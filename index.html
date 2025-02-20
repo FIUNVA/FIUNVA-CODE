@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora Universal de Bases con Procedimientos</title>
+  <!-- Puedes separar estos estilos en un archivo CSS aparte -->
+  <style>
+    :root {
+      --primary: #2ecc71;
+      --secondary: #3498db;
+      --background: #2c3e50;
+      --text: #ecf0f1;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .calculator {
+      background: #34495e;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 700px;
+    }
+    .base-selector {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .base-btn {
+      padding: 10px 20px;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .base-btn.active {
+      background: var(--primary);
+      box-shadow: 0 0 15px var(--primary);
+    }
+    .input-group {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    input, select {
+      padding: 12px;
+      border: 2px solid #3b4a5a;
+      border-radius: 8px;
+      background: #2c3e50;
+      color: var(--text);
+      font-size: 1.1rem;
+      text-align: center;
+      transition: border-color 0.3s ease;
+    }
+    input:focus, select:focus {
+      border-color: var(--secondary);
+      outline: none;
+    }
+    button.calculate {
+      width: 100%;
+      padding: 15px;
+      background: var(--secondary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button.calculate:hover {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+    .result {
+      padding: 1.5rem;
+      background: #3b4a5a;
+      border-radius: 8px;
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .error {
+      color: #e74c3c;
+      margin-top: 1rem;
+    }
+    .procedure-btn {
+      width: 100%;
+      padding: 12px;
+      background: #16a085;
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: all 0.3s ease;
+      display: none;
+    }
+    .procedure-btn:hover {
+      background: #1abc9c;
+    }
+    .procedure {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      background: #2c3e50;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      display: none;
+    }
+    .examples {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #95a5a6;
+    }
+    /* Estilos para los procedimientos tradicionales mejorados */
+    .traditional-procedure {
+      background: #1e2a38;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .traditional-procedure h3 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+    .traditional-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .number-row, .carry-row, .operator-row, .division-result {
+      display: flex;
+      align-items: center;
+      margin: 0.3rem 0;
+    }
+    .digit {
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      background: #34495e;
+      margin: 0 2px;
+      border-radius: 4px;
+    }
+    .operator-symbol, .label, .partial-label {
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+    .division-line {
+      width: 100%;
+      border-bottom: 2px solid var(--secondary);
+      margin: 0.5rem 0;
+    }
+    .traditional-steps {
+      text-align: left;
+      width: 100%;
+      background: #27303c;
+      padding: 0.5rem;
+      border-radius: 5px;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+    }
+    .traditional-steps h4 {
+      margin: 0.5rem 0;
+      color: var(--secondary);
+    }
+    .traditional-steps ol {
+      padding-left: 1.2rem;
+      margin: 0;
+    }
+    .traditional-steps li {
+      margin-bottom: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <!-- Selector de base -->
+    <div class="base-selector">
+      <button class="base-btn active" data-base="2">Binario</button>
+      <button class="base-btn" data-base="8">Octal</button>
+      <button class="base-btn" data-base="10">Decimal</button>
+      <button class="base-btn" data-base="16">Hexadecimal</button>
+      <input type="number" id="baseInput" min="2" max="36" value="10" style="width:80px;">
+    </div>
+    <!-- Ingreso de números y operación -->
+    <div class="input-group">
+      <input type="text" id="num1" placeholder="Número 1">
+      <select id="operation">
+        <option value="+">+</option>
+        <option value="-">-</option>
+        <option value="*">×</option>
+        <option value="/">÷</option>
+      </select>
+      <input type="text" id="num2" placeholder="Número 2">
+    </div>
+    <button class="calculate" onclick="calculate()">Calcular</button>
+    <div class="result" id="result"></div>
+    <div class="error" id="error"></div>
+    <!-- Botones para elegir el procedimiento a mostrar -->
+    <button class="procedure-btn" id="showProcedureAlgorithmic" onclick="toggleProcedureAlgorithmic()">Mostrar procedimiento algorítmico</button>
+    <button class="procedure-btn" id="showProcedureTraditional" onclick="toggleProcedureTraditional()">Mostrar procedimiento tradicional</button>
+    <!-- Aquí se mostrará el procedimiento (algorítmico o tradicional) -->
+    <div class="procedure" id="procedure"></div>
+    <div class="examples">
+      Ejemplos válidos:<br>
+      Base 7: 12.3 • Base 12: A4.5B • Base 5: 43.21<br>
+      Base 16: F.A • Base 2: 101.1 • Base 36: Z.5K<br><br>
+      FIUNVA CODE 2025
+    </div>
+  </div>
+
+  <!-- Inclusión de archivos JavaScript auxiliares -->
+  <script src="common.js"></script>
+  <script src="traditionalProcedure.js"></script>
+</body>
+</html>

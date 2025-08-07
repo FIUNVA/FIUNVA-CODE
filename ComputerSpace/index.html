@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Space - Mejorado</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">
+                <h1>🚀 COMPUTER SPACE</h1>
+                <div class="subtitle">¡Defiende la Galaxia!</div>
+            </div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span class="stat-label">PUNTUACIÓN</span>
+                    <span class="stat-value" id="scoreValue">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">VIDAS</span>
+                    <span class="stat-value" id="livesValue">❤️❤️❤️</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">ENEMIGOS</span>
+                    <span class="stat-value" id="enemyCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">NIVEL</span>
+                    <span class="stat-value" id="levelValue">1</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <canvas id="gameCanvas"></canvas>
+            <div class="flash-overlay" id="flashOverlay"></div>
+            
+            <div class="game-controls-sidebar">
+                <div class="sidebar-image">
+                    <img src="../Imagenes/FC2.png" alt="FIUNVA Logo" class="fiunva-logo">
+                </div>
+                
+                <div class="control-section">
+                    <div class="control-group">
+                        <h3>🎮 CONTROLES</h3>
+                        <div class="control-list">
+                            <div class="control-row">
+                                <span class="key">⬅️ ➡️</span>
+                                <span class="action">Rotar nave</span>
+                            </div>
+                            <div class="control-row">
+                                <span class="key">⬆️</span>
+                                <span class="action">Avanzar</span>
+                            </div>
+                            <div class="control-row">
+                                <span class="key">ESPACIO</span>
+                                <span class="action">Disparar</span>
+                            </div>
+                            <div class="control-row">
+                                <span class="key">R</span>
+                                <span class="action">Reiniciar</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-overlay" id="gameOverlay">
+            <div class="overlay-content">
+                <h2 id="overlayTitle">🚀 COMPUTER SPACE</h2>
+                <p id="overlayMessage">Presiona cualquier tecla para iniciar</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

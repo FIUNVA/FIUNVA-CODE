@@ -1,0 +1,423 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e, #0f3460);
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease-in-out infinite;
+    color: #00ff00;
+    overflow: hidden;
+    height: 100vh;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 0% 100%; }
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 10px;
+    gap: 10px;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 255, 0, 0.1);
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    padding: 15px 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.game-title h1 {
+    font-size: 2rem;
+    text-shadow: 0 0 10px #00ff00;
+    letter-spacing: 3px;
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: #00dddd;
+    text-align: center;
+    margin-top: 5px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.game-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid #00ff00;
+    min-width: 80px;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #00dddd;
+    margin-bottom: 2px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-shadow: 0 0 8px currentColor;
+}
+
+.game-area {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    gap: 30px; /* Espacio entre el canvas y el panel de controles */
+}
+
+#gameCanvas {
+    border: 3px solid #00ff00;
+    border-radius: 15px;
+    background: #000;
+    box-shadow: 
+        0 0 30px rgba(0, 255, 0, 0.5),
+        inset 0 0 30px rgba(0, 255, 0, 0.1);
+}
+
+.flash-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    border-radius: 15px;
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+.flash-overlay.player-hit {
+    background: rgba(255, 100, 100, 0.6);
+    opacity: 1;
+    animation: damageFlash 0.5s ease-out;
+}
+
+.flash-overlay.enemy-hit {
+    background: rgba(255, 255, 100, 0.4);
+    opacity: 1;
+    animation: hitFlash 0.3s ease-out;
+}
+
+.flash-overlay.muzzle-flash {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+    opacity: 1;
+    animation: muzzleFlash 0.15s ease-out;
+}
+
+@keyframes damageFlash {
+    0% { opacity: 0.8; }
+    100% { opacity: 0; }
+}
+
+@keyframes hitFlash {
+    0% { opacity: 0.6; }
+    100% { opacity: 0; }
+}
+
+@keyframes muzzleFlash {
+    0% { opacity: 0.9; }
+    100% { opacity: 0; }
+}
+
+/* Estilos para la imagen FIUNVA en la sidebar */
+.sidebar-image {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.fiunva-logo {
+    max-width: 100%;
+    height: auto;
+    max-height: 120px;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 255, 0, 0.2);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+/* Estilos para el panel de controles lateral */
+.game-controls-sidebar {
+    position: relative;
+    width: 220px;
+    min-width: 220px;
+    background: rgba(0, 255, 0, 0.1);
+    border: 2px solid rgba(0, 255, 0, 0.5);
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    margin-left: 30px; /* Distancia del campo de juego */
+}
+
+.game-controls {
+    display: flex;
+    justify-content: center;
+    background: rgba(0, 255, 0, 0.05);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    backdrop-filter: blur(5px);
+}
+
+.control-section {
+    flex: 1;
+}
+
+.control-group {
+    text-align: center;
+}
+
+.control-group h3 {
+    color: #00ff00;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    text-shadow: 0 0 8px #00ff00;
+    letter-spacing: 1px;
+}
+
+.control-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.control-row:hover {
+    background: rgba(0, 255, 0, 0.1);
+    border-color: rgba(0, 255, 0, 0.5);
+    transform: translateX(3px);
+}
+
+.key {
+    color: #ffff00;
+    font-weight: bold;
+    text-shadow: 0 0 5px #ffff00;
+}
+
+.action {
+    color: #00dddd;
+}
+
+.audio-status {
+    margin-top: 15px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 0, 0.5);
+}
+
+#audioStatus {
+    font-size: 0.8rem;
+    color: #ffff00;
+    text-align: center;
+}
+ 
+.game-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.game-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.overlay-content {
+    text-align: center;
+    padding: 40px;
+    background: rgba(0, 255, 0, 0.1);
+    border: 3px solid #00ff00;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 40px rgba(0, 255, 0, 0.5);
+}
+
+.overlay-content h2 {
+    font-size: 3rem;
+    color: #00ff00;
+    text-shadow: 0 0 20px #00ff00;
+    margin-bottom: 20px;
+    animation: pulse 1.5s infinite;
+}
+
+.overlay-content p {
+    font-size: 1.2rem;
+    color: #00dddd;
+    margin-bottom: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .game-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .game-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .game-area {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .game-controls-sidebar {
+        width: 100%;
+        max-width: 400px;
+        margin-left: 0;
+        margin-top: 20px;
+    }
+    
+    .fiunva-logo {
+        max-height: 80px;
+    }
+    
+    .game-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .game-tips {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 800px) {
+    .game-container {
+        padding: 5px;
+    }
+    
+    .game-title h1 {
+        font-size: 1.5rem;
+    }
+    
+    .stat-item {
+        min-width: 60px;
+        padding: 6px 8px;
+    }
+    
+    .stat-value {
+        font-size: 1rem;
+    }
+    
+    #gameCanvas {
+        max-width: 100%;
+        max-height: 60vh;
+    }
+    
+    .game-controls-sidebar {
+        width: 100%;
+        padding: 15px;
+        margin-left: 0;
+    }
+    
+    .fiunva-logo {
+        max-height: 60px;
+    }
+    
+    .control-row {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+}
+
+/* Animaciones de colisión personalizadas */
+@keyframes explosion {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5) rotate(180deg);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(2) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes enemyDestruction {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    25% {
+        transform: scale(1.2) rotate(90deg);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(0.8) rotate(180deg);
+        opacity: 0.7;
+    }
+    75% {
+        transform: scale(1.1) rotate(270deg);
+        opacity: 0.4;
+    }
+    100% {
+        transform: scale(0) rotate(360deg);
+        opacity: 0;
+    }
+}

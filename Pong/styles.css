@@ -1,0 +1,238 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #0c0c0c, #1a1a2e, #16213e);
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    overflow: hidden;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.scoreboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 800px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.player-info {
+    text-align: center;
+    min-width: 150px;
+}
+
+.player-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #00ff88;
+    text-shadow: 0 0 10px #00ff88;
+}
+
+.score {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 20px #fff;
+    margin-bottom: 10px;
+}
+
+.lives {
+    font-size: 1.1rem;
+    color: #ff6b6b;
+}
+
+.game-title {
+    text-align: center;
+    flex: 1;
+}
+
+.game-logo {
+    max-width: 250px;
+    height: auto;
+    max-height: 100px;
+    object-fit: contain;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}
+
+.game-title h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 3s ease-in-out infinite;
+}
+
+.game-status {
+    font-size: 1rem;
+    color: #ffff00;
+    text-shadow: 0 0 10px #ffff00;
+    animation: pulse 2s infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+#pongCanvas {
+    border: 3px solid #00ff88;
+    border-radius: 10px;
+    box-shadow: 
+        0 0 20px #00ff88,
+        inset 0 0 20px rgba(0, 255, 136, 0.1);
+    background: #000;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    width: 800px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-group {
+    text-align: center;
+    flex: 1;
+}
+
+.control-group h4 {
+    color: #4ecdc4;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.control-group p {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin: 3px 0;
+}
+
+/* Animación de explosión */
+@keyframes explosion {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+.explosion {
+    position: absolute;
+    pointer-events: none;
+    animation: explosion 0.5s ease-out forwards;
+}
+
+/* Efectos de colisión */
+@keyframes collision-flash {
+    0% { box-shadow: 0 0 20px #00ff88; }
+    50% { box-shadow: 0 0 40px #ff6b6b, 0 0 60px #ff6b6b; }
+    100% { box-shadow: 0 0 20px #00ff88; }
+}
+
+.collision-effect {
+    animation: collision-flash 0.3s ease-out;
+}
+
+.audio-info {
+    margin-top: 10px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    max-width: 600px;
+}
+
+.audio-info p {
+    margin-bottom: 10px;
+    color: #ffff00;
+    font-size: 0.9rem;
+}
+
+.audio-info ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 0;
+}
+
+.audio-info li {
+    color: #00dddd;
+    font-size: 0.8rem;
+}
+
+.audio-info strong {
+    color: #00ff88;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .game-container {
+        padding: 10px;
+    }
+    
+    .scoreboard,
+    .controls {
+        width: 100%;
+        max-width: 800px;
+    }
+    
+    #pongCanvas {
+        max-width: 100%;
+    }
+    
+    .game-title h1 {
+        font-size: 2rem;
+    }
+    
+    .game-logo {
+        max-width: 180px;
+        max-height: 75px;
+    }
+    
+    .score {
+        font-size: 2.5rem;
+    }
+}

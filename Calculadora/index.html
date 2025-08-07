@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora Universal de Bases con Procedimientos</title>
+  <!-- Puedes separar estos estilos en un archivo CSS aparte -->
+  <style>
+    :root {
+      --primary: #2ecc71;
+      --secondary: #3498db;
+      --background: #2c3e50;
+      --text: #ecf0f1;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .main-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      width: 100%;
+      max-width: 1400px;
+    }
+
+    .side-image {
+      height: 30vh;
+      width: auto;
+      object-fit: contain;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    @media (max-width: 1200px) {
+      .main-container {
+        flex-direction: column;
+      }
+      .side-image {
+        height: 40vh;
+        max-width: 90%;
+      }
+    }
+    .calculator {
+      background: #34495e;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 700px;
+    }
+    .base-selector {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .base-btn {
+      padding: 10px 20px;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .base-btn.active {
+      background: var(--primary);
+      box-shadow: 0 0 15px var(--primary);
+    }
+    .input-group {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    input, select {
+      padding: 12px;
+      border: 2px solid #3b4a5a;
+      border-radius: 8px;
+      background: #2c3e50;
+      color: var(--text);
+      font-size: 1.1rem;
+      text-align: center;
+      transition: border-color 0.3s ease;
+    }
+    input:focus, select:focus {
+      border-color: var(--secondary);
+      outline: none;
+    }
+    button.calculate {
+      width: 100%;
+      padding: 15px;
+      background: var(--secondary);
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button.calculate:hover {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+    .result {
+      padding: 1.5rem;
+      background: #3b4a5a;
+      border-radius: 8px;
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .error {
+      color: #e74c3c;
+      margin-top: 1rem;
+    }
+    .procedure-btn {
+      width: 100%;
+      padding: 12px;
+      background: #16a085;
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: all 0.3s ease;
+      display: none;
+    }
+    .procedure-btn:hover {
+      background: #1abc9c;
+    }
+    .procedure {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      background: #2c3e50;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      display: none;
+    }
+    .examples {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #95a5a6;
+    }
+    /* Estilos para los procedimientos tradicionales mejorados */
+    .traditional-procedure {
+      background: #1e2a38;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .traditional-procedure h3 {
+      margin-top: 0;
+      color: var(--primary);
+      text-align: center;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 0.5rem;
+    }
+    
+    /* Estilos mejorados para suma */
+    .carry-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      justify-content: center;
+    }
+    .carry-label {
+      font-size: 0.9rem;
+      margin-right: 1rem;
+      color: var(--secondary);
+      font-weight: bold;
+    }
+    .carry-digit {
+      width: 25px;
+      height: 25px;
+      line-height: 25px;
+      text-align: center;
+      margin: 0 2px;
+      font-size: 0.8rem;
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    .has-carry {
+      background: rgba(231, 76, 60, 0.2);
+      border-radius: 3px;
+    }
+    .operation-label {
+      width: 30px;
+      text-align: center;
+      font-weight: bold;
+      color: var(--secondary);
+    }
+    .operation-space {
+      width: 30px;
+    }
+    
+    /* Estilos mejorados para resta */
+    .borrow-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      justify-content: center;
+    }
+    .borrow-label {
+      font-size: 0.9rem;
+      margin-right: 1rem;
+      color: var(--secondary);
+      font-weight: bold;
+    }
+    .borrow-digit {
+      width: 25px;
+      height: 25px;
+      line-height: 25px;
+      text-align: center;
+      margin: 0 2px;
+      font-size: 0.8rem;
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    .has-borrow {
+      background: rgba(231, 76, 60, 0.2);
+      border-radius: 3px;
+    }
+    .borrowed-from {
+      position: relative;
+    }
+    .crossed-out {
+      text-decoration: line-through;
+      color: #e74c3c;
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.8rem;
+    }
+    .borrowed-value {
+      color: var(--primary);
+      font-weight: bold;
+    }
+    .original-digit {
+      background: #e74c3c;
+      color: white;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+    .borrowed-result {
+      background: var(--primary);
+      color: white;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-weight: bold;
+      margin-left: 0.3rem;
+    }
+    .calculation-line {
+      font-family: monospace;
+      font-weight: bold;
+      margin-top: 0.3rem;
+    }
+    
+    /* Estilos para pasos detallados */
+    .step-by-step {
+      margin-top: 2rem;
+    }
+    .step-by-step h4 {
+      color: var(--secondary);
+      margin-bottom: 1rem;
+    }
+    .steps-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    .step-box {
+      background: #27303c;
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+    }
+    .step-header {
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    .step-calculation {
+      margin: 0.5rem 0;
+      font-family: monospace;
+    }
+    .addend, .carry-in, .minuend, .subtrahend {
+      color: var(--text);
+      font-weight: bold;
+    }
+    .total {
+      color: var(--secondary);
+      font-weight: bold;
+    }
+    .result-highlight {
+      background: var(--primary);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+    .carry-highlight, .borrow-note {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    
+    /* Estilos para multiplicación */
+    .multiplicand-row, .multiplier-row {
+      justify-content: center;
+      margin: 0.3rem 0;
+    }
+    .partial-products-section {
+      margin: 1rem 0;
+    }
+    .partial-product-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0.3rem 0;
+    }
+    .partial-label {
+      font-weight: bold;
+      margin-right: 0.5rem;
+      color: var(--secondary);
+      min-width: 40px;
+    }
+    .result-label {
+      font-weight: bold;
+      color: var(--primary);
+      margin-right: 0.5rem;
+    }
+    .multiplication-details {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .mult-step-box {
+      background: #27303c;
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid var(--secondary);
+    }
+    .mult-step-header {
+      font-weight: bold;
+      color: var(--secondary);
+      margin-bottom: 0.8rem;
+    }
+    .mult-calculations {
+      margin: 0.5rem 0;
+    }
+    .mult-calc-row {
+      margin: 0.3rem 0;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .position-label {
+      min-width: 50px;
+      color: #95a5a6;
+      font-size: 0.9rem;
+    }
+    .mult-operation {
+      color: var(--text);
+      font-weight: bold;
+    }
+    .carry-add {
+      color: #e74c3c;
+    }
+    .equals {
+      color: var(--secondary);
+    }
+    .result-breakdown {
+      color: var(--primary);
+      font-weight: bold;
+    }
+    .carry-out {
+      color: #e74c3c;
+      font-style: italic;
+    }
+    .partial-highlight {
+      background: var(--secondary);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .final-sum {
+      margin-top: 2rem;
+      background: #2c3e50;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .sum-visualization {
+      font-family: monospace;
+      text-align: center;
+    }
+    .sum-row {
+      margin: 0.2rem 0;
+      color: var(--text);
+    }
+    .sum-line-final {
+      color: var(--secondary);
+      font-weight: bold;
+    }
+    .sum-result {
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    
+    /* Estilos para división - Casita tradicional */
+    .division-casita {
+      background: #2c3e50;
+      padding: 2rem;
+      border-radius: 10px;
+      margin: 1rem 0;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .casita-structure {
+      font-family: 'Courier New', monospace;
+      font-size: 1.2rem;
+      line-height: 1.4;
+      position: relative;
+    }
+    
+    /* Cociente arriba */
+    .quotient-line {
+      text-align: center;
+      margin-bottom: 0.3rem;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.3rem;
+    }
+    
+    .quotient-digit {
+      margin: 0 0.2rem;
+      padding: 0.2rem 0.4rem;
+      background: var(--primary);
+      color: white;
+      border-radius: 3px;
+    }
+    
+    /* Línea horizontal del cociente */
+    .quotient-underline {
+      width: 100%;
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Fila del divisor y dividendo */
+    .divisor-dividend-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .divisor-box {
+      background: var(--secondary);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+    
+    .division-corner {
+      font-size: 1.5rem;
+      color: var(--secondary);
+      margin: 0 0.3rem;
+      font-weight: bold;
+    }
+    
+    .dividend-box {
+      background: #34495e;
+      color: var(--text);
+      padding: 0.4rem 0.8rem;
+      border-radius: 5px;
+      font-weight: bold;
+      border: 2px solid var(--secondary);
+    }
+    
+    /* Operaciones paso a paso */
+    .division-operations {
+      margin-left: 4rem; /* Alineado con el dividendo */
+      border-left: 2px solid var(--secondary);
+      padding-left: 1rem;
+    }
+    
+    .operation-step {
+      margin: 0.8rem 0;
+    }
+    
+    .multiplication-line {
+      text-align: left;
+      margin: 0.3rem 0;
+    }
+    
+    .operation-number {
+      background: #e74c3c;
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+    
+    .subtraction-line {
+      width: 100px;
+      border-bottom: 2px solid var(--secondary);
+      margin: 0.3rem 0;
+    }
+    
+    .subtraction-result {
+      margin: 0.3rem 0;
+    }
+    
+    .remainder-number {
+      color: var(--primary);
+      font-weight: bold;
+      padding: 0.2rem 0.4rem;
+      background: rgba(46, 204, 113, 0.2);
+      border-radius: 3px;
+    }
+    
+    .final-remainder {
+      margin-top: 1.5rem;
+      text-align: center;
+      padding: 0.8rem;
+      background: rgba(46, 204, 113, 0.1);
+      border-radius: 8px;
+      border: 2px solid var(--primary);
+    }
+    
+    .remainder-final-value {
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.2rem;
+      background: var(--primary);
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+    }
+    
+    /* Pasos de división mejorados */
+    .calc-explanation {
+      margin: 0.4rem 0;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+    }
+    
+    .calc-explanation strong {
+      background: #34495e;
+      color: var(--text);
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      margin: 0 0.2rem;
+    }
+    
+    /* Mantener el resto de estilos existentes... */
+    .division-house {
+      background: #2c3e50;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin: 1rem 0;
+    }
+    .house-structure {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .quotient-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .quotient-label {
+      margin-right: 1rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    .division-symbol {
+      display: flex;
+      align-items: center;
+      margin: 1rem 0;
+    }
+    .divisor-section {
+      display: flex;
+      align-items: center;
+      margin-right: 1rem;
+    }
+    .divisor-digit {
+      background: var(--secondary);
+      color: white;
+    }
+    .division-bracket {
+      font-size: 2rem;
+      margin: 0 0.5rem;
+      color: var(--secondary);
+    }
+    .dividend-section {
+      display: flex;
+      align-items: center;
+    }
+    .dividend-digit {
+      background: #34495e;
+      color: var(--text);
+    }
+    .remainder-final {
+      text-align: center;
+      margin-top: 1rem;
+      padding: 0.5rem;
+      background: rgba(46, 204, 113, 0.1);
+      border-radius: 5px;
+    }
+    .remainder-value {
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    
+    /* Pasos de división */
+    .division-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .div-step-box {
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+    }
+    .can-divide {
+      background: #27303c;
+    }
+    .cannot-divide {
+      background: #2a1f1f;
+      border-left-color: #e74c3c;
+    }
+    .step-number {
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    .step-operation {
+      margin: 0.5rem 0;
+    }
+    .step-label {
+      font-weight: bold;
+      color: var(--secondary);
+    }
+    .partial-dividend {
+      background: #34495e;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+    .division-calculation {
+      margin: 0.8rem 0;
+    }
+    .calc-row {
+      display: flex;
+      align-items: center;
+      margin: 0.3rem 0;
+      font-family: monospace;
+    }
+    .calc-label {
+      min-width: 100px;
+      color: #95a5a6;
+      font-size: 0.9rem;
+    }
+    .calc-operation {
+      color: var(--text);
+      font-weight: bold;
+    }
+    .quotient-highlight {
+      background: var(--primary);
+      color: white;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .remainder-highlight {
+      background: var(--secondary);
+      color: white;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .no-division {
+      font-style: italic;
+      color: #e74c3c;
+    }
+    
+    /* Verificación de división */
+    .division-verification {
+      margin-top: 2rem;
+      background: #2c3e50;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .verification-formula {
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+    }
+    .formula-part {
+      color: var(--secondary);
+      font-weight: bold;
+    }
+    .verification-calculation {
+      margin-top: 1rem;
+      font-family: monospace;
+      font-size: 1.1rem;
+    }
+    .verification-numbers {
+      color: var(--primary);
+      font-weight: bold;
+    }
+    
+    /* Estilos generales mejorados */
+    .traditional-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      background: #2c3e50;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .number-row, .carry-row, .operator-row {
+      display: flex;
+      align-items: center;
+      margin: 0.3rem 0;
+    }
+    .digit {
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      background: #34495e;
+      margin: 0 2px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .main-digit {
+      background: #34495e;
+      color: var(--text);
+      border: 1px solid #4a5f7a;
+    }
+    .result-digit {
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+    }
+    .partial-digit {
+      background: var(--secondary);
+      color: white;
+    }
+    .division-line-thick {
+      width: 100%;
+      border-bottom: 3px solid var(--secondary);
+      margin: 0.5rem 0;
+    }
+    .sum-line {
+      border-bottom: 2px solid var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="calculator">
+      <!-- Selector de base -->
+      <div class="base-selector">
+        <button class="base-btn" data-base="2">Binario</button>
+        <button class="base-btn" data-base="8">Octal</button>
+        <button class="base-btn" data-base="10">Decimal</button>
+        <button class="base-btn" data-base="16">Hexadecimal</button>
+        <input type="number" id="baseInput" min="2" max="36" value="10" style="width:80px;">
+      </div>
+      <!-- Ingreso de números y operación -->
+      <div class="input-group">
+        <input type="text" id="num1" placeholder="Número 1">
+        <select id="operation">
+          <option value="+">+</option>
+          <option value="-">-</option>
+          <option value="*">×</option>
+          <option value="/">÷</option>
+        </select>
+        <input type="text" id="num2" placeholder="Número 2">
+      </div>
+      <button class="calculate" onclick="calculate()">Calcular</button>
+      <div class="result" id="result"></div>
+      <div class="error" id="error"></div>
+      <!-- Botones para elegir el procedimiento a mostrar -->
+      <button class="procedure-btn" id="showProcedureAlgorithmic" onclick="toggleProcedureAlgorithmic()">Mostrar procedimiento algorítmico</button>
+      <button class="procedure-btn" id="showProcedureTraditional" onclick="toggleProcedureTraditional()">Mostrar procedimiento tradicional</button>
+      <!-- Aquí se mostrará el procedimiento (algorítmico o tradicional) -->
+      <div class="procedure" id="procedure"></div>
+      <div class="examples">
+        Ejemplos válidos:<br>
+        Base 7: 12.3 • Base 12: A4.5B • Base 5: 43.21<br>
+        Base 16: F.A • Base 2: 101.1 • Base 36: Z.5K<br><br>
+        FIUNVA CODE 2025
+      </div>
+    </div>
+    
+    <img src="../Imagenes/FC2.png" alt="FIUNVA Logo" class="side-image">
+  </div>
+
+  <!-- Inclusión de archivos JavaScript auxiliares -->
+  <script src="common.js"></script>
+  <script src="traditionalProcedure.js"></script>
+</body>
+</html>

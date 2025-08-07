@@ -1,231 +1,410 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculadora Universal de Bases con Procedimientos</title>
-  <!-- Puedes separar estos estilos en un archivo CSS aparte -->
-  <style>
-    :root {
-      --primary: #2ecc71;
-      --secondary: #3498db;
-      --background: #2c3e50;
-      --text: #ecf0f1;
-    }
-    body {
-      font-family: 'Arial', sans-serif;
-      background: var(--background);
-      color: var(--text);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .calculator {
-      background: #34495e;
-      padding: 2rem;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      width: 90%;
-      max-width: 700px;
-    }
-    .base-selector {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
-    }
-    .base-btn {
-      padding: 10px 20px;
-      border: 2px solid var(--primary);
-      border-radius: 8px;
-      background: transparent;
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .base-btn.active {
-      background: var(--primary);
-      box-shadow: 0 0 15px var(--primary);
-    }
-    .input-group {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-    input, select {
-      padding: 12px;
-      border: 2px solid #3b4a5a;
-      border-radius: 8px;
-      background: #2c3e50;
-      color: var(--text);
-      font-size: 1.1rem;
-      text-align: center;
-      transition: border-color 0.3s ease;
-    }
-    input:focus, select:focus {
-      border-color: var(--secondary);
-      outline: none;
-    }
-    button.calculate {
-      width: 100%;
-      padding: 15px;
-      background: var(--secondary);
-      border: none;
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    button.calculate:hover {
-      transform: scale(0.98);
-      opacity: 0.9;
-    }
-    .result {
-      padding: 1.5rem;
-      background: #3b4a5a;
-      border-radius: 8px;
-      margin-top: 2rem;
-      text-align: center;
-    }
-    .error {
-      color: #e74c3c;
-      margin-top: 1rem;
-    }
-    .procedure-btn {
-      width: 100%;
-      padding: 12px;
-      background: #16a085;
-      border: none;
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 1.1rem;
-      cursor: pointer;
-      margin-top: 1.5rem;
-      transition: all 0.3s ease;
-      display: none;
-    }
-    .procedure-btn:hover {
-      background: #1abc9c;
-    }
-    .procedure {
-      margin-top: 1.5rem;
-      padding: 1.5rem;
-      background: #2c3e50;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      display: none;
-    }
-    .examples {
-      margin-top: 2rem;
-      font-size: 0.9rem;
-      color: #95a5a6;
-    }
-    /* Estilos para los procedimientos tradicionales mejorados */
-    .traditional-procedure {
-      background: #1e2a38;
-      padding: 1rem;
-      border-radius: 10px;
-      margin-top: 1rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-    .traditional-procedure h3 {
-      margin-top: 0;
-      color: var(--primary);
-    }
-    .traditional-display {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .number-row, .carry-row, .operator-row, .division-result {
-      display: flex;
-      align-items: center;
-      margin: 0.3rem 0;
-    }
-    .digit {
-      width: 30px;
-      height: 30px;
-      line-height: 30px;
-      text-align: center;
-      background: #34495e;
-      margin: 0 2px;
-      border-radius: 4px;
-    }
-    .operator-symbol, .label, .partial-label {
-      font-weight: bold;
-      margin-right: 0.5rem;
-    }
-    .division-line {
-      width: 100%;
-      border-bottom: 2px solid var(--secondary);
-      margin: 0.5rem 0;
-    }
-    .traditional-steps {
-      text-align: left;
-      width: 100%;
-      background: #27303c;
-      padding: 0.5rem;
-      border-radius: 5px;
-      margin-top: 1rem;
-      font-size: 0.95rem;
-    }
-    .traditional-steps h4 {
-      margin: 0.5rem 0;
-      color: var(--secondary);
-    }
-    .traditional-steps ol {
-      padding-left: 1.2rem;
-      margin: 0;
-    }
-    .traditional-steps li {
-      margin-bottom: 0.3rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub de Proyectos Web</title>
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --background: #2c3e50;
+            --card-bg: #34495e;
+            --text: #ecf0f1;
+            --text-secondary: #bdc3c7;
+            --hover: #1abc9c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, var(--background), #1a252f);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .project-card:hover::before {
+            opacity: 1;
+        }
+
+        .project-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+        }
+
+        .calculator-icon {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+
+        .game-icon {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+        }
+
+        .pong-icon {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .project-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .project-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .project-features li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .project-features li::before {
+            content: '✓';
+            color: var(--primary);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .project-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, var(--primary), var(--hover));
+            border: none;
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .project-button:hover {
+            transform: scale(0.98);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .calculator-btn {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+
+        .calculator-btn:hover {
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .game-btn {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+        }
+
+        .game-btn:hover {
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+        }
+
+        .pong-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .pong-btn:hover {
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--card-bg);
+            color: var(--text-secondary);
+        }
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .footer-logo {
+            height: 9rem;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tech-badge {
+            background: var(--card-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .project-card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Animaciones */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .project-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .project-card:nth-child(1) { animation-delay: 0.1s; }
+        .project-card:nth-child(2) { animation-delay: 0.2s; }
+        .project-card:nth-child(3) { animation-delay: 0.3s; }
+    </style>
 </head>
 <body>
-  <div class="calculator">
-    <!-- Selector de base -->
-    <div class="base-selector">
-      <button class="base-btn" data-base="2">Binario</button>
-      <button class="base-btn" data-base="8">Octal</button>
-      <button class="base-btn" data-base="10">Decimal</button>
-      <button class="base-btn" data-base="16">Hexadecimal</button>
-      <input type="number" id="baseInput" min="2" max="36" value="10" style="width:80px;">
-    </div>
-    <!-- Ingreso de números y operación -->
-    <div class="input-group">
-      <input type="text" id="num1" placeholder="Número 1">
-      <select id="operation">
-        <option value="+">+</option>
-        <option value="-">-</option>
-        <option value="*">×</option>
-        <option value="/">÷</option>
-      </select>
-      <input type="text" id="num2" placeholder="Número 2">
-    </div>
-    <button class="calculate" onclick="calculate()">Calcular</button>
-    <div class="result" id="result"></div>
-    <div class="error" id="error"></div>
-    <!-- Botones para elegir el procedimiento a mostrar -->
-    <button class="procedure-btn" id="showProcedureAlgorithmic" onclick="toggleProcedureAlgorithmic()">Mostrar procedimiento algorítmico</button>
-    <button class="procedure-btn" id="showProcedureTraditional" onclick="toggleProcedureTraditional()">Mostrar procedimiento tradicional</button>
-    <!-- Aquí se mostrará el procedimiento (algorítmico o tradicional) -->
-    <div class="procedure" id="procedure"></div>
-    <div class="examples">
-      Ejemplos válidos:<br>
-      Base 7: 12.3 • Base 12: A4.5B • Base 5: 43.21<br>
-      Base 16: F.A • Base 2: 101.1 • Base 36: Z.5K<br><br>
-      FIUNVA CODE 2025
-    </div>
-  </div>
+    <div class="container">
+        <header class="header">
+            <h1>🚀 HUB DE PROYECTOS WEB</h1>
+            <p>Colección de aplicaciones y juegos web interactivas desarrolladas con HTML, CSS y JavaScript</p>
+        </header>
 
-  <!-- Inclusión de archivos JavaScript auxiliares -->
-  <script src="common.js"></script>
-  <script src="traditionalProcedure.js"></script>
+        <main class="projects-grid">
+            <!-- Proyecto 1: Calculadora -->
+            <div class="project-card">
+                <div class="project-icon calculator-icon">🧮</div>
+                <h2 class="project-title">Calculadora Universal</h2>
+                <p class="project-description">
+                    Calculadora avanzada para operaciones en múltiples bases numéricas con procedimientos detallados y operaciones especializadas.
+                </p>
+                <ul class="project-features">
+                    <li>Conversión entre bases (2 a 36)</li>
+                    <li>Operaciones aritméticas básicas</li>
+                    <li>Suma y resta</li>
+                    <li>Multiplicación y división</li>
+                    <li>Procedimiento algorítmico</li>
+                    <li>Procedimientos paso a paso</li>
+                </ul>
+                <a href="Calculadora/index.html" class="project-button calculator-btn">
+                    Abrir Calculadora
+                </a>
+            </div>
+
+            <!-- Proyecto 2: Computer Space -->
+            <div class="project-card">
+                <div class="project-icon game-icon">🚀</div>
+                <h2 class="project-title">Computer Space</h2>
+                <p class="project-description">
+                    Recreación del clásico juego de arcade Computer Space. Controla una nave espacial y dispara a objetos enemigos en el espacio.
+                </p>
+                <ul class="project-features">
+                    <li>Gráficos retro estilo arcade</li>
+                    <li>Sistema de puntuación</li>
+                    <li>Efectos de sonido</li>
+                    <li>Controles intuitivos</li>
+                    <li>Física de movimiento realista</li>
+                    <li>Múltiples vidas</li>
+                </ul>
+                <a href="ComputerSpace/index.html" class="project-button game-btn">
+                    Jugar Computer Space
+                </a>
+            </div>
+
+            <!-- Proyecto 3: Pong -->
+            <div class="project-card">
+                <div class="project-icon pong-icon">🏓</div>
+                <h2 class="project-title">Pong Clásico</h2>
+                <p class="project-description">
+                    El legendario juego Pong recreado con tecnologías web modernas. Disfruta del clásico juego de tenis de mesa digital.
+                </p>
+                <ul class="project-features">
+                    <li>Gameplay clásico auténtico</li>
+                    <li>Controles responsive</li>
+                    <li>Física de rebote realista</li>
+                    <li>Interfaz minimalista</li>
+                    <li>Modo un jugador 1 vs jugador 2</li>
+                    <li>Velocidad progresiva</li>
+                </ul>
+                <a href="Pong/index.html" class="project-button pong-btn">
+                    Jugar Pong
+                </a>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <img src="Imagenes/FC1.png" alt="FIUNVA Logo" class="footer-logo">
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Agregar efectos de interacción adicionales
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.project-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.5)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
+                });
+            });
+
+            // Efecto de ripple en los botones
+            const buttons = document.querySelectorAll('.project-button');
+            
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // Crear elemento ripple
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.cssText = `
+                        position: absolute;
+                        border-radius: 50%;
+                        background: rgba(255, 255, 255, 0.3);
+                        transform: scale(0);
+                        animation: ripple 0.6s linear;
+                        left: ${x}px;
+                        top: ${y}px;
+                        width: ${size}px;
+                        height: ${size}px;
+                    `;
+                    
+                    this.style.position = 'relative';
+                    this.style.overflow = 'hidden';
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+        });
+
+        // Crear animación CSS para el ripple
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>

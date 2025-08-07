@@ -239,6 +239,17 @@ npx live-server
 
 ## 📞 Contacto
 
+Intagram: @igfiunva
+
+Facebook: Fiunva
+
+Pagina web: https://fiunva.my.canva.site
+
+Youtube: @FIUNVA
+
+e-mail: fiunva.oficial@gmail.com
+
+
 **FIUNVA CODE - Submarca de FIUNVA**
 - Desarrollo de aplicaciones y juegos web
 - Soluciones tecnológicas innovadoras

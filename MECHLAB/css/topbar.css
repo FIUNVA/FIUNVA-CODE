@@ -1,0 +1,34 @@
+/* ---------- header (brand row) ---------- */
+.topbar{
+  display:flex;align-items:center;gap:16px;
+  padding:10px 18px;
+  border-bottom:1px solid var(--edge);
+  background:linear-gradient(180deg, rgba(15,32,54,0.95), rgba(10,20,32,0.85));
+  flex:none;flex-wrap:wrap;
+}
+.brand{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-right:auto;min-width:0;}
+.brand .mark{font-family:var(--sans);font-weight:700;font-size:18px;letter-spacing:0.05em;color:var(--ink);}
+.brand .mark::before{content:'⟁ ';color:var(--c-mass);}
+.brand .sub{font-size:10.5px;color:var(--ink-faint);font-family:var(--mono);letter-spacing:0.02em;line-height:1.2;}
+.brand .credit{font-size:10px;color:var(--c-force);font-family:var(--mono);letter-spacing:0.07em;text-transform:uppercase;line-height:1.1;opacity:0.9;}
+@media (max-width:900px){ .brand .sub,.brand .credit{display:none;} }
+
+.segmented{display:flex;border:1px solid var(--edge);border-radius:999px;padding:3px;background:var(--panel-3);}
+.segmented button{border:none;background:transparent;color:var(--ink-dim);padding:6px 14px;border-radius:999px;cursor:pointer;font-size:12.5px;font-weight:600;font-family:var(--sans);transition:all .15s ease;}
+.segmented button.active{background:var(--c-mass);color:#08131e;}
+.segmented button:not(.active):hover{color:var(--ink);}
+
+.btn{
+  border:1px solid var(--edge);background:var(--panel-2);color:var(--ink);
+  padding:7px 13px;border-radius:var(--radius-sm);cursor:pointer;
+  font-size:12px;font-weight:600;font-family:var(--sans);letter-spacing:0.01em;
+  display:inline-flex;align-items:center;gap:6px;transition:all .15s ease;white-space:nowrap;
+}
+.btn:hover{border-color:var(--c-mass);color:var(--c-mass);}
+.btn:active{transform:translateY(1px);}
+.btn.danger:hover{border-color:var(--red);color:var(--red);}
+.btn.accent{background:var(--c-force);border-color:var(--c-force);color:#241202;}
+.btn.accent:hover{filter:brightness(1.08);color:#241202;}
+.btn.accent.playing{background:transparent;color:var(--c-force);}
+select.select{border:1px solid var(--edge);background:var(--panel-2);color:var(--ink);padding:7px 10px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;}
+

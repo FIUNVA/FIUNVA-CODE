@@ -1,0 +1,17 @@
+/* ---------- main area: canvas + drawer ---------- */
+.main{flex:1;position:relative;overflow:hidden;display:flex;}
+.canvas-wrap{
+  flex:1;position:relative;overflow:auto;
+  background:var(--bg-grid);
+}
+#workSvg{display:block;cursor:default;}
+.comp{cursor:grab;}
+.comp:active{cursor:grabbing;}
+
+.empty-hint-canvas{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  color:var(--ink-faint);font-family:var(--mono);font-size:13px;text-align:center;
+  border:1px dashed var(--edge);border-radius:10px;padding:22px 30px;pointer-events:none;
+  max-width:340px;line-height:1.7;
+}
+

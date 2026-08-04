@@ -1,0 +1,44 @@
+:root{
+  --bg:#0a1420;
+  --bg-grid:#0c1826;
+  --panel:#0f2036;
+  --panel-2:#122a46;
+  --panel-3:#0d1f34;
+  --edge:#1d3b58;
+  --edge-soft:rgba(87,184,214,0.18);
+  --ink:#e4eef5;
+  --ink-dim:#87a2b8;
+  --ink-faint:#4f6478;
+
+  --c-mass:#5fc0dd;
+  --c-mass-dim:rgba(95,192,221,0.16);
+  --c-wall:#9fb0c2;
+  --c-wall-dim:rgba(159,176,194,0.16);
+  --c-spring:#6fcf97;
+  --c-spring-dim:rgba(111,207,151,0.16);
+  --c-damper:#b58cf2;
+  --c-damper-dim:rgba(181,140,242,0.16);
+  --c-force:#f2a154;
+  --c-force-dim:rgba(242,161,84,0.16);
+
+  --red:#e8637a;
+  --green:#6fcf97;
+  --radius:10px;
+  --radius-sm:6px;
+  --mono:'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+  --sans:'Space Grotesk', system-ui, sans-serif;
+  --body:'Inter', system-ui, sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--body);
+}
+::selection{background:rgba(242,161,84,0.4);color:#0a1420;}
+button{font-family:inherit;}
+input,select{font-family:inherit;}
+
+.app{display:flex;flex-direction:column;height:100vh;}
+

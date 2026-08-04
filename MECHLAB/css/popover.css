@@ -1,0 +1,30 @@
+/* ---------- parameter popover ---------- */
+.popover{
+  position:fixed;z-index:200;min-width:230px;max-width:280px;
+  background:var(--panel);border:1px solid var(--edge);border-radius:10px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+  font-size:12.5px;
+}
+.popover-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:9px 12px;border-bottom:1px solid var(--edge);
+}
+.popover-head .ttl{font-family:var(--sans);font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:7px;}
+.popover-head .dot{width:9px;height:9px;border-radius:50%;}
+.popover-head .x{background:transparent;border:none;color:var(--ink-faint);cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;}
+.popover-head .x:hover{color:var(--red);}
+.popover-body{padding:11px 12px;display:flex;flex-direction:column;gap:9px;max-height:60vh;overflow-y:auto;}
+.pf-row{display:flex;flex-direction:column;gap:4px;}
+.pf-row label{font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.05em;font-family:var(--mono);}
+.pf-row input[type=number], .pf-row input[type=text], .pf-row select{
+  background:var(--panel-3);border:1px solid var(--edge);color:var(--ink);padding:6px 8px;border-radius:5px;
+  font-family:var(--mono);font-size:12px;width:100%;
+}
+.pf-row input:focus, .pf-row select:focus{outline:none;border-color:var(--ink-dim);}
+.pf-two{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.pf-check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink);cursor:pointer;}
+.pf-check input{accent-color:var(--c-mass);width:14px;height:14px;}
+.popover-foot{display:flex;justify-content:flex-end;padding:9px 12px;border-top:1px solid var(--edge);}
+.del-btn{background:transparent;border:1px solid var(--edge);color:var(--red);padding:6px 11px;border-radius:6px;cursor:pointer;font-size:11.5px;font-family:var(--sans);font-weight:600;}
+.del-btn:hover{background:rgba(232,99,122,0.1);}
+

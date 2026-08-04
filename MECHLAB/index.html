@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MECHLAB · Simulador de sistemas mecánicos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/tokens.css">
+<link rel="stylesheet" href="./css/topbar.css">
+<link rel="stylesheet" href="./css/toolbar.css">
+<link rel="stylesheet" href="./css/canvas.css">
+<link rel="stylesheet" href="./css/popover.css">
+<link rel="stylesheet" href="./css/drawer.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">MECHLAB</span>
+      <span class="credit">Powered by FIUNVA</span>
+      <span class="sub">SIMULADOR DE SISTEMAS MECÁNICOS</span>
+    </div>
+    <div class="segmented" id="modeSwitch">
+      <button data-mode="trans" class="active">Traslacional</button>
+      <button data-mode="rot">Rotacional</button>
+      <button data-mode="pend">Péndulo</button>
+    </div>
+    <select class="select" id="presetSelect"><option value="">Cargar ejemplo…</option></select>
+    <button class="btn" id="undoBtn" title="Deshacer (Ctrl+Z)">↶</button>
+    <button class="btn" id="redoBtn" title="Rehacer (Ctrl+Y)">↷</button>
+    <button class="btn" id="saveBtn" title="Guardar proyecto (.json)">💾 Guardar</button>
+    <button class="btn" id="loadBtn" title="Abrir proyecto (.json)">📂 Abrir</button>
+    <input type="file" id="loadFileInput" accept=".json" style="display:none;">
+    <button class="btn" id="exportPngBtn" title="Exportar diagrama como PNG">⬇ Exportar</button>
+    <button class="btn" id="analysisToggleBtn">📊 Análisis</button>
+    <button class="btn danger" id="resetAllBtn">↺ Limpiar</button>
+  </header>
+
+  <div class="toolbar">
+    <div class="palette">
+      <button class="pbtn" id="addMassBtn" style="--c:var(--c-mass)"><span class="dot" style="background:var(--c-mass)"></span><span id="addMassLabel">Masa</span></button>
+      <button class="pbtn" id="addWallBtn" style="--c:var(--c-wall)"><span class="dot" style="background:var(--c-wall)"></span>Pared / soporte</button>
+      <button class="pbtn" id="addSpringBtn" style="--c:var(--c-spring)"><span class="dot" style="background:var(--c-spring)"></span>Resorte</button>
+      <button class="pbtn" id="addDamperBtn" style="--c:var(--c-damper)"><span class="dot" style="background:var(--c-damper)"></span>Amortiguador</button>
+      <button class="pbtn" id="addForceBtn" style="--c:var(--c-force)"><span class="dot" style="background:var(--c-force)"></span><span id="addForceLabel">Fuerza</span></button>
+      <button class="pbtn" id="addLinkBtn" style="--c:var(--c-mass);display:none;"><span class="dot" style="background:var(--c-mass)"></span>Eslabón</button>
+      <button class="pbtn" id="addDrumBtn" style="--c:var(--c-mass)"><span class="dot" style="background:var(--c-mass)"></span>Cuadro (excéntrica)</button>
+    </div>
+    <div class="hint" id="hintBar"><span class="pill">Arrastra para mover · doble clic para configurar</span></div>
+    <div class="transport">
+      <button class="btn accent" id="playBtn">▶ Simular</button>
+      <button class="btn" id="stopBtn">⟲</button>
+      <button class="btn" id="resetViewBtn" title="Centrar vista">&#8853; Vista</button>
+      <div class="tfield"><label>DUR</label><input type="number" id="durInput" value="10" min="2" max="60" step="1"><label>s</label></div>
+      <div class="tfield"><label>VEL</label><input type="number" id="speedInput" value="1" min="0.1" max="4" step="0.1"><label>×</label></div>
+      <div class="time-readout" id="timeReadout">t = 0.00 s</div>
+    </div>
+  </div>
+
+  <div class="legend-strip">
+    <span><span class="dot" style="background:var(--c-mass)"></span><span id="legendMass">Masa</span></span>
+    <span><span class="dot" style="background:var(--c-wall)"></span>Pared / soporte fijo</span>
+    <span><span class="dot" style="background:var(--c-spring)"></span>Resorte</span>
+    <span><span class="dot" style="background:var(--c-damper)"></span>Amortiguador</span>
+    <span><span class="dot" style="background:var(--c-force)"></span><span id="legendForce">Fuerza</span></span>
+  </div>
+
+  <div class="main">
+    <div class="canvas-wrap" id="canvasWrap">
+      <svg id="workSvg" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="empty-hint-canvas" id="emptyHint">Tu espacio de trabajo está vacío.<br>Usa la paleta de arriba para agregar una masa, una pared o una fuerza.<br>Haz doble clic en cualquier elemento para configurarlo.</div>
+    </div>
+
+    <div class="drawer" id="drawer">
+      <div class="drawer-head"><h2>Análisis</h2><button class="drawer-close" id="drawerCloseBtn">×</button></div>
+      <div class="drawer-body">
+        <div class="tabs">
+          <button data-tab="eq" class="active">Ecuaciones</button>
+          <button data-tab="tf">F. Transf.</button>
+          <button data-tab="ss">Espacio</button>
+          <button data-tab="pz">Polos/Ceros</button>
+          <button data-tab="bode">Bode</button>
+          <button data-tab="sim">Simulación</button>
+          <button data-tab="phase" style="display:none;">Fase</button>
+        </div>
+        <div class="tab-content active" id="tabEq"></div>
+        <div class="tab-content" id="tabTf"></div>
+        <div class="tab-content" id="tabSs"></div>
+        <div class="tab-content" id="tabPz"></div>
+        <div class="tab-content" id="tabBode"></div>
+        <div class="tab-content" id="tabSim">
+          <div class="scope-layout">
+            <div class="scope-plot analysis-graph" data-graph-source="scope-graph" data-graph-title="Simulación">
+              <div class="scope-svg-wrap"><svg id="scopeSvg" viewBox="0 0 1000 260" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>
+            </div>
+            <div class="scope-side">
+              <div class="scope-side-title">Señales</div>
+              <div class="scope-checklist" id="scopeChecklist"></div>
+              <div class="scope-legend-hint">Discontinuas = entradas · Continuas = salidas</div>
+            </div>
+          </div>
+          <div class="scope-legend" id="scopeLegend" hidden></div>
+          <div class="scope-readout" id="scopeReadout"></div>
+        </div>
+        <div class="tab-content" id="tabPhase"></div>
+      </div>
+    </div>
+
+    <div class="graph-viewer" id="graphViewer" hidden>
+      <div class="graph-viewer-shell" id="graphViewerShell">
+        <div class="graph-viewer-head" id="graphViewerHandle">
+          <div class="graph-viewer-title" id="graphViewerTitle">Gráfica ampliada</div>
+          <div class="graph-viewer-actions">
+            <button type="button" class="graph-viewer-minimize" id="graphViewerMinimizeBtn" title="Minimizar / restaurar">|__|</button>
+            <button type="button" class="graph-viewer-close" id="graphViewerCloseBtn" title="Cerrar">×</button>
+          </div>
+        </div>
+        <div class="graph-viewer-body" id="graphViewerBody"></div>
+      </div>
+    </div>
+
+    <div id="popoverLayer"></div>
+  </div>
+</div>
+
+<script src="./js/core.js"></script>
+<script src="./js/model.js"></script>
+<script src="./js/pendulum.js"></script>
+<script src="./js/analysis.js"></script>
+<script src="./js/canvas.js"></script>
+<script src="./js/app.js"></script>
+</body>
+</html>

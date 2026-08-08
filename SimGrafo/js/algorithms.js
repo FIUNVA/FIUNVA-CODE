@@ -1,5 +1,5 @@
 /**
- * RUTA-BOT DELTA-7 — Algoritmos: Dijkstra, Prim, Kruskal
+ * GraphFlow Optimizer — Algoritmos: Dijkstra, Prim, Kruskal
  * Depende de: graph-data.js (GRAPH, NODES, EDGES_RAW)
  */
 (function (global) {

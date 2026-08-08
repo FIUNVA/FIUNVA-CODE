@@ -124,6 +124,10 @@
             background: linear-gradient(45deg, #f39c12, #e74c3c);
         }
 
+        .simgrafo-icon {
+            background: linear-gradient(45deg, #0d7377, #1565c0);
+        }
+
         .project-title {
             font-size: 1.8rem;
             margin-bottom: 1rem;
@@ -218,6 +222,14 @@
             box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
         }
 
+        .simgrafo-btn {
+            background: linear-gradient(45deg, #0d7377, #1565c0);
+        }
+
+        .simgrafo-btn:hover {
+            box-shadow: 0 5px 15px rgba(13, 115, 119, 0.3);
+        }
+
         .footer {
             text-align: center;
             margin-top: 3rem;
@@ -292,6 +304,7 @@
         .project-card:nth-child(3) { animation-delay: 0.3s; }
         .project-card:nth-child(4) { animation-delay: 0.4s; }
         .project-card:nth-child(5) { animation-delay: 0.5s; }
+        .project-card:nth-child(6) { animation-delay: 0.6s; }
     </style>
 </head>
 <body>
@@ -399,6 +412,26 @@
                 </ul>
                 <a href="MechatronicsInvestigationV2.0/index.html" class="project-button mechatronics-btn">
                     Abrir Investigation
+                </a>
+            </div>
+
+            <!-- Proyecto 6: GraphFlow Optimizer -->
+            <div class="project-card">
+                <div class="project-icon simgrafo-icon">📈</div>
+                <h2 class="project-title">GraphFlow Optimizer</h2>
+                <p class="project-description">
+                    Simulador industrial de optimización de rutas con algoritmos de grafos para analizar nodos, aristas, costos y flujos en una planta.
+                </p>
+                <ul class="project-features">
+                    <li>Motor de rutas con Dijkstra</li>
+                    <li>Árboles de expansión mínima con Prim y Kruskal</li>
+                    <li>Mapa visual de planta industrial</li>
+                    <li>Bitácora de resultados y métricas</li>
+                    <li>Configuración de origen y destino</li>
+                    <li>Interfaz orientada a control logístico</li>
+                </ul>
+                <a href="SimGrafo/index.html" class="project-button simgrafo-btn">
+                    Abrir GraphFlow
                 </a>
             </div>
         </main>

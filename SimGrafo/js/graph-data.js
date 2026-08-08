@@ -1,5 +1,5 @@
 /**
- * RUTA-BOT DELTA-7 — Datos del grafo (planta industrial)
+ * GraphFlow Optimizer — Datos del grafo (planta industrial)
  * Nodos y aristas para el simulador de algoritmos.
  */
 (function (global) {

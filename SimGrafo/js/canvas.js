@@ -1,5 +1,5 @@
 /**
- * RUTA-BOT DELTA-7 — Renderizado del canvas (mapa de planta)
+ * GraphFlow Optimizer — Renderizado del canvas (mapa de planta)
  * Depende de: graph-data.js (NODES, EDGES_RAW), estado global activeAlgo y ALGO_META
  */
 (function (global) {

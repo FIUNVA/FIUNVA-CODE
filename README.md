@@ -151,21 +151,6 @@ Implementación moderna del icónico juego Pong, manteniendo la esencia del jueg
 - Pausar/reanudar con tecla ESPACIO
 - Reinicio completo del juego
 
-## 🎨 Recursos Gráficos
-
-### `/Imagenes/`
-
-**`FC1.png`** - Logo principal de FIUNVA CODE
-- Utilizado en el footer del hub principal
-- Integrado como reemplazo del título en el juego Pong
-- Formato PNG con transparencia
-- Diseño optimizado para múltiples tamaños
-
-**`FC2.png`** - Logo secundario de FIUNVA CODE
-- Utilizado en la sidebar de la calculadora
-- Integrado en el panel de controles de Computer Space
-- Complementa la identidad visual de la marca
-- Versión alternativa del branding principal
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -257,5 +242,5 @@ e-mail: fiunva.oficial@gmail.com
 
 ---
 
-*© 2025 FIUNVA CODE - Todos los derechos reservados*
+*© 2026 FIUNVA CODE - Todos los derechos reservados*
 

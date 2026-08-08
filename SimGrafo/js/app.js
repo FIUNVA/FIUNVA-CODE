@@ -335,8 +335,8 @@
     window.addEventListener('resize', function () { resizeCanvas(state, activeAlgo); });
     requestAnimationFrame(function () {
       resizeCanvas(state, activeAlgo);
-      log('🔧 Sistema RUTA-BOT inicializado.', 'le-info');
-      log('📦 Planta DELTA-7: 12 estaciones — 22 conexiones.', 'le-info');
+      log('🔧 Sistema GraphFlow Optimizer inicializado.', 'le-info');
+      log('📦 Planta industrial: 12 estaciones — 22 conexiones.', 'le-info');
       log('⚡ Selecciona un algoritmo y ejecuta la simulación.', 'le-info');
     });
   }

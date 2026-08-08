@@ -1,5 +1,5 @@
 /**
- * RUTA-BOT DELTA-7 — Utilidades: log, reloj
+ * GraphFlow Optimizer — Utilidades: log, reloj
  */
 (function (global) {
   'use strict';

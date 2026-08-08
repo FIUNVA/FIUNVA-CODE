@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MECHATRONICS INVESTIGATION</title>
+  <style>
+:root{
+  --bg:#060a0d;--surf:#0d1418;--surf2:#131c22;--surf3:#1a2530;
+  --bdr:#1e2d3a;--bdr2:#2a3d4f;
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,.15);--amber-glow:rgba(245,158,11,.4);
+  --green:#22c55e;--green-dim:rgba(34,197,94,.15);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.15);
+  --blue:#38bdf8;--blue-dim:rgba(56,189,248,.15);
+  --txt:#c8d8e4;--dim:#4a6272;--dim2:#2e4455;
+  --c1:#f59e0b;--c2:#22c55e;--c3:#38bdf8;--c4:#a855f7;--c5:#ef4444;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:Arial,Helvetica,sans-serif;color:var(--txt);position:relative}
+.mono{font-family:'Courier New',monospace}
+.orb{font-family:'Arial Black',sans-serif}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);
+  pointer-events:none;z-index:9999;
+}
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9998;opacity:.4;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes danger{0%,100%{background:var(--red-dim)}50%{background:rgba(239,68,68,.35)}}
+@keyframes walk{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes blink{0%,90%,100%{opacity:1}91%,99%{opacity:0}}
+@keyframes scanH{from{transform:translateY(-100%)}to{transform:translateY(100vh)}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px var(--amber-glow)}50%{box-shadow:0 0 24px var(--amber-glow),0 0 48px var(--amber-dim)}}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-8px)}}
+@keyframes typewriter{from{width:0}to{width:100%}}
+@keyframes stripes{from{background-position:0 0}to{background-position:40px 0}}
+@keyframes neon-glow{0%,100%{text-shadow:0 0 5px var(--amber),0 0 10px var(--amber-glow),0 0 20px rgba(245,158,11,.5)}50%{text-shadow:0 0 10px var(--amber),0 0 20px var(--amber-glow),0 0 40px rgba(245,158,11,.8)}}
+@keyframes vibrate{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+@keyframes spotlight{0%,100%{box-shadow:inset 0 0 20px rgba(245,158,11,.1),0 0 15px rgba(245,158,11,.2)}50%{box-shadow:inset 0 0 30px rgba(245,158,11,.2),0 0 25px rgba(245,158,11,.4)}}
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+@keyframes pulse-scale{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.9}}
+@keyframes neon-green{0%,100%{box-shadow:0 0 10px #22c55e,inset 0 0 10px rgba(34,197,94,.1)}50%{box-shadow:0 0 20px #22c55e,inset 0 0 20px rgba(34,197,94,.2)}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 10px rgba(245,158,11,.4)}50%{box-shadow:0 0 30px rgba(245,158,11,.8),0 0 60px rgba(245,158,11,.4)}}
+@keyframes float-rotate{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-12px) rotate(2deg)}75%{transform:translateY(8px) rotate(-2deg)}}
+@keyframes glow-pulse{0%,100%{opacity:.6}50%{opacity:1}}
+.fadein{animation:fadeUp .5s ease both}
+.fadein2{animation:fadeUp .5s .15s ease both}
+.fadein3{animation:fadeUp .5s .3s ease both}
+.hazard{background:repeating-linear-gradient(-45deg,var(--amber),var(--amber) 6px,#1a1200 6px,#1a1200 18px);animation:stripes 1.2s linear infinite}
+.neon-text{animation:neon-glow 2s ease-in-out infinite}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surf)}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+#app{width:100%;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+#nav{flex-shrink:0;background:var(--surf);border-bottom:1px solid var(--bdr);padding:0 16px;display:flex;align-items:center;gap:16px;height:50px;position:relative;z-index:100}
+#nav-logo{font-family:Arial;font-size:13px;font-weight:900;color:var(--amber);letter-spacing:2px;white-space:nowrap}
+#nav-logo span{color:var(--txt);font-weight:700}
+.nav-sep{width:1px;height:20px;background:var(--bdr);flex-shrink:0}
+.nav-tabs{display:flex;gap:4px;flex:1}
+.nav-tab{background:transparent;border:1px solid transparent;color:var(--dim);padding:8px 16px;border-radius:4px;cursor:pointer;font-family:Arial;font-size:14px;font-weight:600;letter-spacing:1px;transition:all .15s}
+.nav-tab:hover{color:var(--txt);border-color:var(--bdr2)}
+.nav-tab.active{background:var(--amber-dim);border-color:var(--amber);color:var(--amber)}
+#nav-story-badge{flex-shrink:0;font-family:'Courier New',monospace;font-size:11px;padding:4px 10px;border:1px solid var(--bdr2);border-radius:3px;color:var(--dim);display:none}
+#nav-story-badge.visible{display:block}
+#content{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;display:none}
+.screen.active{display:block}
+#screen-intro.active{background:radial-gradient(ellipse at 50% 20%,#0d1f10 0%,var(--bg) 65%);display:flex!important;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+#screen-briefing.active{display:block!important;padding:20px;width:100%;height:100%;overflow-y:auto}
+#screen-briefing.active{position:relative;display:block!important;padding:20px;width:100%;height:100%;overflow-y:auto;background:radial-gradient(circle at top left,rgba(245,158,11,.08),transparent 28%),radial-gradient(circle at top right,rgba(56,189,248,.08),transparent 24%),linear-gradient(180deg,rgba(6,10,13,.98),rgba(9,14,18,.98) 45%,rgba(6,10,13,.99))}
+#screen-accuse.active{display:block!important;padding:20px;max-width:900px;margin:0 auto;width:100%}
+#screen-accuse .select-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+#screen-reveal.active{display:block!important;padding:20px;max-width:900px;margin:0 auto;width:100%}
+#screen-flow.active{display:block!important;padding:20px;max-width:1000px;margin:0 auto;width:100%}
+.intro-grid{position:absolute;inset:0;background-image:linear-gradient(var(--bdr) 1px,transparent 1px),linear-gradient(90deg,var(--bdr) 1px,transparent 1px);background-size:50px 50px;opacity:.15;pointer-events:none}
+.intro-content{position:relative;z-index:1;max-width:700px;width:100%}
+.intro-badge{display:inline-block;font-family:'Courier New',monospace;font-size:10px;letter-spacing:4px;color:var(--dim);border:1px solid var(--bdr2);padding:5px 14px;border-radius:2px;margin-bottom:20px}
+.intro-title1{font-family:Arial;font-size:clamp(28px,6vw,62px);font-weight:900;color:var(--amber);letter-spacing:4px;line-height:1;text-shadow:0 0 60px var(--amber-glow),0 0 100px rgba(245,158,11,.2);animation:neon-glow 3s ease-in-out infinite}
+.intro-title2{font-family:Arial;font-size:clamp(28px,6vw,62px);font-weight:900;color:var(--txt);letter-spacing:4px;line-height:1;margin-bottom:6px}
+.intro-sub{font-family:'Courier New',monospace;font-size:11px;letter-spacing:3px;color:var(--dim);margin-bottom:36px}
+.intro-crewmates{display:flex;justify-content:center;gap:16px;margin-bottom:32px;flex-wrap:wrap}
+.intro-card{background:var(--surf2);border:2px solid var(--bdr);border-radius:12px;padding:16px 12px;width:130px;text-align:center;transition:all .3s;cursor:pointer;animation:float 3s ease-in-out infinite;box-shadow:0 4px 15px rgba(0,0,0,.3)}
+.intro-card:nth-child(2){animation-delay:.4s}
+.intro-card:nth-child(3){animation-delay:.8s}
+.intro-card:nth-child(4){animation-delay:1.2s}
+.intro-card:nth-child(5){animation-delay:1.6s}
+.intro-card:hover{transform:translateY(-12px) scale(1.12)!important;border-color:var(--amber);box-shadow:0 12px 40px rgba(245,158,11,.6),inset 0 0 15px rgba(245,158,11,.2),0 0 30px rgba(245,158,11,.4);background:var(--amber-dim);animation:pulse-glow .6s ease}
+.intro-card-name{font-size:11px;font-weight:700;margin-top:8px;line-height:1.2}
+.intro-card-role{font-size:9px;color:var(--dim);margin-top:3px;font-family:'Courier New',monospace}
+.intro-stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+.stat-pill{border:2px solid var(--amber);border-radius:8px;padding:12px 18px;text-align:center;min-width:100px;background:rgba(245,158,11,.05);box-shadow:0 0 15px rgba(245,158,11,.15);transition:all .3s;cursor:default;animation:float-rotate 4s ease-in-out infinite}
+.stat-pill:nth-child(1){animation-delay:0s}
+.stat-pill:nth-child(2){animation-delay:.6s}
+.stat-pill:nth-child(3){animation-delay:1.2s}
+.stat-pill:nth-child(4){animation-delay:1.8s}
+.stat-pill:hover{background:rgba(245,158,11,.2);box-shadow:0 0 35px rgba(245,158,11,.5),inset 0 0 10px rgba(245,158,11,.2);transform:scale(1.1)}
+.stat-n{font-family:Arial;font-size:28px;font-weight:900;color:var(--amber);text-shadow:0 0 8px rgba(245,158,11,.5)}
+.stat-l{font-size:11px;color:var(--dim);letter-spacing:1px;margin-top:4px;font-weight:600}
+.intro-mission{background:var(--surf2);border:2px solid var(--amber);border-left:6px solid var(--amber);border-radius:10px;padding:18px 20px;text-align:left;max-width:480px;margin:0 auto 28px;box-shadow:0 0 20px rgba(245,158,11,.15);transition:all .3s}
+.intro-mission:hover{box-shadow:0 4px 30px rgba(245,158,11,.25)}
+.mission-title{font-family:'Courier New',monospace;font-size:10px;color:var(--amber);letter-spacing:3px;margin-bottom:10px}
+.mission-text{font-size:15px;line-height:1.9;color:var(--txt)}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--amber-dim);border:2px solid var(--amber);color:var(--amber);padding:14px 36px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;font-size:13px;letter-spacing:2px;font-weight:bold;transition:all .2s;text-transform:uppercase;box-shadow:0 0 0 rgba(245,158,11,0);position:relative}
+.btn:hover{background:rgba(245,158,11,.4);box-shadow:0 0 40px rgba(245,158,11,.6),inset 0 0 20px rgba(245,158,11,.15);transform:translateY(-3px) scale(1.08);text-shadow:0 0 12px rgba(245,158,11,.6);animation:pulse-glow .4s ease}
+.btn:active{transform:translateY(-1px) scale(1.04);box-shadow:0 0 25px rgba(245,158,11,.5),inset 0 0 15px rgba(245,158,11,.2)}
+.btn:disabled,.btn.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.btn-ghost{background:transparent;border-color:var(--bdr2);color:var(--dim)}
+.btn-ghost:hover{background:var(--surf2);color:var(--txt);border-color:var(--bdr2);box-shadow:none}
+.btn-green{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.btn-green:hover{background:rgba(34,197,94,.3)}
+.btn-red{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.btn-red:hover{background:rgba(239,68,68,.3)}
+.alert-box{background:var(--red-dim);border:2px solid var(--red);border-left:6px solid var(--red);border-radius:8px;padding:18px 20px;margin-bottom:16px;animation:danger 2s ease-in-out infinite;box-shadow:0 4px 20px rgba(239,68,68,.2)}
+.alert-tag{font-family:'Courier New',monospace;font-size:10px;letter-spacing:4px;color:var(--red);margin-bottom:8px}
+.alert-title{font-family:Arial;font-size:16px;color:var(--amber);margin-bottom:8px;font-weight:700}
+.alert-body{font-size:14px;line-height:1.8;color:var(--txt);font-family:'Courier New',monospace}
+.panel{background:linear-gradient(135deg,var(--surf2),rgba(19,28,34,.6));border:2px solid var(--bdr);border-radius:10px;padding:18px;margin-bottom:14px;box-shadow:0 4px 15px rgba(0,0,0,.2);transition:all .2s}
+.panel:hover{border-color:var(--amber);box-shadow:0 8px 30px rgba(245,158,11,.2),inset 0 0 20px rgba(245,158,11,.05);transform:translateY(-2px)}
+.panel-title{font-family:'Courier New',monospace;font-size:12px;letter-spacing:3px;color:var(--dim);margin-bottom:14px}
+.panel-title{font-family:'Courier New',monospace;font-size:12px;letter-spacing:3px;color:var(--dim);margin-bottom:14px;position:relative;padding-bottom:10px}
+.panel-title::after{content:'';position:absolute;left:0;bottom:0;width:84px;height:1px;background:linear-gradient(90deg,var(--amber),transparent);opacity:.8}
+.chars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.char-card{background:var(--surf3);border:2px solid var(--bdr);border-radius:8px;padding:14px;display:flex;align-items:flex-start;gap:12px;transition:all .3s;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.char-card{background:linear-gradient(180deg,rgba(26,37,48,.98),rgba(14,23,30,.98));border:1px solid rgba(42,61,79,.9);border-radius:10px;padding:14px;display:flex;align-items:flex-start;gap:12px;transition:all .3s;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03);position:relative;overflow:hidden}
+.char-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,158,11,.12),transparent 42%,transparent 60%,rgba(56,189,248,.08));opacity:0;transition:opacity .3s}
+.char-card:hover{border-color:var(--amber);background:linear-gradient(135deg,var(--surf2),var(--amber-dim));box-shadow:0 10px 34px rgba(245,158,11,.28),inset 0 0 15px rgba(245,158,11,.1);transform:translateY(-4px) scale(1.03)}
+.char-card:hover::before{opacity:1}
+.char-card-info .char-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.char-card-info .char-role{font-family:'Courier New',monospace;font-size:11px;color:var(--dim);margin-bottom:5px}
+.char-card-info .char-bio{font-size:13px;line-height:1.5;color:var(--txt)}
+.locs-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.locs-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:2px 0 6px}
+.loc-tag{border:1px solid rgba(56,189,248,.65);border-radius:999px;padding:10px 16px;font-size:14px;color:var(--blue);display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,rgba(10,28,38,.95),rgba(9,18,25,.95));transition:all .2s;cursor:pointer;font-weight:500;box-shadow:0 0 10px rgba(56,189,248,.14),inset 0 1px 0 rgba(255,255,255,.04)}
+.loc-tag:hover{background:linear-gradient(180deg,rgba(17,52,70,.95),rgba(9,18,25,.95));box-shadow:0 0 20px rgba(56,189,248,.4);transform:translateY(-2px) scale(1.04)}
+.loc-tag.active{background:rgba(56,189,248,.24);box-shadow:0 0 26px rgba(56,189,248,.5);transform:scale(1.04);border-color:#7dd3fc}
+.loc-tag img{width:22px;height:22px;object-fit:contain;flex:0 0 22px;filter:drop-shadow(0 0 4px rgba(255,255,255,.08))}
+.causes-row{display:flex;flex-wrap:wrap;gap:8px}
+.causes-row{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 6px}
+.cause-tag{border:1px solid rgba(34,197,94,.7);border-radius:999px;padding:10px 16px;font-size:14px;color:var(--green);background:linear-gradient(180deg,rgba(10,28,16,.95),rgba(8,18,12,.95));transition:all .2s;cursor:pointer;font-weight:500;box-shadow:0 0 10px rgba(34,197,94,.14),inset 0 1px 0 rgba(255,255,255,.04);display:inline-flex;align-items:center;gap:10px}
+.cause-tag:hover{background:linear-gradient(180deg,rgba(19,56,30,.95),rgba(8,18,12,.95));box-shadow:0 0 20px rgba(34,197,94,.4);transform:translateY(-2px) scale(1.04)}
+.cause-tag.active{background:rgba(34,197,94,.24);box-shadow:0 0 26px rgba(34,197,94,.45);transform:scale(1.04);border-color:#86efac}
+.cause-tag img{width:26px;height:26px;object-fit:contain;flex:0 0 26px;filter:drop-shadow(0 0 4px rgba(255,255,255,.08))}
+.brief-intel-box{margin-top:12px;background:linear-gradient(135deg,rgba(9,18,24,.96),rgba(14,27,36,.9));border:1px solid var(--bdr2);border-left:4px solid var(--amber);border-radius:8px;padding:12px 14px;position:relative;overflow:hidden}
+.brief-intel-box{margin-top:12px;background:linear-gradient(135deg,rgba(9,18,24,.98),rgba(14,27,36,.92));border:1px solid var(--bdr2);border-left:4px solid var(--amber);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+.brief-intel-box::after{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,rgba(245,158,11,.6),transparent);animation:shimmer 3.2s linear infinite}
+.brief-intel-label{font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:var(--dim);margin-bottom:8px}
+.brief-intel-title{font-size:14px;font-weight:700;color:var(--amber);margin-bottom:6px}
+.brief-intel-desc{font-family:'Courier New',monospace;font-size:12px;line-height:1.7;color:var(--txt);min-height:44px}
+.brief-intel-desc.typing::after{content:'▌';margin-left:4px;color:var(--amber);animation:blink .8s steps(1,end) infinite}
+.briefing-footer{display:flex;gap:12px;justify-content:center;padding-top:8px}
+.briefing-footer{display:flex;gap:12px;justify-content:center;padding:12px 0 4px}
+#screen-invest.active{position:relative;display:flex!important;flex-direction:column;overflow:hidden;background:radial-gradient(circle at top left,rgba(56,189,248,.06),transparent 24%),radial-gradient(circle at top right,rgba(245,158,11,.06),transparent 22%),linear-gradient(180deg,rgba(5,9,12,.99),rgba(8,14,18,.98))}
+#screen-invest.active{height:calc(100vh - 50px);min-height:0}
+.panel{background:linear-gradient(135deg,var(--surf2),rgba(19,28,34,.6));border:2px solid var(--bdr);border-radius:10px;padding:18px;margin-bottom:14px;box-shadow:0 4px 15px rgba(0,0,0,.2);transition:all .2s}
+#invest-top{flex-shrink:0;background:var(--surf);border-bottom:2px solid var(--bdr);padding:12px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 4px 15px rgba(0,0,0,.2)}
+#invest-top{flex-shrink:0;background:linear-gradient(180deg,rgba(17,24,29,.98),rgba(12,18,22,.98));border-bottom:1px solid rgba(245,158,11,.35);padding:12px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 8px 24px rgba(0,0,0,.28),inset 0 -1px 0 rgba(255,255,255,.03);position:relative;z-index:1;font-size:16px}
+#invest-top::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:.55}
+#invest-top-title{font-family:Arial;font-size:15px;color:var(--amber);font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:1px}
+.invest-counter{font-family:'Courier New',monospace;font-size:13px;border:2px solid var(--bdr2);border-radius:6px;padding:6px 12px;white-space:nowrap;background:rgba(0,0,0,.2);box-shadow:0 0 10px rgba(255,255,255,.05)}
+.invest-counter{font-family:'Courier New',monospace;font-size:14px;border:1px solid rgba(42,61,79,.95);border-radius:999px;padding:7px 13px;white-space:nowrap;background:linear-gradient(180deg,rgba(6,12,16,.95),rgba(12,18,23,.95));box-shadow:0 0 10px rgba(255,255,255,.05),inset 0 1px 0 rgba(255,255,255,.04)}
+.invest-warn{font-family:'Courier New',monospace;font-size:10px;color:var(--red);animation:pulse 1.5s ease-in-out infinite}
+#invest-body{flex:1;display:flex;overflow:hidden;gap:0;min-height:0;height:calc(100% - 0px)}
+#invest-left{flex-shrink:0;width:220px;background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+#invest-left{flex-shrink:0;width:220px;background:linear-gradient(180deg,rgba(13,20,24,.98),rgba(8,12,16,.98));border-right:1px solid rgba(245,158,11,.18);display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1}
+#invest-left::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(245,158,11,.05),transparent 20%,transparent 80%,rgba(56,189,248,.04));pointer-events:none;opacity:.9}
+.sidebar-section{padding:12px;border-bottom:1px solid var(--bdr)}
+.sidebar-label{font-family:'Courier New',monospace;font-size:11px;letter-spacing:3px;color:var(--dim);margin-bottom:10px}
+.crew-list{display:flex;flex-direction:column;gap:6px}
+.crew-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:6px;background:var(--surf2);border:2px solid transparent;transition:all .2s;cursor:pointer}
+.crew-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:linear-gradient(180deg,rgba(19,28,34,.95),rgba(13,20,25,.95));border:1px solid rgba(42,61,79,.85);transition:all .2s;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.crew-item:hover{border-color:var(--amber);background:linear-gradient(180deg,rgba(37,27,9,.85),rgba(19,20,12,.95));box-shadow:0 0 15px rgba(245,158,11,.2);transform:translateX(2px)}
+.crew-item.suspect{border-color:var(--amber);background:linear-gradient(180deg,rgba(37,27,9,.95),rgba(25,19,9,.95));box-shadow:0 0 20px rgba(245,158,11,.3)}
+.crew-name{font-size:16px;font-weight:700;flex:1}
+.crew-status{font-family:'Courier New',monospace;font-size:10px}
+#notebook{flex:1;overflow-y:auto;padding:12px}
+#notebook{flex:1;overflow-y:auto;padding:12px;position:relative}
+.nb-title{font-family:'Courier New',monospace;font-size:9px;letter-spacing:3px;color:var(--dim);margin-bottom:10px}
+.nb-empty{font-size:11px;color:var(--dim);font-family:'Courier New',monospace;line-height:1.7;padding:8px 0}
+.nb-entry{border-bottom:1px solid var(--bdr);padding:10px 0;margin-bottom:4px}
+.nb-entry-loc{font-family:'Courier New',monospace;font-size:9px;letter-spacing:2px;margin-bottom:6px}
+.nb-entry.hot .nb-entry-loc{color:var(--amber)}
+.nb-entry:not(.hot) .nb-entry-loc{color:var(--dim)}
+.nb-entry-text{font-size:13px;line-height:1.7;color:var(--txt);font-family:'Courier New',monospace}
+#invest-map{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--bg);min-height:0;height:100%}
+#invest-map{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;background:radial-gradient(circle at center,rgba(245,158,11,.03),transparent 35%),var(--bg)}
+#map-svg-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:10px;overflow:hidden;position:relative;min-height:0}
+.factory-stage{position:relative;width:min(100%,900px);aspect-ratio:700/480;max-height:100%;margin:0 auto;border-radius:10px;overflow:hidden;background:var(--surf3);border:2px solid var(--bdr);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.factory-stage{position:relative;width:min(100%,900px);aspect-ratio:700/480;max-height:100%;margin:0 auto;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(26,37,48,.98),rgba(11,17,22,.98));border:1px solid rgba(245,158,11,.22);box-shadow:0 14px 36px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.02),inset 0 0 0 1px rgba(255,255,255,.03)}
+.factory-stage::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,158,11,.06),transparent 30%,transparent 70%,rgba(56,189,248,.05));pointer-events:none;z-index:1}
+.factory-stage-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;padding:8px;border-radius:8px}
+#factory-map{position:absolute;inset:0;width:100%;height:100%;cursor:pointer}
+#invest-bottom{flex-shrink:0;background:var(--surf);border-top:1px solid var(--bdr);padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:12px}
+#invest-bottom{flex-shrink:0;background:linear-gradient(180deg,rgba(13,19,24,.98),rgba(8,12,15,.98));border-top:1px solid rgba(30,45,58,.9);padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:12px;position:relative;z-index:1;min-height:58px}
+#clue-panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(90vw,560px);max-height:min(72vh,560px);overflow:hidden;background:linear-gradient(180deg,rgba(19,28,34,.98),rgba(12,18,23,.98));border:1px solid rgba(42,61,79,.95);border-radius:16px;padding:18px;z-index:1200;display:none;animation:popIn .2s ease;box-shadow:0 12px 48px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.03)}
+#clue-panel.show{display:block}
+#clue-panel.hot{border-color:var(--amber);border-left:6px solid var(--amber);box-shadow:0 0 30px rgba(245,158,11,.4),0 8px 40px rgba(0,0,0,.4)}
+#clue-panel.cold{border-color:var(--blue);border-left:6px solid var(--blue);box-shadow:0 0 20px rgba(56,189,248,.2),0 8px 40px rgba(0,0,0,.4)}
+.clue-tag{font-family:'Courier New',monospace;font-size:13px;letter-spacing:4px;margin-bottom:10px;font-weight:700;text-transform:uppercase}
+.hot .clue-tag{color:var(--amber);text-shadow:0 0 8px rgba(245,158,11,.4)}
+.cold .clue-tag{color:var(--blue);text-shadow:0 0 8px rgba(56,189,248,.3)}
+.clue-loc{font-family:'Courier New',monospace;font-size:12px;color:var(--dim);margin-bottom:8px}
+.clue-loc-image{width:100%;max-height:160px;object-fit:contain;background:var(--surf3);border:1px solid var(--bdr2);border-radius:10px;padding:8px;display:block;margin:0 0 10px 0}
+.clue-body{font-size:16px;line-height:1.9;font-family:'Courier New',monospace;color:var(--txt)}
+#clue-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;line-height:1}
+#clue-close:hover{color:var(--txt)}
+.accuse-title{font-family:Arial;font-size:26px;color:var(--amber);text-align:center;letter-spacing:3px;margin-bottom:12px;font-weight:900;text-shadow:0 0 10px rgba(245,158,11,.3)}
+.accuse-sub{text-align:center;color:var(--dim);font-family:'Courier New',monospace;font-size:13px;margin-bottom:20px}
+.select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.select-item{background:var(--surf3);border:2px solid var(--bdr);border-radius:8px;padding:14px;cursor:pointer;text-align:center;transition:all .25s;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.select-item:hover{border-color:var(--amber);background:var(--amber-dim);box-shadow:0 6px 30px rgba(245,158,11,.4);transform:translateY(-5px) scale(1.1);animation:pulse-glow .4s ease}
+.select-item.chosen{background:var(--amber-dim);border-color:var(--amber);box-shadow:0 0 30px rgba(245,158,11,.6),inset 0 0 20px rgba(245,158,11,.15);transform:scale(1.15);animation:pulse-glow .8s ease infinite}
+.select-item-icon{font-size:32px;margin-bottom:8px}
+.select-item-name{font-size:14px;font-weight:700;line-height:1.3}
+.select-item-sub{font-size:12px;color:var(--dim);margin-top:3px;font-family:'Courier New',monospace}
+.accusation-summary{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:14px 16px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.acc-field{flex:1;min-width:120px}
+.acc-label{font-family:'Courier New',monospace;font-size:11px;letter-spacing:3px;color:var(--dim);margin-bottom:4px}
+.acc-value{font-size:16px;font-weight:700}
+.acc-value.set{color:var(--amber)}
+.acc-value.empty{color:var(--dim)}
+.accuse-footer{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding-top:4px}
+.accuse-note{text-align:center;font-family:'Courier New',monospace;font-size:12px;color:var(--dim);padding-top:8px}
+.verdict-banner{border-radius:12px;padding:24px;text-align:center;margin-bottom:16px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.verdict-banner.win{background:linear-gradient(135deg,var(--green-dim),rgba(34,197,94,.08));border:3px solid var(--green);box-shadow:0 0 50px rgba(34,197,94,.5),inset 0 0 30px rgba(34,197,94,.1);animation:pulse-glow 1s ease infinite}
+.verdict-banner.lose{background:linear-gradient(135deg,var(--red-dim),rgba(239,68,68,.08));border:3px solid var(--red);box-shadow:0 0 50px rgba(239,68,68,.5),inset 0 0 30px rgba(239,68,68,.1);animation:pulse-glow 1s ease infinite}
+.verdict-title{font-family:Arial;font-size:clamp(18px,4vw,28px);font-weight:900;letter-spacing:3px;margin-bottom:8px}
+.win .verdict-title{color:var(--green)}
+.lose .verdict-title{color:var(--red)}
+.verdict-sub{font-size:15px;color:var(--txt)}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.compare-box{background:var(--surf2);border:2px solid var(--bdr);border-radius:10px;padding:16px;box-shadow:0 4px 15px rgba(0,0,0,.2);transition:all .2s}
+.compare-box:hover{box-shadow:0 6px 25px rgba(0,0,0,.3)}
+.compare-box.player{border-color:rgba(239,68,68,.6);box-shadow:0 0 20px rgba(239,68,68,.15)}
+.compare-box.answer{border-color:rgba(34,197,94,.6);box-shadow:0 0 20px rgba(34,197,94,.15)}
+.compare-label{font-family:'Courier New',monospace;font-size:9px;letter-spacing:3px;margin-bottom:12px}
+.player .compare-label{color:var(--red)}
+.answer .compare-label{color:var(--green)}
+.compare-field{margin-bottom:8px}
+.compare-field-l{font-family:'Courier New',monospace;font-size:11px;color:var(--dim)}
+.compare-field-v{font-size:15px;font-weight:700;margin-top:2px}
+.answer .compare-field-v{color:var(--green)}
+.solution-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+.sol-card{background:var(--surf2);border-radius:10px;padding:18px;text-align:center;border-top:6px solid transparent;box-shadow:0 4px 15px rgba(0,0,0,.25);transition:all .3s;border:2px solid rgba(245,158,11,.2)}
+.sol-card:nth-child(1){border-color:rgba(245,158,11,.4);border-top:6px solid var(--amber)}
+.sol-card:nth-child(2){border-color:rgba(245,158,11,.4);border-top:6px solid var(--amber)}
+.sol-card:nth-child(3){border-color:rgba(245,158,11,.4);border-top:6px solid var(--amber)}
+.sol-card:hover{transform:translateY(-8px) scale(1.05);box-shadow:0 12px 35px rgba(245,158,11,.3),inset 0 0 20px rgba(245,158,11,.05);animation:pulse-glow .6s ease}
+.sol-card-l{font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;margin-bottom:10px}
+.sol-card-icon{font-size:40px;margin-bottom:8px;animation:pulse-scale 2s ease-in-out infinite}
+.sol-card-name{font-size:15px;font-weight:700;margin-bottom:4px;line-height:1.3}
+.sol-card-sub{font-size:12px;color:var(--dim);line-height:1.4}
+.narrative-box{background:var(--surf2);border:2px solid var(--bdr);border-radius:10px;padding:22px;margin-bottom:16px;box-shadow:0 4px 15px rgba(0,0,0,.2)}
+.narr-title{font-family:Arial;font-size:15px;letter-spacing:2px;color:var(--amber);margin-bottom:16px;font-weight:700;text-shadow:0 0 8px rgba(245,158,11,.2)}
+.narr-section{margin-bottom:16px}
+.narr-section-l{font-family:'Courier New',monospace;font-size:11px;letter-spacing:3px;margin-bottom:8px}
+.narr-section.motive .narr-section-l{color:var(--red)}
+.narr-section.ending .narr-section-l{color:var(--green)}
+.narr-text{font-size:14px;line-height:1.9;color:var(--txt);font-family:'Courier New',monospace}
+.reveal-footer{display:flex;justify-content:center;padding-top:8px}
+.flow-title{font-family:Arial;font-size:24px;color:var(--amber);letter-spacing:3px;text-align:center;margin-bottom:12px;font-weight:900;text-shadow:0 0 10px rgba(245,158,11,.3)}
+.flow-sub{text-align:center;color:var(--dim);font-family:'Courier New',monospace;font-size:12px;letter-spacing:2px;margin-bottom:20px}
+#flow-svg-wrap{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:16px;margin-bottom:16px;overflow-x:auto}
+.stories-table-wrap{background:var(--surf2);border:2px solid var(--bdr);border-radius:10px;padding:18px;margin-bottom:16px;overflow-x:auto;box-shadow:0 4px 15px rgba(0,0,0,.2)}
+.stories-table{width:100%;border-collapse:collapse;font-size:14px}
+.stories-table th{font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;color:var(--amber);padding:10px 14px;text-align:left;border-bottom:2px solid var(--bdr);white-space:nowrap;font-weight:bold}
+.stories-table td{padding:12px 14px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.stories-table tr:last-child td{border-bottom:none}
+.story-num{font-family:Arial;font-size:14px;font-weight:900;color:var(--amber)}
+.legend-grid{display:flex;flex-wrap:wrap;gap:12px;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:14px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px}
+.legend-shape{width:20px;height:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.map-room{cursor:pointer;transition:all .2s}
+.map-room .room-bg{fill:transparent!important;stroke:transparent!important}
+.map-room:hover .room-bg{fill:rgba(245,158,11,.35)!important;stroke:rgba(245,158,11,.6)!important;stroke-width:2.5!important}
+.map-room.visited .room-bg{fill:rgba(245,158,11,.2)!important;stroke:rgba(245,158,11,.5)!important;stroke-width:2!important}
+.map-room.visited .room-border{stroke:rgba(245,158,11,.6)!important;stroke-width:2.5!important}
+.crewmate{animation:walk 1.2s ease-in-out infinite}
+#debug-console{position:fixed;right:16px;bottom:16px;width:min(420px,calc(100% - 32px));max-height:280px;background:rgba(13,20,24,.95);border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;z-index:10000;box-shadow:0 24px 80px rgba(0,0,0,.45)}
+#debug-console header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(15,23,34,.95);font-family:'Courier New',monospace;font-size:11px;letter-spacing:1px;color:#c8d8e4;text-transform:uppercase}
+#debug-console button{background:transparent;border:1px solid rgba(255,255,255,.12);color:#c8d8e4;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px}
+#debug-console button:hover{background:rgba(255,255,255,.08)}
+#debug-output{padding:12px;font-family:'Courier New',monospace;font-size:12px;line-height:1.4;max-height:210px;overflow-y:auto;color:#c8d8e4}
+.debug-entry{margin-bottom:8px;white-space:pre-wrap;word-break:break-word}
+.debug-entry.log{color:#c8d8e4}
+.debug-entry.warn{color:#f59e0b}
+.debug-entry.error{color:#ef4444}
+.debug-entry.system{color:#38bdf8}
+@media(max-width:768px){
+  #invest-left{width:0;overflow:hidden;border:none}
+  .compare-grid{grid-template-columns:1fr}
+  .solution-cards{grid-template-columns:1fr 1fr}
+  .factory-stage-image{padding:6px}
+  #debug-console{right:8px;left:8px;width:auto}
+  .briefing-images{grid-template-columns:1fr}
+  .briefing-image-box img{height:240px;object-fit:contain;background-color:var(--surf3);padding:6px}
+  .char-grid-modal{grid-template-columns:repeat(2,1fr)}
+  .chars-grid{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .intro-card{width:80px}
+  .solution-cards{grid-template-columns:1fr}
+  .nav-tab{padding:6px 8px;font-size:11px}
+  .factory-stage-image{padding:4px}
+  .briefing-image-box img{height:200px;object-fit:contain;background-color:var(--surf3);padding:4px}
+  .briefing-image-label{font-size:11px;padding:10px}
+  .char-grid-modal{grid-template-columns:1fr}
+  .char-card-modal{padding:12px}
+  .char-image-modal{height:180px;object-fit:contain;background-color:var(--surf3);padding:4px}
+}
+/* MODAL DE PERSONAJES */
+#char-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:5000;align-items:center;justify-content:center}
+#char-modal.active{display:flex}
+.char-modal-content{background:var(--surf);border:2px solid var(--bdr2);border-radius:12px;max-width:900px;width:90%;max-height:90vh;overflow-y:auto;padding:24px;animation:popIn .3s ease}
+.char-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.char-modal-title{font-size:24px;font-weight:900;color:var(--amber);letter-spacing:2px}
+.char-modal-close{background:none;border:none;font-size:24px;color:var(--dim);cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.char-modal-close:hover{color:var(--txt)}
+.char-grid-modal{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.char-card-modal{background:linear-gradient(135deg,var(--surf2),var(--surf3));border:2px solid var(--bdr);border-radius:10px;padding:16px;text-align:center;transition:all .3s;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.2)}
+.char-card-modal:hover{border-color:var(--amber);background:linear-gradient(135deg,var(--surf2),var(--amber-dim));box-shadow:0 8px 30px rgba(245,158,11,.3),inset 0 0 15px rgba(245,158,11,.1);transform:translateY(-6px)}
+.char-image-modal{width:100%;height:220px;object-fit:contain;background-color:var(--surf3);border-radius:8px;margin-bottom:12px;border:2px solid var(--bdr);transition:all .3s;animation:zoom-image .4s cubic-bezier(.34,1.56,.64,1);padding:6px}
+.char-card-modal:hover .char-image-modal{border-color:var(--amber);box-shadow:0 0 15px rgba(245,158,11,.3)}
+.char-name-modal{font-size:16px;font-weight:900;margin-bottom:6px;letter-spacing:1px}
+.char-role-modal{font-size:12px;color:var(--dim);margin-bottom:10px;font-family:'Courier New',monospace;font-weight:600}
+.char-bio-modal{font-size:12px;color:var(--txt);line-height:1.5;font-family:'Courier New',monospace}
+/* IMAGENES EN BRIEFING */
+.briefing-images{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0;animation:fadeIn .5s}
+.briefing-image-box{background:var(--surf2);border:2px solid var(--bdr);border-radius:10px;overflow:hidden;text-align:center;transition:all .3s;box-shadow:0 4px 15px rgba(0,0,0,.2);cursor:pointer}
+.briefing-image-box:hover{border-color:var(--amber);box-shadow:0 0 30px rgba(245,158,11,.3),0 8px 25px rgba(0,0,0,.3);transform:translateY(-4px)}
+.briefing-image-box img{width:100%;height:280px;object-fit:contain;background-color:var(--surf3);display:block;transition:all .3s;padding:8px}
+.briefing-image-box:hover img{filter:brightness(1.1)}
+.briefing-image-label{background:linear-gradient(135deg,var(--bdr),var(--bdr2));padding:14px;font-size:13px;font-weight:700;color:var(--amber);letter-spacing:1px;text-shadow:0 0 8px rgba(245,158,11,.2)}
+/* REFERENCIA VISUAL EN INVESTIGACION */
+.invest-characters-ref{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:12px;margin-top:12px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.char-ref-mini{background:var(--bdr);border-radius:6px;padding:8px;text-align:center;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.char-ref-mini:hover{border-color:var(--amber);box-shadow:0 0 12px rgba(245,158,11,.3)}
+.char-ref-emoji{font-size:24px;line-height:1}
+.char-ref-name{font-size:9px;margin-top:4px;font-weight:700}
+/* CONFIRMACION VISUAL EN ACUSACION */
+.accuse-visual{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center}
+.accuse-visual img{max-width:200px;height:auto;border-radius:6px;margin-bottom:12px}
+.accuse-visual-name{font-size:16px;font-weight:900;color:var(--amber)}
+.accuse-visual-role{font-size:12px;color:var(--dim);margin-top:4px}
+.accuse-visual-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.accuse-visual-card{cursor:default}
+.accuse-visual-card .char-image-modal{height:160px}
+.accuse-visual-empty{height:160px;display:flex;align-items:center;justify-content:center;background:var(--surf3);border-radius:8px;border:2px dashed var(--bdr2);color:var(--dim);font-family:'Courier New',monospace;font-size:13px;padding:12px;text-align:center}
+.accuse-choice-card{padding:12px}
+.accuse-choice-card .char-image-modal{height:150px;margin-bottom:10px}
+
+/* TRANSICIONES CINEMATOGRÁFICAS */
+#screen-transition{position:absolute;inset:0;pointer-events:none;z-index:2000;opacity:0;overflow:hidden}
+#screen-transition.active{opacity:1}
+#screen-transition::before{content:'';position:absolute;inset:-20%;background:linear-gradient(115deg,transparent 15%,rgba(245,158,11,.08) 36%,rgba(245,158,11,.45) 50%,rgba(34,197,94,.16) 58%,transparent 82%);transform:translateX(-120%) skewX(-12deg)}
+#screen-transition.active::before{animation:transition-sweep .55s ease both}
+#screen-transition::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(245,158,11,.22),rgba(6,10,13,.85) 62%,rgba(6,10,13,.95) 100%);mix-blend-mode:screen;opacity:0}
+#screen-transition.active::after{animation:transition-flash .55s ease both}
+@keyframes transition-sweep{0%{transform:translateX(-120%) skewX(-12deg)}100%{transform:translateX(120%) skewX(-12deg)}}
+@keyframes transition-flash{0%{opacity:0}30%{opacity:.9}100%{opacity:0}}
+
+/* CARPETAS DE INVESTIGACIÓN */
+.case-files{border-top:1px solid var(--bdr);padding:12px}
+.case-files-title{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--dim);margin-bottom:10px}
+.case-files-list{display:flex;flex-direction:column;gap:8px}
+.case-file-item{display:flex;align-items:center;gap:8px;width:100%;background:linear-gradient(135deg,var(--surf2),var(--surf3));border:1px solid var(--bdr);border-radius:6px;color:var(--txt);padding:8px;cursor:pointer;transition:all .2s;text-align:left}
+.case-file-item:hover{border-color:var(--amber);transform:translateX(2px);box-shadow:0 0 14px rgba(245,158,11,.2)}
+.case-file-item.locked{opacity:.55;filter:saturate(.6);cursor:not-allowed}
+.case-file-icon{font-size:16px}
+.case-file-meta{display:flex;flex-direction:column;line-height:1.2}
+.case-file-name{font-size:11px;font-weight:700}
+.case-file-status{font-size:10px;color:var(--dim);font-family:'Share Tech Mono',monospace}
+
+/* MODAL DE EXPEDIENTE */
+#casefile-modal{display:none;position:fixed;inset:0;background:rgba(2,6,10,.88);z-index:5100;align-items:center;justify-content:center;padding:20px}
+#casefile-modal.active{display:flex}
+.casefile-modal-content{width:min(760px,95vw);max-height:90vh;overflow-y:auto;background:linear-gradient(155deg,var(--surf),var(--surf2));border:2px solid var(--amber);border-radius:12px;padding:20px;box-shadow:0 0 30px rgba(245,158,11,.25);animation:popIn .28s ease}
+.casefile-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+.casefile-title{font-family:'Orbitron',sans-serif;font-size:18px;color:var(--amber);letter-spacing:2px}
+.casefile-close{background:none;border:1px solid var(--bdr2);color:var(--dim);width:30px;height:30px;border-radius:4px;cursor:pointer}
+.casefile-close:hover{color:var(--txt);border-color:var(--amber)}
+.casefile-body{font-family:'Share Tech Mono',monospace;font-size:13px;line-height:1.8;color:var(--txt)}
+.casefile-loc-image{width:100%;max-height:180px;object-fit:contain;background:var(--surf3);border:1px solid var(--bdr2);border-radius:10px;padding:8px;display:block;margin:0 0 12px 0}
+.casefile-seal{margin-bottom:10px;display:inline-block;border:1px solid var(--amber);padding:4px 10px;border-radius:3px;font-size:10px;letter-spacing:2px;color:var(--amber);background:rgba(245,158,11,.12)}
+
+/* PISTA CON EFECTO MAQUINA DE ESCRIBIR */
+.clue-body.typing::after{content:'▌';margin-left:4px;color:var(--amber);animation:blink .75s steps(1,end) infinite}
+/* AJUSTE VISUAL DE LA PANTALLA DE INVESTIGACION */
+#screen-invest.active{position:relative;display:flex!important;flex-direction:column;overflow:hidden;background:radial-gradient(circle at top left,rgba(56,189,248,.06),transparent 24%),radial-gradient(circle at top right,rgba(245,158,11,.06),transparent 22%),linear-gradient(180deg,rgba(5,9,12,.99),rgba(8,14,18,.98))}
+#screen-invest.active::before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 12%,transparent 88%,rgba(255,255,255,.02));opacity:.55}
+#invest-top{flex-shrink:0;background:linear-gradient(180deg,rgba(17,24,29,.98),rgba(12,18,22,.98));border-bottom:1px solid rgba(245,158,11,.35);padding:12px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 8px 24px rgba(0,0,0,.28),inset 0 -1px 0 rgba(255,255,255,.03);position:relative;z-index:1}
+#invest-top::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:.55}
+#invest-body{flex:1;display:flex;overflow:hidden;gap:14px;padding:14px 14px 0;align-items:stretch;position:relative;z-index:1;min-height:0}
+#invest-left{flex-shrink:0;width:250px;height:100%;min-height:0;background:linear-gradient(180deg,rgba(13,20,24,.98),rgba(8,12,16,.98));border:1px solid rgba(245,158,11,.18);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1;box-shadow:0 18px 42px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.03)}
+#invest-left::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(245,158,11,.05),transparent 20%,transparent 80%,rgba(56,189,248,.04));pointer-events:none;opacity:.9}
+.sidebar-section{padding:12px;border-bottom:1px solid rgba(30,45,58,.85)}
+#notebook{flex:1;min-height:0;overflow-y:auto;padding:12px;position:relative;background:rgba(255,255,255,.01);border-top:1px solid rgba(30,45,58,.7);border-bottom:1px solid rgba(30,45,58,.7);font-size:15px}
+.case-files{border-top:1px solid rgba(30,45,58,.85);padding:12px;background:linear-gradient(180deg,rgba(8,12,16,.75),rgba(13,20,25,.95));margin-top:auto;font-size:15px;max-height:24vh;overflow-y:auto}
+#invest-map{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;position:relative;background:radial-gradient(circle at center,rgba(245,158,11,.03),transparent 35%),var(--bg);border:1px solid rgba(56,189,248,.08);border-radius:18px;box-shadow:0 18px 44px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.02)}
+#map-svg-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:16px 16px 12px;overflow:hidden;position:relative}
+.factory-stage{position:relative;width:min(100%,980px);aspect-ratio:700/480;max-height:100%;margin:0 auto;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,rgba(26,37,48,.98),rgba(11,17,22,.98));border:1px solid rgba(245,158,11,.22);box-shadow:0 14px 36px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.02),inset 0 0 0 1px rgba(255,255,255,.03);font-size:16px}
+#factory-map text{font-size:15px;letter-spacing:.5px}
+.factory-stage::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,158,11,.06),transparent 30%,transparent 70%,rgba(56,189,248,.05));pointer-events:none;z-index:1}
+#invest-bottom{flex-shrink:0;background:linear-gradient(180deg,rgba(13,19,24,.98),rgba(8,12,15,.98));border-top:1px solid rgba(30,45,58,.9);padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:12px;position:relative;z-index:1;border-radius:0 0 18px 18px;min-height:58px}
+#clue-panel{position:fixed;left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(92vw,620px);background:linear-gradient(180deg,rgba(19,28,34,.98),rgba(12,18,23,.98));border:1px solid rgba(42,61,79,.95);border-radius:16px;padding:20px;z-index:1200;display:none;animation:popIn .2s ease;box-shadow:0 12px 48px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.03)}
+#clue-panel.show{display:block}
+.clue-tag{font-size:13px;letter-spacing:4px}
+.clue-loc{font-size:12px}
+.clue-body{font-size:16px;line-height:1.9}
+#debug-console{position:fixed;right:16px;bottom:14px;width:min(360px,calc(100% - 32px));max-height:180px;background:rgba(13,20,24,.88);border:1px solid rgba(245,158,11,.12);border-radius:14px;overflow:hidden;z-index:10000;box-shadow:0 20px 60px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.03);backdrop-filter:blur(10px);font-size:14px}
+#debug-console header{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid rgba(245,158,11,.12);background:rgba(15,23,34,.92);font-family:'Courier New',monospace;font-size:11px;letter-spacing:1px;color:#c8d8e4;text-transform:uppercase}
+#debug-output{padding:10px 12px;font-family:'Courier New',monospace;font-size:13px;line-height:1.5;max-height:140px;overflow-y:auto;color:#c8d8e4}
+@media(max-width:768px){
+  #invest-body{padding:10px 10px 0;gap:10px}
+  #invest-left{width:0;overflow:hidden;border:none;padding:0;box-shadow:none;height:auto}
+  #invest-map{border-radius:14px}
+  #debug-console{right:8px;left:8px;width:auto;bottom:8px}
+}
+@media(max-width:520px){
+  #invest-body{padding:8px 8px 0;gap:8px}
+}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="nav">
+      <div id="nav-logo"><span>MECHATRONICS</span> CLUE</div>
+      <div class="nav-sep"></div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-tab="game" id="tab-game">JUEGO</button>
+        <button class="nav-tab" data-tab="flow" id="tab-flow">DIAGRAMA</button>
+      </div>
+      <div id="nav-story-badge" class="mono"></div>
+    </div>
+
+    <div id="content">
+      <div id="screen-transition" aria-hidden="true"></div>
+      <div id="screen-intro" class="screen active">
+        <div class="intro-grid"></div>
+        <svg style="position:absolute;width:100%;height:100%;top:0;left:0;pointer-events:none;opacity:.1" preserveAspectRatio="none">
+          <circle cx="10%" cy="10%" r="100" fill="none" stroke="#f59e0b" stroke-width="2"/>
+          <circle cx="90%" cy="80%" r="150" fill="none" stroke="#22c55e" stroke-width="2"/>
+          <circle cx="50%" cy="50%" r="200" fill="none" stroke="#38bdf8" stroke-width="1"/>
+        </svg>
+        <div class="intro-content">
+          <div class="intro-badge fadein">SISTEMA DE DIAGNÓSTICO INDUSTRIAL v2.0</div>
+          <div class="intro-title1 fadein neon-text">MECHATRONICS</div>
+          <div class="intro-title2 fadein">INVESTIGATION</div>
+          <div class="intro-sub fadein2">SIMULADOR CLUE — LÍNEA DE PRODUCCIÓN 3</div>
+          <div class="intro-crewmates fadein2" id="intro-crewmates"></div>
+          <div class="intro-stats fadein2">
+            <div class="stat-pill"><div class="stat-n">5</div><div class="stat-l">SOSPECHOSOS</div></div>
+            <div class="stat-pill"><div class="stat-n">5</div><div class="stat-l">LOCACIONES</div></div>
+            <div class="stat-pill"><div class="stat-n">5</div><div class="stat-l">CAUSAS</div></div>
+            <div class="stat-pill"><div class="stat-n">5</div><div class="stat-l">HISTORIAS</div></div>
+          </div>
+          <div class="intro-mission fadein2">
+            <div class="mission-title">// MISIÓN URGENTE</div>
+            <div class="mission-text">
+              La <strong style="color:var(--amber)">Línea 3</strong> de producción se ha detenido.<br>
+              Como <strong>Inspector de Calidad</strong>, debes determinar:<br>
+              <span style="color:var(--amber)">→</span> <strong>QUIÉN</strong> es responsable (o si fue falla natural)<br>
+              <span style="color:var(--amber)">→</span> <strong>QUÉ</strong> causó la falla técnica<br>
+              <span style="color:var(--amber)">→</span> <strong>DÓNDE</strong> ocurrió el incidente
+            </div>
+          </div>
+          <button class="btn fadein3" id="btn-start">INICIAR INVESTIGACIÓN</button>
+        </div>
+      </div>
+
+      <div id="screen-briefing" class="screen">
+        <div class="fadein">
+          <div class="alert-box">
+            <div class="alert-tag">ALERTA — REPORTE DE INCIDENTE ACTIVO</div>
+            <div class="alert-title" id="brief-title"></div>
+            <div class="alert-body" id="brief-incident"></div>
+          </div>
+          <div class="briefing-images fadein2">
+            <div class="briefing-image-box">
+              <img src="Images/ESCENARIO.png" alt="Mapa de la Fábrica">
+              <div class="briefing-image-label">📋 PLANO DE LA FÁBRICA</div>
+            </div>
+            <div class="briefing-image-box">
+              <img src="Images/PERSONAL.png" alt="Organigrama del Personal">
+              <div class="briefing-image-label">👥 ORGANIGRAMA DEL EQUIPO</div>
+            </div>
+          </div>
+          <div class="panel fadein2">
+            <div class="panel-title">// PERSONAL EN PLANTA — POSIBLES SOSPECHOSOS</div>
+            <div class="chars-grid" id="brief-chars"></div>
+          </div>
+          <div class="panel fadein2">
+            <div class="panel-title">// ÁREAS DE INVESTIGACIÓN</div>
+            <div class="locs-row" id="brief-locs"></div>
+            <div class="brief-intel-box">
+              <div class="brief-intel-label">EXPEDIENTE DE ÁREA</div>
+              <div class="brief-intel-title" id="brief-loc-title">Selecciona una zona</div>
+              <div class="brief-intel-desc" id="brief-loc-desc">Al seleccionar un área se mostrará su contexto operativo y riesgos.</div>
+            </div>
+          </div>
+          <div class="panel fadein2">
+            <div class="panel-title">// CAUSAS POSIBLES</div>
+            <div class="causes-row" id="brief-causes"></div>
+            <div class="brief-intel-box">
+              <div class="brief-intel-label">EXPEDIENTE TÉCNICO DE CAUSA</div>
+              <div class="brief-intel-title" id="brief-cause-title">Selecciona una causa</div>
+              <div class="brief-intel-desc" id="brief-cause-desc">Al seleccionar una causa se mostrará su patrón de falla e impacto esperado.</div>
+            </div>
+          </div>
+          <div class="briefing-footer fadein3">
+            <button class="btn btn-ghost" id="btn-back-intro">SALIR</button>
+            <button class="btn" id="btn-start-invest">COMENZAR INVESTIGACIÓN</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="screen-invest" class="screen">
+        <div id="invest-top">
+          <div id="invest-top-title"></div>
+          <div class="invest-counter" id="invest-counter">Locaciones: 0/5</div>
+          <div class="invest-counter" id="invest-clues">Pistas: 0/5</div>
+          <div class="invest-warn" id="invest-warn" style="display:none">⚠ Visita 3 locaciones para acusar</div>
+          <button class="btn" style="padding:7px 18px;font-size:11px" id="btn-accuse">ACUSAR</button>
+        </div>
+        <div id="invest-body">
+          <div id="invest-left">
+            <div class="sidebar-section">
+              <div class="sidebar-label">// SOSPECHOSOS</div>
+              <div class="crew-list" id="sidebar-crew"></div>
+              <button class="btn" style="width:100%;margin-top:12px;font-size:11px;padding:8px 0" id="btn-view-profiles">VER PERFILES</button>
+              <div class="invest-characters-ref" id="invest-chars-ref"></div>
+            </div>
+            <div id="notebook">
+              <div class="nb-title">// LIBRETA DE PISTAS</div>
+              <div class="nb-empty" id="nb-empty">Investiga una locación para obtener pistas...</div>
+              <div id="nb-entries"></div>
+            </div>
+            <div class="case-files">
+              <div class="case-files-title">// CARPETAS DE INVESTIGACIÓN</div>
+              <div class="case-files-list" id="case-files-list"></div>
+            </div>
+          </div>
+          <div id="invest-map">
+            <div id="map-svg-wrap">
+              <div class="factory-stage">
+                <img src="Images/ESCENARIO.png" alt="Plano de la Fábrica" class="factory-stage-image">
+                <svg id="factory-map" viewBox="0 0 700 480"></svg>
+              </div>
+            </div>
+            <div id="clue-panel">
+              <button id="clue-close">×</button>
+              <div class="clue-tag" id="clue-tag"></div>
+              <img class="clue-loc-image" id="clue-loc-image" src="" alt="" style="display:none" onerror="this.style.display='none'">
+              <div class="clue-loc" id="clue-loc"></div>
+              <div class="clue-body" id="clue-body"></div>
+            </div>
+            <div id="invest-bottom">
+              <button class="btn btn-ghost" id="btn-back-briefing">REPORTE</button>
+              <button class="btn" style="padding:10px 28px" id="btn-accuse2">HACER ACUSACIÓN</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="screen-accuse" class="screen">
+        <div class="fadein">
+          <div class="accuse-title">SALA DE ACUSACIONES</div>
+          <div class="accuse-sub">Selecciona tu acusación formal basada en las evidencias recolectadas</div>
+          <div class="panel fadein2">
+            <div class="panel-title">// ¿QUIÉN es el responsable?</div>
+            <div id="accuse-visual-section"></div>
+            <div class="select-grid" id="acc-chars"></div>
+          </div>
+          <div class="panel fadein2">
+            <div class="panel-title">// ¿QUÉ causó la falla?</div>
+            <div class="select-grid" id="acc-causes"></div>
+          </div>
+          <div class="panel fadein2">
+            <div class="panel-title">// ¿DÓNDE ocurrió?</div>
+            <div class="select-grid" id="acc-locs"></div>
+          </div>
+          <div class="accusation-summary fadein3">
+            <div class="acc-field"><div class="acc-label">ACUSADO</div><div class="acc-value empty" id="acc-s-char">— Sin seleccionar</div></div>
+            <div class="acc-field"><div class="acc-label">CAUSA</div><div class="acc-value empty" id="acc-s-cause">— Sin seleccionar</div></div>
+            <div class="acc-field"><div class="acc-label">LUGAR</div><div class="acc-value empty" id="acc-s-loc">— Sin seleccionar</div></div>
+          </div>
+          <div class="accuse-footer fadein3">
+            <button class="btn btn-ghost" id="btn-back-invest">INVESTIGAR MÁS</button>
+            <button class="btn" id="btn-submit">PRESENTAR ACUSACIÓN</button>
+          </div>
+          <div class="accuse-note fadein3" id="acc-note">Selecciona los 3 campos para habilitar la acusación</div>
+        </div>
+      </div>
+
+      <div id="screen-reveal" class="screen">
+        <div class="fadein">
+          <div class="verdict-banner" id="verdict-banner">
+            <div class="verdict-title" id="verdict-title"></div>
+            <div class="verdict-sub" id="verdict-sub"></div>
+          </div>
+          <div class="compare-grid" id="compare-grid" style="display:none">
+            <div class="compare-box player">
+              <div class="compare-label">TU ACUSACIÓN</div>
+              <div id="compare-player"></div>
+            </div>
+            <div class="compare-box answer">
+              <div class="compare-label">SOLUCIÓN REAL</div>
+              <div id="compare-answer"></div>
+            </div>
+          </div>
+          <div class="solution-cards" id="solution-cards"></div>
+          <div class="narrative-box fadein2">
+            <div class="narr-title">RELATO COMPLETO DEL CASO</div>
+            <div id="narr-content"></div>
+          </div>
+          <div class="reveal-footer fadein3">
+            <button class="btn" id="btn-restart">NUEVO CASO</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="screen-flow" class="screen">
+        <div class="fadein">
+          <div class="flow-title">DIAGRAMA DE FLUJO — LÓGICA DEL JUEGO</div>
+          <div class="flow-sub">// MECHATRONICS CLUE — ÁRBOL DE DECISIONES</div>
+          <div id="flow-svg-wrap">
+            <svg id="flow-svg" viewBox="0 0 760 1050" width="100%" style="max-width:760px;display:block;margin:0 auto"></svg>
+          </div>
+          <div class="stories-table-wrap">
+            <div class="panel-title">// LAS 5 HISTORIAS POSIBLES (COMBINACIONES FIJAS)</div>
+            <table class="stories-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>HISTORIA</th>
+                  <th>RESPONSABLE</th>
+                  <th>CAUSA / "ARMA"</th>
+                  <th>LOCACIÓN</th>
+                  <th>TIPO</th>
+                </tr>
+              </thead>
+              <tbody id="stories-tbody"></tbody>
+            </table>
+          </div>
+          <div class="legend-grid">
+            <div class="panel-title" style="width:100%;margin-bottom:4px">// LEYENDA DEL DIAGRAMA</div>
+            <div class="legend-item"><div class="legend-shape" style="background:rgba(245,158,11,.2);border:1px solid var(--amber);border-radius:3px"></div>Proceso / Acción</div>
+            <div class="legend-item"><div class="legend-shape" style="transform:rotate(45deg);background:rgba(56,189,248,.2);border:1px solid var(--blue)"></div>Decisión (Rombo)</div>
+            <div class="legend-item"><div class="legend-shape" style="background:rgba(34,197,94,.2);border:1px solid var(--green);border-radius:50%"></div>Inicio / Fin</div>
+            <div class="legend-item"><div class="legend-shape"><div style="width:100%;height:2px;background:var(--red)"></div></div>Flujo NO / Error</div>
+            <div class="legend-item"><div class="legend-shape"><div style="width:100%;height:2px;background:var(--green)"></div></div>Flujo SÍ / Correcto</div>
+            <div class="legend-item"><div class="legend-shape"><div style="width:100%;height:2px;background:var(--dim);stroke-dasharray:4,2"></div></div>Reinicio / Loop</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PERSONAJES -->
+  <div id="char-modal">
+    <div class="char-modal-content">
+      <div class="char-modal-header">
+        <div class="char-modal-title">PERFILES DE PERSONAL</div>
+        <button class="char-modal-close" id="char-modal-close">×</button>
+      </div>
+      <div class="char-grid-modal" id="char-modal-grid"></div>
+    </div>
+  </div>
+
+  <div id="casefile-modal">
+    <div class="casefile-modal-content">
+      <div class="casefile-header">
+        <div class="casefile-title" id="casefile-title">EXPEDIENTE</div>
+        <button class="casefile-close" id="casefile-close">×</button>
+      </div>
+      <div class="casefile-body" id="casefile-body"></div>
+    </div>
+  </div>
+
+  
+
+  <script>
+// ============================================================================
+// GAME DATA VALIDATION
+// ============================================================================
+function validateGameData() {
+  const errors = [];
+  const warnings = [];
+  
+  // Validar que existen todos los conjuntos de datos
+  if (!CHARS || CHARS.length === 0) errors.push('CHARS array vacío o no existe');
+  if (!CAUSES || CAUSES.length === 0) errors.push('CAUSES array vacío o no existe');
+  if (!LOCS || LOCS.length === 0) errors.push('LOCS array vacío o no existe');
+  
+  // Validar estructura de CHARS
+  CHARS.forEach((char, idx) => {
+    if (!char.id) errors.push(`CHARS[${idx}]: sin propiedad 'id'`);
+    if (!char.name) errors.push(`CHARS[${idx}]: sin propiedad 'name'`);
+  });
+  
+  // Validar estructura de CAUSES
+  CAUSES.forEach((cause, idx) => {
+    if (!cause.id) errors.push(`CAUSES[${idx}]: sin propiedad 'id'`);
+    if (!cause.name) errors.push(`CAUSES[${idx}]: sin propiedad 'name'`);
+  });
+  
+  // Validar estructura de LOCS
+  LOCS.forEach((loc, idx) => {
+    if (!loc.id) errors.push(`LOCS[${idx}]: sin propiedad 'id'`);
+    if (!loc.name) errors.push(`LOCS[${idx}]: sin propiedad 'name'`);
+  });
+  
+  // Validar que CLUE_TEMPLATES tiene cobertura suficiente
+  const possibleKeys = [];
+  CHARS.forEach(char => {
+    CAUSES.forEach(cause => {
+      possibleKeys.push(`${char.id}-${cause.id}`);
+    });
+  });
+  
+  const missingTemplates = [];
+  possibleKeys.forEach(key => {
+    if (!CLUE_TEMPLATES[key]) {
+      missingTemplates.push(key);
+    }
+  });
+  
+  if (missingTemplates.length > 0) {
+    warnings.push(`Falta templates para ${missingTemplates.length} combinaciones (usando defaults)`);
+  }
+  
+  if (errors.length > 0) {
+    return false;
+  }
+  if (warnings.length > 0) {
+  }
+  return true;
+}
+
+function validateGeneratedStory(story) {
+  const errors = [];
+  
+  // Validar estructura básica
+  if (!story.char || !story.cause || !story.loc) {
+    errors.push('Falta culpable, causa o ubicación');
+  }
+  
+  // Validar que los IDs existen
+  if (!CHARS.find(c => c.id === story.char)) {
+    errors.push(`Culpable inválido: ${story.char}`);
+  }
+  if (!CAUSES.find(c => c.id === story.cause)) {
+    errors.push(`Causa inválida: ${story.cause}`);
+  }
+  if (!LOCS.find(l => l.id === story.loc)) {
+    errors.push(`Ubicación inválida: ${story.loc}`);
+  }
+  
+  // Validar pistas
+  if (!story.clues || story.clues.length !== LOCS.length) {
+    errors.push(`Número incorrecto de pistas: ${story.clues?.length || 0} vs ${LOCS.length}`);
+  }
+  
+  story.clues?.forEach((clue, idx) => {
+    if (!LOCS.find(l => l.id === clue.loc)) {
+      errors.push(`Pista ${idx}: ubicación inválida`);
+    }
+  });
+  
+  if (errors.length > 0) {
+
+    return false;
+  }
+  
+  return true;
+}
+
+// ============================================================================
+// GAME DATA
+// ============================================================================
+const CHARS = [
+  {id:'carlos', name:'Carlos', role:'Técnico Eléctrico', emoji:'', bio:'Especialista en sistemas de energia',color:'#f59e0b'},
+  {id:'ana', name:'Ana', role:'Ingeniera Control', emoji:'', bio:'Responsable de automatización',color:'#22c55e'},
+  {id:'luis', name:'Luis', role:'Soldador jefe', emoji:'', bio:'Encargado de fabricación',color:'#ff6b6b'},
+  {id:'maria', name:'María', role:'Coordinadora Almacén', emoji:'', bio:'Gestión de materiales',color:'#a855f7'},
+  {id:'natural', name:'Falla Natural', role:'No es sabotaje', emoji:'', bio:'El sistema falló por desgaste',color:'#38bdf8'}
+];
+
+const LOCS = [
+  {id:'ensamble', name:'Área de Ensamble', emoji:'', image:'Images/AREA_ENSAMBLE.png'},
+  {id:'control', name:'Sala de Control', emoji:'', image:'Images/SALA_DE_CONTROL.png'},
+  {id:'almacen', name:'Almacén', emoji:'', image:'Images/ALMACEN.png'},
+  {id:'subestacion', name:'Subestación', emoji:'', image:'Images/SUBESTACION.png'},
+  {id:'soldadura', name:'Línea de Soldadura', emoji:'', image:'Images/LINEA_DE_SOLDADURA.png'}
+];
+
+const CAUSES = [
+  {id:'fusible', name:'Fusible Incorrecto', emoji:'', image:'Images/FUSIBLE_INCORRECTO.png'},
+  {id:'sensor', name:'Sensor Desgastado', emoji:'', image:'Images/SENSOR_DEGASTADO.png'},
+  {id:'cable', name:'Cable Cortocircuitado', emoji:'', image:'Images/CABLE_CORTOCIRCUITADO.png'},
+  {id:'valvula', name:'Válvula Incorrecta', emoji:'', image:'Images/VALCULA_INCORRECTA.png'},
+  {id:'plc', name:'PLC Modificado', emoji:'', image:'Images/PLC_MODIFICADO.png'}
+];
+
+const LOC_DESCRIPTIONS = {
+  ensamble: 'Nucleo de la linea de produccion. Aqui convergen actuadores, sensores y sincronizacion de tareas. Un fallo en esta zona suele detener toda la celda en menos de 30 segundos.',
+  control: 'Centro de decisiones de la planta. Consolas HMI, alarmas y registros de eventos. Cualquier alteracion aqui puede camuflar una falla real o simular una averia falsa.',
+  almacen: 'Zona de custodio de repuestos y componentes criticos. Si falta trazabilidad de piezas, esta area suele revelar sustituciones o salidas no autorizadas.',
+  subestacion: 'Punto de distribucion energetica. Variaciones o protecciones mal configuradas provocan paradas abruptas y daños en cascada sobre equipos sensibles.',
+  soldadura: 'Area de alta carga y temperaturas severas. El desgaste acelerado, corrientes inestables y vibracion mecanica hacen de esta zona un foco recurrente de incidentes.'
+};
+
+const CAUSE_DESCRIPTIONS = {
+  fusible: 'Un fusible fuera de especificacion altera la proteccion del circuito: puede dispararse antes de tiempo o no dispararse cuando corresponde. Resultado: paro inesperado o daño de modulos.',
+  sensor: 'Sensor degradado por fatiga, suciedad o calibracion vencida. Entrega lecturas inconsistentes al PLC y desencadena decisiones erraticas del sistema de control.',
+  cable: 'Aislamiento comprometido o conexion floja. Genera ruido electrico, perdidas intermitentes de señal y eventos de seguridad que fuerzan la detencion automatica.',
+  valvula: 'Valvula instalada con curva o diametro incorrecto. Provoca caudal fuera de rango, tiempos de ciclo inestables y sobreesfuerzo en actuadores aguas abajo.',
+  plc: 'Logica de control modificada sin validacion. Bastan dos lineas alteradas para cambiar secuencias, silenciar alarmas o crear condiciones de falla dificil de rastrear.'
+};
+
+/* SONIDOS DEL JUEGO (se cargan desde /Sound) */
+const SOUND_FILES = {
+  inicio: 'Sound/000_Inicio.mp3',
+  pista: 'Sound/001_Pista.mp3',
+  investigacion: 'Sound/002_Investigacion.mp3',
+  acusacion: 'Sound/003_Acusacion.mp3',
+  veredicto: 'Sound/004_Veredicto.mp3'
+};
+
+// Transiciones y sonido de texto
+const TRANSITION_SOUNDS = {
+  transicion1: 'Sound/006_Transicion1.mp3',
+  transicion2: 'Sound/007_Transicion2.mp3',
+  transicion3: 'Sound/008_Transicion3.mp3'
+};
+
+const ADDITIONAL_SOUNDS = {
+  texto: 'Sound/005_Texto.mp3'
+};
+
+// Combinar todos los sonidos
+const ALL_SOUNDS = { ...SOUND_FILES, ...TRANSITION_SOUNDS, ...ADDITIONAL_SOUNDS };
+
+const Sounds = {};
+let currentBackgroundSound = null;
+let introSoundPlayed = false;
+let introSoundUnlockBound = false;
+
+function initSounds() {
+  Object.keys(ALL_SOUNDS).forEach((k) => {
+    const a = new Audio(ALL_SOUNDS[k]);
+    a.preload = 'auto';
+    // loop background investigacion
+    if (k === 'investigacion') a.loop = true;
+    Sounds[k] = a;
+  });
+}
+
+function playSound(name, opts = {}) {
+  const s = Sounds[name];
+  if (!s) return;
+  try {
+    if (opts.restart) {
+      s.currentTime = 0;
+    }
+    s.play().catch(() => {
+      // Autoplay may be blocked; ignore
+    });
+  } catch (e) {
+    // ignore
+  }
+}
+
+function stopSound(name) {
+  const s = Sounds[name];
+  if (!s) return;
+  try { 
+    s.pause(); 
+    s.currentTime = 0; 
+  } catch (e) {}
+}
+
+function stopAllSounds() {
+  Object.values(Sounds).forEach(s => {
+    try { 
+      s.pause(); 
+      s.currentTime = 0; 
+    } catch (e) {}
+  });
+  currentBackgroundSound = null;
+}
+
+function playBackgroundSound(name, opts = {}) {
+  // Detener sonido de fondo anterior si existe
+  if (currentBackgroundSound && currentBackgroundSound !== name) {
+    stopSound(currentBackgroundSound);
+  }
+  currentBackgroundSound = name;
+  playSound(name, opts);
+}
+
+function playIntroSound() {
+  const sound = Sounds.inicio;
+  if (!sound || introSoundPlayed) return;
+
+  try {
+    sound.currentTime = 0;
+    const playPromise = sound.play();
+
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise.then(() => {
+        introSoundPlayed = true;
+      }).catch(() => {
+        bindIntroSoundUnlock();
+      });
+    } else {
+      introSoundPlayed = true;
+    }
+  } catch (e) {
+    bindIntroSoundUnlock();
+  }
+}
+
+function bindIntroSoundUnlock() {
+  if (introSoundUnlockBound || introSoundPlayed) return;
+  introSoundUnlockBound = true;
+
+  const unlockIntroSound = () => {
+    const sound = Sounds.inicio;
+    if (!sound || introSoundPlayed) return;
+
+    try {
+      sound.currentTime = 0;
+      const playPromise = sound.play();
+
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise.then(() => {
+          introSoundPlayed = true;
+        }).catch(() => {});
+      } else {
+        introSoundPlayed = true;
+      }
+    } catch (e) {}
+  };
+
+  ['pointerdown', 'keydown'].forEach((eventName) => {
+    document.addEventListener(eventName, unlockIntroSound, { once: true, passive: true });
+  });
+}
+
+// Banco de pistas contextuales para cada combinación
+const CLUE_TEMPLATES = {
+  'carlos-fusible': {
+    'subestacion': 'Se encontró un fusible 250v en lugar del 120v requerido.',
+    'control': 'Registros muestran acceso de Carlos a subestación hace 2 horas.',
+    'almacen': 'El inventario de fusibles tiene discrepancias significativas.',
+    'ensamble': 'Línea paralizada por pérdida total de energía.',
+    'soldadura': 'Equipos de soldadura sin suministro eléctrico.'
+  },
+  'carlos-cable': {
+    'subestacion': 'Cable de control cortado en panel principal.',
+    'control': 'Lecturas de voltaje erráticas en subestación.',
+    'almacen': 'Herramientas de corte fueron solicitadas por Carlos.',
+    'ensamble': 'Sistema de seguridad desactivado por fallo eléctrico.',
+    'soldadura': 'Pérdida de comunicación con subestación.'
+  },
+  'carlos-sensor': {
+    'subestacion': 'Sensor de voltaje desconectado en subestación.',
+    'control': 'Lecturas anómalas de energía en todos los circuitos.',
+    'almacen': 'Registro de herramientas show acceso de Carlos sin supervisión.',
+    'ensamble': 'Sistema de monitoreo completamente fuera de línea.',
+    'soldadura': 'Fallo cascada en sistemas dependientes de subestación.'
+  },
+  'carlos-plc': {
+    'subestacion': 'Reprogramación de lógica de seguridad detectada.',
+    'control': 'Versión de firmware no coincide con registros oficiales.',
+    'almacen': 'PLC antiguo encontrado en área de Carlos.',
+    'ensamble': 'Secuencia de producción ejecutando comandos no autorizados.',
+    'soldadura': 'Parámetros de seguridad modificados sin documentación.'
+  },
+  'carlos-valvula': {
+    'subestacion': 'Válvula de descarga hidráulica incorrecta instalada.',
+    'control': 'Presión del sistema fuera de especificación técnica.',
+    'almacen': 'Componente correcto falta del inventario.',
+    'ensamble': 'Cilindros hidráulicos no responden a comandos.',
+    'soldadura': 'Presión afecta sistema de enfriamiento de soldadura.'
+  },
+  'ana-fusible': {
+    'subestacion': 'Fusible incorrecto especificado en requisición de Ana.',
+    'control': 'Registros de Ana en panel de control minutos antes del fallo.',
+    'almacen': 'Solicitud de fusible anómala autorizada por Ana.',
+    'ensamble': 'Fallo coincide exactamente con horario de turnos de Ana.',
+    'soldadura': 'Sistema de soldadura depende de fusibles correctos.'
+  },
+  'ana-cable': {
+    'subestacion': 'Diagrama eléctrico modificado por Ana contiene errores.',
+    'control': 'Cambios no autorizados en configuración de cables.',
+    'almacen': 'Registro de salida de cables de Ana no documentados.',
+    'ensamble': 'Fallo de aislamiento en cables principales.',
+    'soldadura': 'Cortocircuito en línea de soldadura por cable suelto.'
+  },
+  'ana-sensor': {
+    'subestacion': 'Calibración de sensores incompleta según Ana.',
+    'control': 'Últimos cambios de sensor hechos por Ana hace 3 días.',
+    'almacen': 'Sensor antiguo encontrado en escritorio de Ana.',
+    'ensamble': 'Sensor de producción enviando datos inconsistentes.',
+    'soldadura': 'Sensor de temperatura en soldadora desconectado.'
+  },
+  'ana-plc': {
+    'subestacion': 'PLC V3.2 reemplazado por versión obsoleta V2.1.',
+    'control': 'Autorización de cambio de PLC firmada por Ana el día anterior.',
+    'almacen': 'Registro de salida de PLC coincide con acceso de Ana.',
+    'ensamble': 'Secuencia de producción programada incorrectamente.',
+    'soldadura': 'Parámetros de soldadura no son coherentes con PLC nuevo.'
+  },
+  'ana-valvula': {
+    'subestacion': 'Especificación de válvula incorrecta en requisición de Ana.',
+    'control': 'Presión hidráulica no responde a ajustes normales.',
+    'almacen': 'Válvula incorrecta colocada en inventario por Ana.',
+    'ensamble': 'Componentes hidráulicos mostrando fatiga.',
+    'soldadura': 'Sistema de enfriamiento falla por presión incorrecta.'
+  },
+  'luis-fusible': {
+    'subestacion': 'Fusible instalado manualmente por Luis sin verificación.',
+    'control': 'Luis tiene acceso exclusivo a subestación en ese horario.',
+    'almacen': 'Luis solicitó fusibles hace 1 semana.',
+    'ensamble': 'Trabajo de Luis coincide con hora exacta del fallo.',
+    'soldadura': 'Luis estaba trabajando en área de soldadura antes del fallo.'
+  },
+  'luis-cable': {
+    'subestacion': 'Cable de alimentación de soldadora cortado parcialmente.',
+    'control': 'Alerta automática de fallo en línea de soldadura registrada.',
+    'almacen': 'Herramientas de corte solicitadas por Luis el día anterior.',
+    'ensamble': 'Área acordonada por problema en línea de soldadura.',
+    'soldadura': 'Sobre corriente detectada en circuito de soldadura.'
+  },
+  'luis-sensor': {
+    'subestacion': 'Sensor de corriente en soldadora desgastado.',
+    'control': 'Lecturas del sensor errático desde hace días.',
+    'almacen': 'Historial de mantenimiento de sensor incompleto.',
+    'ensamble': 'Sistema de monitoreo de Luis mostró anomalías.',
+    'soldadura': 'Sensor capacitivo desgastado después de 40,000 ciclos.'
+  },
+  'luis-plc': {
+    'subestacion': 'Cambios en lógica de soldadura detectados en PLC.',
+    'control': 'Programa de soldadura modificado sin documentación.',
+    'almacen': 'Luis tiene acceso a equipos de programación.',
+    'ensamble': 'Secuencia de soldadura ejecutando comandos anómalos.',
+    'soldadura': 'Parámetros de soldadura modificados manualmente.'
+  },
+  'luis-valvula': {
+    'subestacion': 'Válvula de soldadora con especificación incorrecta.',
+    'control': 'Presión de soldadura fuera de rango operacional.',
+    'almacen': 'Componente de válvula encontrado en área de Luis.',
+    'ensamble': 'Falla en ciclo de enfriamiento de soldadura.',
+    'soldadura': 'Válvula hidráulica incorrecta instalada en soldadora.'
+  },
+  'maria-fusible': {
+    'subestacion': 'Fusible incorrecto etiquetado en almacén por María.',
+    'control': 'María tiene registro de acceso a subestación hace 4 horas.',
+    'almacen': 'Inventario de fusibles bajo supervisión de María.',
+    'ensamble': 'Fallo de energía afectó área bajo responsabilidad de María.',
+    'soldadura': 'Distribuidor de fusibles cerca de soldadura está desordenado.'
+  },
+  'maria-cable': {
+    'subestacion': 'Cable de control cortocircuitado según inventario de María.',
+    'control': 'Cambios en configuración de cables no documentados por María.',
+    'almacen': 'Cables de soldadura almacenados de manera peligrosa.',
+    'ensamble': 'Aislamiento dañado en cables bajo cuidado de María.',
+    'soldadura': 'Cable de alimentación de soldadora sin protección adecuada.'
+  },
+  'maria-sensor': {
+    'subestacion': 'Sensor guardado en almacén sin calibración de María.',
+    'control': 'Registro de sensor incompleto bajo supervisión de María.',
+    'almacen': 'Sensor capacitivo desgastado en inventario de María.',
+    'ensamble': 'Sensor no fue reemplazado en mantenimiento de María.',
+    'soldadura': 'Sensor de temperatura en soldadora vencido según María.'
+  },
+  'maria-plc': {
+    'subestacion': 'PLC antiguo almacenado sin seguridad por María.',
+    'control': 'María autorizó movimiento de PLC hace 2 días.',
+    'almacen': 'Registro de salida de PLC a nombre de María.',
+    'ensamble': 'PLC antiguo encontrado cerca de área de control.',
+    'soldadura': 'Parámetros de soldadura reseteados por PLC incorrecto.'
+  },
+  'maria-valvula': {
+    'subestacion': 'Válvula hidráulica incorrecta colocada en inventario.',
+    'control': 'María firma recepción de válvula con código incorrecto.',
+    'almacen': 'Válvula defectuosa guardada en almacén bajo María.',
+    'ensamble': 'Componente de válvula defectuosa detectado durante inspección.',
+    'soldadura': 'Presión de soldadura afectada por válvula incorrecta.'
+  },
+  'natural-fusible': {
+    'subestacion': 'Fusible muestra signos de envejecimiento natural.',
+    'control': 'Especificación de voltaje dentro de límites pero cercanos.',
+    'almacen': 'Historial de mantenimiento: fusible no reemplazado en 2 años.',
+    'ensamble': 'Demanda de energía aumentó gradualmente en últimas semanas.',
+    'soldadura': 'Patrón de fallo consistente con desgaste gradual.'
+  },
+  'natural-cable': {
+    'subestacion': 'Aislamiento de cable muestra corrosión natural.',
+    'control': 'Edad del cable excede vida útil recomendada.',
+    'almacen': 'Ambiente húmedo causó degradación gradual de cable.',
+    'ensamble': 'No hay evidencia de daño intencional.',
+    'soldadura': 'Cortocircuito resultó de fatiga material normal.'
+  },
+  'natural-sensor': {
+    'subestacion': 'Voltaje de alimentación del sensor dentro de límites normales.',
+    'control': 'Sensor muestra fatiga tras 45,000 ciclos operativos.',
+    'almacen': 'Última calibración hace 18 meses (fuera de intervalo).',
+    'ensamble': 'Sensor capacitivo desgastado después de uso prolongado.',
+    'soldadura': 'No hay reportes de anomalías en esta área, fallo gradual.'
+  },
+  'natural-plc': {
+    'subestacion': 'PLC muestra errores de memoria tras 3 años de operación.',
+    'control': 'Firmware desactualizado pero dentro de especificación.',
+    'almacen': 'PLC no fue reemplazado en último mantenimiento programado.',
+    'ensamble': 'Errores lógicos consistentes con envejecimiento de componentes.',
+    'soldadura': 'Sistema de seguridad falló por obsolescencia de PLC.'
+  },
+  'natural-valvula': {
+    'subestacion': 'Válvula muestra desgaste normal por 50,000 ciclos.',
+    'control': 'Presión fluctúa dentro de rango pero inconsistente.',
+    'almacen': 'Válvula no fue servida en último mantenimiento preventivo.',
+    'ensamble': 'Componentes hidráulicos mostrando fatiga normal.',
+    'soldadura': 'Desgaste natural de sello de válvula causó falla.'
+  }
+};
+
+// Función para generar un caso aleatorio
+function generateRandomStory() {
+  const randomChar = CHARS[Math.floor(Math.random() * CHARS.length)];
+  const randomCause = CAUSES[Math.floor(Math.random() * CAUSES.length)];
+  const randomLoc = LOCS[Math.floor(Math.random() * LOCS.length)];
+  
+  const templateKey = `${randomChar.id}-${randomCause.id}`;
+  const templates = CLUE_TEMPLATES[templateKey] || CLUE_TEMPLATES['natural-sensor'];
+  
+  const story = {
+    id: `generated-${Date.now()}`,
+    char: randomChar.id,
+    cause: randomCause.id,
+    loc: randomLoc.id,
+    title: `Investigación de Falla - ${randomLoc.name}`,
+    type: randomChar.id === 'natural' ? 'Falla Natural' : 'Sabotaje',
+    clues: LOCS.map(loc => ({
+      loc: loc.id,
+      text: templates[loc.id] || `Información disponible en ${loc.name}.`
+    }))
+  };
+  
+  return story;
+}
+
+// ============================================================================
+// GAME STATE
+// ============================================================================
+const GameState = {
+  currentStory: null,
+  visitedLocs: new Set(),
+  foundClues: new Map(),
+  accusation: {char: null, cause: null, loc: null},
+  currentScreen: 'intro',
+  lastGameScreen: 'intro',
+  isInitialized: false,
+  init() {
+    if (!this.isInitialized) {
+      this.selectRandomStory();
+      this.isInitialized = true;
+
+    }
+  },
+  selectRandomStory() {
+    this.currentStory = generateRandomStory();
+
+  },
+  reset() {
+    this.visitedLocs.clear();
+    this.foundClues.clear();
+    this.accusation = {char: null, cause: null, loc: null};
+    this.lastGameScreen = 'intro';
+
+  },
+  resetForNewGame() {
+    this.currentStory = null;
+    this.visitedLocs.clear();
+    this.foundClues.clear();
+    this.accusation = {char: null, cause: null, loc: null};
+    this.lastGameScreen = 'intro';
+    this.isInitialized = false;
+    this.selectRandomStory();
+    this.isInitialized = true;
+
+  }
+};
+
+// ============================================================================
+// DOM HELPERS
+// ============================================================================
+const $ = (sel) => document.querySelector(sel);
+const $all = (sel) => document.querySelectorAll(sel);
+
+// ============================================================================
+// SCREEN NAVIGATION
+// ============================================================================
+function showScreen(name) {
+  const activateScreen = () => {
+    $all('.screen').forEach((s) => s.classList.remove('active'));
+    const screen = $(`#screen-${name}`);
+    if (!screen) return;
+
+    screen.classList.add('active');
+    GameState.currentScreen = name;
+    if (name !== 'flow') {
+      GameState.lastGameScreen = name;
+    }
+
+    if (name === 'invest') {
+      updateInvestCharRefs();
+      updateCaseFiles();
+      // reproducir musica de investigacion (fondo)
+      playBackgroundSound('investigacion', { restart: false });
+    } else if (name === 'accuse') {
+      updateAccuseVisual();
+      // la musica se detiene en goAccuse(), solo actualizar UI aquí
+    } else if (name === 'reveal') {
+      // la musica se detiene en renderReveal()
+    }
+  };
+
+  const transition = $('#screen-transition');
+  if (!transition) {
+    activateScreen();
+    return;
+  }
+
+  transition.classList.remove('active');
+  void transition.offsetWidth;
+  transition.classList.add('active');
+  window.setTimeout(activateScreen, 150);
+  window.setTimeout(() => transition.classList.remove('active'), 620);
+}
+
+function switchTab(tab) {
+  $all('.nav-tab').forEach(t => t.classList.remove('active'));
+  $(`.nav-tab[data-tab="${tab}"]`).classList.add('active');
+  
+  if (tab === 'flow') {
+    showScreen('flow');
+    renderFlowchart();
+    renderStoriesTable();
+  } else {
+    showScreen(GameState.lastGameScreen || 'intro');
+  }
+}
+
+// ============================================================================
+// INTRO SCREEN
+// ============================================================================
+function renderIntro() {
+  // Reproducir sonido de inicio cuando se carga el programa
+  playIntroSound();
+  bindIntroSoundUnlock();
+  
+  const container = $('#intro-crewmates');
+  container.innerHTML = '';
+  
+  const chars = CHARS.slice(0, -1); // Excluir "Falla Natural"
+  chars.forEach((char, i) => {
+    const card = document.createElement('div');
+    card.className = 'intro-card';
+    const imageName = getCharImageName(char.name);
+    card.innerHTML = `
+      <img src="Images/${imageName}.png" alt="${char.name}" style="width:100%;height:90px;object-fit:contain;background:var(--surf3);padding:2px;border-radius:6px;margin-bottom:8px" onerror="this.src='Images/PERSONAL.png'">
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ============================================================================
+// BRIEFING SCREEN
+// ============================================================================
+function showBriefing() {
+  // NO llamamos a GameState.init() - el caso ya debe estar cargado
+  const story = GameState.currentStory;
+  
+  if (!story) {
+    GameState.init();
+  }
+  
+
+  
+  $('#brief-title').textContent = `Falla detectada: ${story.title}`;
+  $('#brief-incident').innerHTML = `
+    <strong>Tipo:</strong> ${story.type}<br>
+    <strong>Ubicación:</strong> ${LOCS.find(l => l.id === story.loc).name}<br>
+    Se ha recopilado evidencia de múltiples ubicaciones en la planta.
+  `;
+  
+  // Characters grid
+  const charsHtml = CHARS.filter(c => c.id !== 'natural').map(c => {
+    const imageName = getCharImageName(c.name);
+    return `
+    <div class="char-card">
+      <img src="Images/${imageName}.png" alt="${c.name}" style="width:100%;height:120px;object-fit:contain;background:var(--surf3);padding:3px;border-radius:6px;margin-bottom:8px" onerror="this.src='Images/PERSONAL.png'">
+    </div>
+  `}).join('');
+  $('#brief-chars').innerHTML = charsHtml;
+  
+  // Locations
+  const locsHtml = LOCS.map((l, idx) => `
+    <button class="loc-tag ${idx === 0 ? 'active' : ''}" data-loc-id="${l.id}" type="button">
+      <img src="${l.image}" alt="${l.name}" onerror="this.style.display='none'">
+      <span>${l.name}</span>
+    </button>
+  `).join('');
+  $('#brief-locs').innerHTML = locsHtml;
+  
+  // Causes
+  const causesHtml = CAUSES.map((c, idx) => `
+    <button class="cause-tag ${idx === 0 ? 'active' : ''}" data-cause-id="${c.id}" type="button">
+      <img src="${c.image}" alt="${c.name}" onerror="this.style.display='none'">
+      <span>${c.name}</span>
+    </button>
+  `).join('');
+  $('#brief-causes').innerHTML = causesHtml;
+
+  // Reproducir transición al briefing (sonido de inicio ya está en la pantalla anterior)
+  playSound('transicion1', { restart: true });
+
+  bindBriefingDescriptions();
+  if (LOCS[0]) {
+    showBriefingLocDescription(LOCS[0].id);
+  }
+  if (CAUSES[0]) {
+    showBriefingCauseDescription(CAUSES[0].id);
+  }
+  
+
+  showScreen('briefing');
+}
+
+let briefingTypingTimer = null;
+function typeBriefingText(targetSelector, text) {
+  const el = $(targetSelector);
+  if (!el) return;
+
+  if (briefingTypingTimer) {
+    window.clearInterval(briefingTypingTimer);
+    briefingTypingTimer = null;
+  }
+
+  el.textContent = '';
+  el.classList.add('typing');
+
+  let i = 0;
+  briefingTypingTimer = window.setInterval(() => {
+    i += 1;
+    el.textContent = text.slice(0, i);
+    if (i >= text.length) {
+      window.clearInterval(briefingTypingTimer);
+      briefingTypingTimer = null;
+      el.classList.remove('typing');
+    }
+  }, 10);
+}
+
+function showBriefingLocDescription(locId) {
+  const loc = LOCS.find((item) => item.id === locId);
+  if (!loc) return;
+
+  $('#brief-loc-title').textContent = `${loc.name} | NIVEL DE ANÁLISIS`;
+  $('#brief-loc-title').dataset.locImage = loc.image;
+  playSound('texto', { restart: true });
+  typeBriefingText('#brief-loc-desc', LOC_DESCRIPTIONS[loc.id] || 'Sin descripcion registrada para esta zona.');
+}
+
+function showBriefingCauseDescription(causeId) {
+  const cause = CAUSES.find((item) => item.id === causeId);
+  if (!cause) return;
+
+  $('#brief-cause-title').textContent = `${cause.name} | PERFIL DE FALLA`;
+  playSound('texto', { restart: true });
+  typeBriefingText('#brief-cause-desc', CAUSE_DESCRIPTIONS[cause.id] || 'Sin descripcion registrada para esta causa.');
+}
+
+function bindBriefingDescriptions() {
+  $all('.loc-tag[data-loc-id]').forEach((button) => {
+    button.addEventListener('click', () => {
+      $all('.loc-tag[data-loc-id]').forEach((item) => item.classList.remove('active'));
+      button.classList.add('active');
+      showBriefingLocDescription(button.dataset.locId);
+    });
+  });
+
+  $all('.cause-tag[data-cause-id]').forEach((button) => {
+    button.addEventListener('click', () => {
+      $all('.cause-tag[data-cause-id]').forEach((item) => item.classList.remove('active'));
+      button.classList.add('active');
+      showBriefingCauseDescription(button.dataset.causeId);
+    });
+  });
+}
+
+// ============================================================================
+// INVESTIGATION SCREEN
+// ============================================================================
+function startInvestigation() {
+  GameState.reset();
+  renderFactoryMap();
+  updateInvestmentUI();
+  updateCaseFiles();
+  // Iniciar bucle musical de investigación con transición
+  stopAllSounds();
+  playSound('transicion2', { restart: true });
+  window.setTimeout(() => playBackgroundSound('investigacion', { restart: true }), 300);
+  showScreen('invest');
+
+}
+
+function returnToInvestigation() {
+  renderFactoryMap();
+  updateInvestmentUI();
+  updateCaseFiles();
+  // Transición al volver a investigación
+  stopAllSounds();
+  playSound('transicion2', { restart: true });
+  window.setTimeout(() => playBackgroundSound('investigacion', { restart: false }), 300);
+  showScreen('invest');
+}
+
+function renderFactoryMap() {
+  const svg = $('#factory-map');
+  svg.innerHTML = '';
+  
+  // Background - Transparent
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('width', '700');
+  bg.setAttribute('height', '480');
+  bg.setAttribute('fill', 'transparent');
+  bg.setAttribute('stroke', 'transparent');
+  bg.setAttribute('stroke-width', '0');
+  svg.appendChild(bg);
+  
+  // Rooms
+  const rooms = [
+    {id:'control', name:'Sala de Control', x:50, y:50, w:150, h:100, color:'#38bdf8'},
+    {id:'ensamble', name:'Área de Ensamble', x:500, y:50, w:150, h:100, color:'#22c55e'},
+    {id:'almacen', name:'Almacén', x:50, y:300, w:150, h:100, color:'#a855f7'},
+    {id:'subestacion', name:'Subestación', x:500, y:300, w:150, h:100, color:'#f59e0b'},
+    {id:'soldadura', name:'Línea de Soldadura', x:275, y:180, w:150, h:100, color:'#ef4444'}
+  ];
+  
+  rooms.forEach(room => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'map-room');
+    g.setAttribute('data-loc', room.id);
+    g.style.cursor = 'pointer';
+    
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('class', 'room-bg');
+    rect.setAttribute('x', room.x);
+    rect.setAttribute('y', room.y);
+    rect.setAttribute('width', room.w);
+    rect.setAttribute('height', room.h);
+    rect.setAttribute('fill', 'transparent');
+    rect.setAttribute('stroke', 'transparent');
+    rect.setAttribute('stroke-width', '2');
+    
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', room.x + room.w / 2);
+    text.setAttribute('y', room.y + room.h / 2);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('fill', '#c8d8e4');
+    text.setAttribute('font-size', '12');
+    text.setAttribute('font-weight', 'bold');
+    text.setAttribute('opacity', '0');
+    text.textContent = room.name;
+    
+    g.appendChild(rect);
+    g.appendChild(text);
+    g.addEventListener('click', () => investigateRoom(room.id));
+    
+    svg.appendChild(g);
+  });
+}
+
+function investigateRoom(locId) {
+  GameState.visitedLocs.add(locId);
+  const story = GameState.currentStory;
+  const clues = story.clues.filter(c => c.loc === locId);
+  
+  if (clues.length > 0) {
+    const clue = clues[0];
+    const isHot = (locId === story.loc);
+    
+    if (!GameState.foundClues.has(locId)) {
+      GameState.foundClues.set(locId, clue);
+    }
+    
+    // Update notebook
+    updateNotebook();
+    updateCaseFiles();
+    
+    // Show clue panel (no mostrar tipo de pista)
+    $('#clue-tag').textContent = '';
+    const loc = LOCS.find(l => l.id === locId);
+    $('#clue-loc').textContent = `Ubicación: ${loc.name}`;
+    const clueLocImage = $('#clue-loc-image');
+    if (clueLocImage) {
+      clueLocImage.src = loc.image;
+      clueLocImage.alt = loc.name;
+      clueLocImage.style.display = 'block';
+    }
+    typeClueText(clue.text);
+    $('#clue-panel').className = 'show';
+    // reproducir sonido de pista
+    playSound('pista', { restart: true });
+
+
+  }
+  
+  updateInvestmentUI();
+}
+
+function updateNotebook() {
+  const nb = $('#nb-entries');
+  nb.innerHTML = '';
+  
+  GameState.foundClues.forEach((clue, locId) => {
+    const isHot = (locId === GameState.currentStory.loc);
+    const entry = document.createElement('div');
+    entry.className = `nb-entry ${isHot ? 'hot' : ''}`;
+    entry.innerHTML = `
+      <div class="nb-entry-loc">${isHot ? '🔥' : '❄️'} ${LOCS.find(l => l.id === locId).name}</div>
+      <div class="nb-entry-text">${clue.text}</div>
+    `;
+    nb.appendChild(entry);
+  });
+  
+  if (GameState.foundClues.size > 0) {
+    $('#nb-empty').style.display = 'none';
+  }
+
+  updateCaseFiles();
+}
+
+function updateCaseFiles() {
+  const list = $('#case-files-list');
+  if (!list) return;
+
+  list.innerHTML = LOCS.map((loc) => {
+    const hasClue = GameState.foundClues.has(loc.id);
+    const state = hasClue ? 'DESCLASIFICADA' : 'BLOQUEADA';
+    return `
+      <button class="case-file-item ${hasClue ? '' : 'locked'}" data-loc="${loc.id}" ${hasClue ? '' : 'disabled'}>
+        <div class="case-file-icon">${hasClue ? '📂' : '📁'}</div>
+        <div class="case-file-meta">
+          <div class="case-file-name">${loc.name}</div>
+          <div class="case-file-status">${state}</div>
+        </div>
+      </button>
+    `;
+  }).join('');
+
+  $all('.case-file-item[data-loc]').forEach((button) => {
+    button.addEventListener('click', () => openCasefile(button.dataset.loc));
+  });
+}
+
+function openCasefile(locId) {
+  const clue = GameState.foundClues.get(locId);
+  if (!clue) return;
+
+  const loc = LOCS.find((entry) => entry.id === locId);
+  $('#casefile-title').textContent = `EXPEDIENTE ${loc.name.toUpperCase()}`;
+  $('#casefile-body').innerHTML = `
+    <img class="casefile-loc-image" src="${loc.image}" alt="${loc.name}" onerror="this.style.display='none'">
+    <div class="casefile-seal">ARCHIVO DE CAMPO | NIVEL: INVESTIGADOR</div>
+    <p><strong>Zona:</strong> ${loc.name}</p>
+    <p><strong>Clasificación:</strong> ${locId === GameState.currentStory.loc ? 'Pista crítica' : 'Observación secundaria'}</p>
+    <p><strong>Registro:</strong> ${clue.text}</p>
+  `;
+  // reproducir sonido de abrir expediente con texto
+  playSound('texto', { restart: true });
+  $('#casefile-modal').classList.add('active');
+}
+
+function closeCasefile() {
+  const modal = $('#casefile-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+let clueTypingInterval = null;
+function typeClueText(text) {
+  const body = $('#clue-body');
+  if (!body) return;
+
+  body.textContent = '';
+  body.classList.add('typing');
+  let index = 0;
+
+  if (clueTypingInterval) {
+    window.clearInterval(clueTypingInterval);
+  }
+
+  clueTypingInterval = window.setInterval(() => {
+    index += 1;
+    body.textContent = text.slice(0, index);
+    if (index >= text.length) {
+      window.clearInterval(clueTypingInterval);
+      clueTypingInterval = null;
+      body.classList.remove('typing');
+    }
+  }, 16);
+}
+
+function updateInvestmentUI() {
+  const story = GameState.currentStory;
+  $('#invest-top-title').textContent = `Investigando: ${story.title}`;
+  $('#invest-counter').textContent = `Locaciones: ${GameState.visitedLocs.size}/5`;
+  $('#invest-clues').textContent = `Pistas: ${GameState.foundClues.size}/5`;
+  
+  const canAccuse = GameState.visitedLocs.size >= 3;
+  $('#btn-accuse').disabled = !canAccuse;
+  $('#btn-accuse2').disabled = !canAccuse;
+  $('#invest-warn').style.display = canAccuse ? 'none' : 'block';
+  
+  // Update sidebar
+  const sidebarHtml = CHARS.filter(c => c.id !== 'natural').map(c => {
+    const imageName = getCharImageName(c.name);
+    return `<div class="crew-item">
+      <img src="Images/${imageName}.png" alt="${c.name}" style="width:40px;height:40px;object-fit:contain;background:var(--surf3);padding:1px;border-radius:4px;margin-right:8px" onerror="this.src='Images/PERSONAL.png'">
+      <div style="flex:1">
+        <div class="crew-name">${c.name}</div>
+      </div>
+    </div>`;
+  }).join('');
+  $('#sidebar-crew').innerHTML = sidebarHtml;
+}
+
+// ============================================================================
+// ACCUSATION SCREEN
+// ============================================================================
+function goAccuse() {
+  if (GameState.visitedLocs.size < 3) {
+    alert('Necesitas visitar al menos 3 locaciones');
+    return;
+  }
+  renderAccusation();
+  // detener musica de investigacion y reproducir jingle de acusacion con transición
+  stopAllSounds();
+  playSound('transicion3', { restart: true });
+  window.setTimeout(() => playSound('acusacion', { restart: true }), 300);
+  showScreen('accuse');
+}
+
+function renderAccusation() {
+  // Characters
+  const charsHtml = CHARS.map(c => {
+    const imageName = getCharImageName(c.name);
+    return `
+    <div class="select-item" data-type="char" data-value="${c.id}">
+      <img src="Images/${imageName}.png" alt="${c.name}" style="width:100%;height:80px;object-fit:contain;background:var(--surf3);padding:2px;border-radius:4px;margin-bottom:6px" onerror="this.src='Images/PERSONAL.png'">
+    </div>
+  `}).join('');
+  $('#acc-chars').innerHTML = charsHtml;
+  
+  // Causes
+  const causesHtml = CAUSES.map(c => `
+    <div class="select-item char-card-modal accuse-choice-card" data-type="cause" data-value="${c.id}">
+      <img src="${c.image}" alt="${c.name}" class="char-image-modal" onerror="this.style.display='none'">
+      <div class="char-name-modal">${c.name}</div>
+      <div class="char-role-modal">TIPO DE FALLA</div>
+    </div>
+  `).join('');
+  $('#acc-causes').innerHTML = causesHtml;
+  
+  // Locations
+  const locsHtml = LOCS.map(l => `
+    <div class="select-item char-card-modal accuse-choice-card" data-type="loc" data-value="${l.id}">
+      <img src="${l.image}" alt="${l.name}" class="char-image-modal" onerror="this.style.display='none'">
+      <div class="char-name-modal">${l.name}</div>
+      <div class="char-role-modal">LOCACIÓN</div>
+    </div>
+  `).join('');
+  $('#acc-locs').innerHTML = locsHtml;
+  
+  // Attach events
+  $all('.select-item').forEach(item => {
+    item.addEventListener('click', () => selectAcc(item));
+  });
+}
+
+function selectAcc(item) {
+  const type = item.dataset.type;
+  const value = item.dataset.value;
+  
+  // Remove previous selection for this type
+  $all(`.select-item[data-type="${type}"].chosen`).forEach(i => {
+    i.classList.remove('chosen');
+  });
+  
+  // Add selection to clicked item
+  item.classList.add('chosen');
+  GameState.accusation[type] = value;
+  
+  updateAccusationSummary();
+  updateAccuseVisual();
+}
+
+function updateAccusationSummary() {
+  const acc = GameState.accusation;
+  
+  const charVal = acc.char ? CHARS.find(c => c.id === acc.char)?.name : '— Sin seleccionar';
+  const causVal = acc.cause ? CAUSES.find(c => c.id === acc.cause)?.name : '— Sin seleccionar';
+  const locVal = acc.loc ? LOCS.find(l => l.id === acc.loc)?.name : '— Sin seleccionar';
+  
+  $('#acc-s-char').textContent = charVal;
+  $('#acc-s-char').className = acc.char ? 'acc-value set' : 'acc-value empty';
+  
+  $('#acc-s-cause').textContent = causVal;
+  $('#acc-s-cause').className = acc.cause ? 'acc-value set' : 'acc-value empty';
+  
+  $('#acc-s-loc').textContent = locVal;
+  $('#acc-s-loc').className = acc.loc ? 'acc-value set' : 'acc-value empty';
+  
+  const allSelected = acc.char && acc.cause && acc.loc;
+  $('#btn-submit').disabled = !allSelected;
+  $('#acc-note').textContent = allSelected ? '[OK] Acusación lista' : 'Selecciona los 3 campos para habilitar la acusación';
+}
+
+function submitAccusation() {
+  const acc = GameState.accusation;
+  if (!acc.char || !acc.cause || !acc.loc) {
+    alert('Completa todos los campos');
+    return;
+  }
+  
+  const story = GameState.currentStory;
+  const isCorrect = (acc.char === story.char && acc.cause === story.cause && acc.loc === story.loc);
+  
+  renderReveal(isCorrect);
+  showScreen('reveal');
+}
+
+// ============================================================================
+// MODAL DE PERSONAJES Y VISUALIZACIONES
+// ============================================================================
+// HELPER: Obtener nombre de archivo de imagen por personaje
+// ============================================================================
+function getCharImageName(charName) {
+  if (charName === 'María') return 'MARIA';
+  if (charName === 'Falla Natural') return 'PERSONAL';
+  return charName.toUpperCase();
+}
+
+// ============================================================================
+function initCharacterModal() {
+  const modal = $('#char-modal');
+  const closeBtn = $('#char-modal-close');
+  const viewBtn = $('#btn-view-profiles');
+  const grid = $('#char-modal-grid');
+  
+  if (viewBtn) viewBtn.addEventListener('click', () => modal.classList.add('active'));
+  if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+  if (modal) modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.remove('active');
+  });
+  
+  // Construir grid de personajes con imágenes
+  if (grid) {
+    const imgMap = { carlos: 'CARLOS.png', ana: 'ANA.png', luis: 'LUIS.png', maria: 'MARIA.png' };
+    grid.innerHTML = CHARS.map(char => {
+      const imgFile = imgMap[char.id];
+      const imgHTML = imgFile 
+        ? `<img src="Images/${imgFile}" alt="${char.name}" class="char-image-modal" onerror="this.src='Images/PERSONAL.png'">`
+        : `<div style="width:100%;height:200px;display:flex;align-items:center;justify-content:center;background:var(--surf3);border-radius:6px">${char.icon}</div>`;
+      
+      return `
+        <div class="char-card-modal">
+          ${imgHTML}
+          <div class="char-name-modal" style="color:${char.color}">${char.name}</div>
+          <div class="char-role-modal">${char.role}</div>
+          <div class="char-bio-modal">${char.bio}</div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function updateAccuseVisual() {
+  const section = $('#accuse-visual-section');
+  if (!section) return;
+
+  const acc = GameState.accusation;
+  const char = CHARS.find((c) => c.id === acc.char) || null;
+  const cause = CAUSES.find((c) => c.id === acc.cause) || null;
+  const loc = LOCS.find((l) => l.id === acc.loc) || null;
+
+  const cards = [
+    {
+      label: 'ACUSADO',
+      item: char,
+      image: char ? `Images/${getCharImageName(char.name)}.png` : '',
+      name: char ? char.name : 'Sin seleccionar',
+      role: char ? char.role : 'Selecciona un sospechoso',
+      fallback: 'Images/PERSONAL.png'
+    },
+    {
+      label: 'FALLA',
+      item: cause,
+      image: cause ? cause.image : '',
+      name: cause ? cause.name : 'Sin seleccionar',
+      role: cause ? 'Tipo de falla' : 'Selecciona una falla',
+      fallback: ''
+    },
+    {
+      label: 'LUGAR',
+      item: loc,
+      image: loc ? loc.image : '',
+      name: loc ? loc.name : 'Sin seleccionar',
+      role: loc ? 'Locación' : 'Selecciona una locación',
+      fallback: ''
+    }
+  ];
+
+  section.innerHTML = `
+    <div class="accuse-visual-grid">
+      ${cards.map((card) => `
+        <div class="char-card-modal accuse-visual-card">
+          ${card.image ? `<img src="${card.image}" alt="${card.name}" class="char-image-modal" ${card.fallback ? `onerror="this.src='${card.fallback}'"` : `onerror="this.style.display='none'"`}>` : `<div class="accuse-visual-empty">${card.label}</div>`}
+          <div class="char-name-modal">${card.name}</div>
+          <div class="char-role-modal">${card.label}</div>
+          <div class="char-bio-modal">${card.role}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function updateInvestCharRefs() {
+  const ref = $('#invest-chars-ref');
+  if (!ref) return;
+  
+  ref.innerHTML = CHARS.filter((char) => char.id !== 'natural').map(char => `
+    <div class="char-ref-mini" title="${char.name} - ${char.role}">
+      <div class="char-ref-name">${char.name}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================================
+// REVEAL SCREEN
+// ============================================================================
+function renderReveal(isCorrect) {
+  // reproducir sonido de veredicto y detener todos los sonidos
+  stopAllSounds();
+  playSound('veredicto', { restart: true });
+  const story = GameState.currentStory;
+  const acc = GameState.accusation;
+  
+  const banner = $('#verdict-banner');
+  if (isCorrect) {
+    banner.className = 'verdict-banner win';
+    $('#verdict-title').textContent = '[CORRECTO] CORRECTO!';
+    $('#verdict-sub').textContent = 'Tu investigación fue precisa';
+
+  } else {
+    banner.className = 'verdict-banner lose';
+    $('#verdict-title').textContent = '[INCORRECTO] INCORRECTO';
+    $('#verdict-sub').textContent = 'Tu análisis fue erróneo';
+
+  }
+  
+  // Comparison grid
+  $('#compare-grid').style.display = 'grid';
+  const playerHtml = `
+    <div class="compare-field">
+      <div class="compare-field-l">ACUSADO</div>
+      <div class="compare-field-v">${CHARS.find(c => c.id === acc.char)?.name}</div>
+    </div>
+    <div class="compare-field">
+      <div class="compare-field-l">CAUSA</div>
+      <div class="compare-field-v">${CAUSES.find(c => c.id === acc.cause)?.name} ${CAUSES.find(c => c.id === acc.cause)?.image ? `<img src="${CAUSES.find(c => c.id === acc.cause).image}" alt="${CAUSES.find(c => c.id === acc.cause).name}" style="height:22px;vertical-align:middle;margin-left:8px" onerror="this.style.display='none'">` : ''}</div>
+    </div>
+    <div class="compare-field">
+      <div class="compare-field-l">LUGAR</div>
+      <div class="compare-field-v">${LOCS.find(l => l.id === acc.loc)?.name} ${LOCS.find(l => l.id === acc.loc)?.image ? `<img src="${LOCS.find(l => l.id === acc.loc).image}" alt="${LOCS.find(l => l.id === acc.loc).name}" style="height:22px;vertical-align:middle;margin-left:8px" onerror="this.style.display='none'">` : ''}</div>
+    </div>
+  `;
+  $('#compare-player').innerHTML = playerHtml;
+  
+  const answerHtml = `
+    <div class="compare-field">
+      <div class="compare-field-l">ACUSADO</div>
+      <div class="compare-field-v">${CHARS.find(c => c.id === story.char)?.name}</div>
+    </div>
+    <div class="compare-field">
+      <div class="compare-field-l">CAUSA</div>
+      <div class="compare-field-v">${CAUSES.find(c => c.id === story.cause)?.name} ${CAUSES.find(c => c.id === story.cause)?.image ? `<img src="${CAUSES.find(c => c.id === story.cause).image}" alt="${CAUSES.find(c => c.id === story.cause).name}" style="height:22px;vertical-align:middle;margin-left:8px" onerror="this.style.display='none'">` : ''}</div>
+    </div>
+    <div class="compare-field">
+      <div class="compare-field-l">LUGAR</div>
+      <div class="compare-field-v">${LOCS.find(l => l.id === story.loc)?.name} ${LOCS.find(l => l.id === story.loc)?.image ? `<img src="${LOCS.find(l => l.id === story.loc).image}" alt="${LOCS.find(l => l.id === story.loc).name}" style="height:22px;vertical-align:middle;margin-left:8px" onerror="this.style.display='none'">` : ''}</div>
+    </div>
+  `;
+  $('#compare-answer').innerHTML = answerHtml;
+  
+  // Solution cards
+  const solChar = CHARS.find(c => c.id === story.char);
+  const solCause = CAUSES.find(c => c.id === story.cause);
+  const solLoc = LOCS.find(l => l.id === story.loc);
+  const charImageName = getCharImageName(solChar.name);
+  
+  $('#solution-cards').innerHTML = `
+    <div class="sol-card" style="border-top-color:${solChar.color}">
+      <img src="Images/${charImageName}.png" alt="${solChar.name}" style="width:100%;height:120px;object-fit:contain;background:var(--surf3);padding:3px;border-radius:4px;margin-bottom:8px" onerror="this.src='Images/PERSONAL.png'">
+      <div class="sol-card-l">RESPONSABLE</div>
+      <div class="sol-card-name">${solChar.name}</div>
+    </div>
+    <div class="sol-card" style="border-top-color:#f59e0b">
+      ${solCause && solCause.image ? `<img src="${solCause.image}" alt="${solCause.name}" style="width:100%;height:100px;object-fit:contain;background:var(--surf3);padding:6px;border-radius:4px;margin-bottom:8px" onerror="this.style.display='none'">` : ''}
+      <div class="sol-card-l">CAUSA</div>
+      <div class="sol-card-name">${solCause.name}</div>
+    </div>
+    <div class="sol-card" style="border-top-color:#38bdf8">
+      ${solLoc && solLoc.image ? `<img src="${solLoc.image}" alt="${solLoc.name}" style="width:100%;height:100px;object-fit:contain;background:var(--surf3);padding:6px;border-radius:4px;margin-bottom:8px" onerror="this.style.display='none'">` : ''}
+      <div class="sol-card-l">UBICACIÓN</div>
+      <div class="sol-card-name">${solLoc.name}</div>
+    </div>
+  `;
+  
+  // Narrative
+  $('#narr-content').innerHTML = `
+    <div class="narr-section">
+      <div class="narr-section-l">DESCRIPCIÓN</div>
+      <div class="narr-text">${story.title}: ${story.type}</div>
+    </div>
+    <div class="narr-section motive">
+      <div class="narr-section-l">MOTIVO</div>
+      <div class="narr-text">${story.clues[0].text}</div>
+    </div>
+    <div class="narr-section ending">
+      <div class="narr-section-l">CONCLUSIÓN</div>
+      <div class="narr-text">El caso ha sido resuelto. La Línea 3 fue ${isCorrect ? 'correctamente identificada' : 'incorrectamente identificada'}.</div>
+    </div>
+  `;
+}
+
+// ============================================================================
+// FLOWCHART SCREEN
+// ============================================================================
+function renderFlowchart() {
+  const svg = $('#flow-svg');
+  svg.innerHTML = '';
+  
+  // Add defs for shadows and gradients
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  
+  // Shadow filter
+  const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+  filter.setAttribute('id', 'shadow');
+  filter.setAttribute('x', '-50%');
+  filter.setAttribute('y', '-50%');
+  filter.setAttribute('width', '200%');
+  filter.setAttribute('height', '200%');
+  
+  const feGaussianBlur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
+  feGaussianBlur.setAttribute('in', 'SourceGraphic');
+  feGaussianBlur.setAttribute('stdDeviation', '3');
+  filter.appendChild(feGaussianBlur);
+  
+  const feOffset = document.createElementNS('http://www.w3.org/2000/svg', 'feOffset');
+  feOffset.setAttribute('dx', '2');
+  feOffset.setAttribute('dy', '2');
+  feOffset.setAttribute('result', 'offsetblur');
+  filter.appendChild(feOffset);
+  
+  defs.appendChild(filter);
+  svg.appendChild(defs);
+  
+  // Flowchart items with better spacing
+  const flowItems = [
+    {y:60, text:'INICIO: Detección de Falla', icon:'●', color:'#f59e0b'},
+    {y:160, text:'Recopilar Evidencia Física', icon:'▭', color:'#f59e0b'},
+    {y:260, text:'¿3+ Locaciones Visitadas?', icon:'◊', decision:true, color:'#38bdf8'},
+    {y:360, text:'Analizar Pistas', icon:'▭', color:'#f59e0b'},
+    {y:460, text:'¿Evidencia Consistente?', icon:'◊', decision:true, color:'#38bdf8'},
+    {y:560, text:'Presentar Acusación', icon:'▭', color:'#f59e0b'},
+    {y:680, text:'Verificar Solución', icon:'◊', decision:true, color:'#a855f7'},
+    {y:800, text:'[GANADOR] VICTORIA: Caso Resuelto', icon:'●', win:true, color:'#22c55e'},
+    {y:900, text:'[PERDEDOR] DERROTA: Acusación Incorrecta', icon:'●', lose:true, color:'#ef4444'}
+  ];
+  
+  flowItems.forEach((item, i) => {
+    const x = 380;
+    
+    // Connection line
+    if (i > 0) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x);
+      line.setAttribute('y1', flowItems[i-1].y + 30);
+      line.setAttribute('x2', x);
+      line.setAttribute('y2', item.y - 25);
+      line.setAttribute('stroke', item.lose ? '#ef4444' : item.win ? '#22c55e' : item.color);
+      line.setAttribute('stroke-width', '3');
+      line.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(line);
+    }
+    
+    // Arrow head for connections
+    if (i > 0 && i < flowItems.length - 1) {
+      const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      const color = item.lose ? '#ef4444' : item.win ? '#22c55e' : item.color;
+      arrow.setAttribute('points', `${x},${item.y - 20} ${x - 6},${item.y - 30} ${x + 6},${item.y - 30}`);
+      arrow.setAttribute('fill', color);
+      svg.appendChild(arrow);
+    }
+    
+    // Shape
+    if (item.decision) {
+      // Diamond for decision
+      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      poly.setAttribute('points', `${x},${item.y - 30} ${x + 70},${item.y} ${x},${item.y + 30} ${x - 70},${item.y}`);
+      poly.setAttribute('fill', item.color);
+      poly.setAttribute('opacity', '0.25');
+      poly.setAttribute('stroke', item.color);
+      poly.setAttribute('stroke-width', '2.5');
+      poly.setAttribute('filter', 'url(#shadow)');
+      svg.appendChild(poly);
+    } else if (item.win || item.lose) {
+      // Circle for start/end
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', x);
+      circle.setAttribute('cy', item.y);
+      circle.setAttribute('r', '32');
+      circle.setAttribute('fill', item.color);
+      circle.setAttribute('opacity', '0.25');
+      circle.setAttribute('stroke', item.color);
+      circle.setAttribute('stroke-width', '2.5');
+      circle.setAttribute('filter', 'url(#shadow)');
+      svg.appendChild(circle);
+    } else {
+      // Rectangle for process
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', x - 90);
+      rect.setAttribute('y', item.y - 22);
+      rect.setAttribute('width', '180');
+      rect.setAttribute('height', '44');
+      rect.setAttribute('rx', '6');
+      rect.setAttribute('fill', item.color);
+      rect.setAttribute('opacity', '0.25');
+      rect.setAttribute('stroke', item.color);
+      rect.setAttribute('stroke-width', '2.5');
+      rect.setAttribute('filter', 'url(#shadow)');
+      svg.appendChild(rect);
+    }
+    
+    // Text
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', x);
+    text.setAttribute('y', item.y + 7);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('fill', '#c8d8e4');
+    text.setAttribute('font-size', '14');
+    text.setAttribute('font-weight', 'bold');
+    text.setAttribute('font-family', 'Courier New, monospace');
+    text.textContent = item.text;
+    svg.appendChild(text);
+  });
+}
+
+function renderStoriesTable() {
+  const tbody = $('#stories-tbody');
+  tbody.innerHTML = '';
+  
+  // Mostrar información sobre el sistema de generación aleatoria
+  const info = `
+    <tr>
+      <td colspan="6" style="text-align:center;padding:20px;color:var(--amber);font-weight:bold;">
+        SISTEMA DE CASOS ALEATORIOS ACTIVADO
+      </td>
+    </tr>
+    <tr>
+      <td colspan="6" style="padding:16px;line-height:1.8;">
+        <strong>Combinaciones Posibles:</strong> 5 Culpables × 5 Causas × 5 Ubicaciones = <span style="color:var(--green);font-size:18px;font-weight:bold;">125 CASOS ÚNICOS</span><br>
+        <strong>Generación:</strong> Cada nuevo juego crea una combinación aleatoria diferente<br>
+        <strong>Pistas:</strong> Todas las pistas son contextuales y coherentes con la combinación generada<br>
+        <strong>Dificultad:</strong> Hay infinitas posibilidades - ¡sin patrones repetitivos!
+      </td>
+    </tr>
+    <tr>
+      <td colspan="6" style="padding:16px;border-top:2px solid var(--bdr);"><strong>ELEMENTOS DISPONIBLES:</strong></td>
+    </tr>
+    <tr>
+      <td colspan="2"><strong>👤 CULPABLES:</strong><br>Carlos, Ana, Luis, María, Falla Natural</td>
+      <td colspan="2"><strong>CAUSAS:</strong><br>Fusible, Sensor, Cable, Válvula, PLC</td>
+      <td colspan="2"><strong>📍 UBICACIONES:</strong><br>Ensamble, Control, Almacén, Subestación, Soldadura</td>
+    </tr>
+  `;
+  
+  tbody.innerHTML = info;
+}
+
+// Crear tabla de referencia con combinaciones predefinidas (para ayuda)
+function renderReferenceTable() {
+  const container = $('#stories-tbody');
+  if (!container) return;
+  
+  const predefinedCases = [
+    { char: 'Carlos', cause: 'Fusible Incorrecto', loc: 'Subestación', type: 'Sabotaje' },
+    { char: 'Ana', cause: 'PLC Modificado', loc: 'Sala de Control', type: 'Sabotaje' },
+    { char: 'Luis', cause: 'Cable Cortocircuitado', loc: 'Línea de Soldadura', type: 'Sabotaje' },
+    { char: 'María', cause: 'Válvula Incorrecta', loc: 'Almacén', type: 'Sabotaje' },
+    { char: 'Falla Natural', cause: 'Sensor Desgastado', loc: 'Área de Ensamble', type: 'Falla Natural' }
+  ];
+}
+
+// ============================================================================
+// EVENT ATTACHMENT
+// ============================================================================
+function attachEvents() {
+  // Intro
+  $('#btn-start').addEventListener('click', showBriefing);
+  
+  // Briefing
+  $('#btn-back-intro').addEventListener('click', () => {
+    showScreen('intro');
+    GameState.resetForNewGame();
+  });
+  $('#btn-start-invest').addEventListener('click', startInvestigation);
+  
+  // Investigation
+  $('#btn-accuse').addEventListener('click', goAccuse);
+  $('#btn-accuse2').addEventListener('click', goAccuse);
+  $('#btn-back-briefing').addEventListener('click', showBriefing);
+  $('#clue-close').addEventListener('click', () => $('#clue-panel').classList.remove('show'));
+  
+  // Accusation
+  $('#btn-back-invest').addEventListener('click', returnToInvestigation);
+  $('#btn-submit').addEventListener('click', submitAccusation);
+  
+  // Reveal
+  $('#btn-restart').addEventListener('click', () => {
+    showScreen('intro');
+    GameState.resetForNewGame();
+  });
+  
+  // Navigation tabs
+  $all('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      switchTab(tab.dataset.tab);
+    });
+  });
+  
+  // Debug console
+  if ($('#debug-clear')) $('#debug-clear').addEventListener('click', () => DebugConsole.clear());
+
+  const casefileClose = $('#casefile-close');
+  if (casefileClose) {
+    casefileClose.addEventListener('click', closeCasefile);
+  }
+  const casefileModal = $('#casefile-modal');
+  if (casefileModal) {
+    casefileModal.addEventListener('click', (event) => {
+      if (event.target === casefileModal) {
+        closeCasefile();
+      }
+    });
+  }
+  
+
+}
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
+document.addEventListener('DOMContentLoaded', () => {
+
+  
+  // Validar datos primero
+  if (!validateGameData()) {
+    return;
+  }
+  
+
+  
+  GameState.init();
+  initSounds();
+  renderIntro();
+  attachEvents();
+  initCharacterModal();
+  
+
+});
+  </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="RUTA-BOT DELTA-7 — Simulador de algoritmos de grafos: Dijkstra, Prim y Kruskal para optimización de rutas en planta industrial.">
+  <title>RUTA-BOT DELTA-7 — Simulador de Algoritmos</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-dot">🤖</div>
+      <div>
+        <div>OPTIMIZADOR INDUSTRIAL DE RUTAS</div>
+        <div class="logo-sub">Desarrollado por: Alejandro Aguirre Díaz</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="hstat">NODOS: <strong>12</strong></div>
+      <div class="hstat">ARISTAS: <strong>22</strong></div>
+      <div id="clockEl">--:--:--</div>
+    </div>
+  </header>
+
+  <div class="app">
+    <div class="left">
+      <div class="algo-tabs">
+        <button type="button" class="algo-tab active" data-algo="dijkstra" onclick="selectAlgo('dijkstra')" aria-pressed="true">
+          <span class="tab-icon" aria-hidden="true">🔵</span> DIJKSTRA
+          <span class="tab-badge">O((V+E)logV)</span>
+        </button>
+        <button type="button" class="algo-tab" data-algo="prim" onclick="selectAlgo('prim')" aria-pressed="false">
+          <span class="tab-icon" aria-hidden="true">🟣</span> PRIM — MST
+          <span class="tab-badge">O(E logV)</span>
+        </button>
+        <button type="button" class="algo-tab" data-algo="kruskal" onclick="selectAlgo('kruskal')" aria-pressed="false">
+          <span class="tab-icon" aria-hidden="true">🟦</span> KRUSKAL — MST
+          <span class="tab-badge">O(E logE)</span>
+        </button>
+      </div>
+      <div class="map-area">
+        <div class="section-title">MAPA DE PLANTA — VISTA SUPERIOR</div>
+        <canvas id="plantCanvas" aria-label="Mapa de la planta industrial con nodos y conexiones"></canvas>
+        <div class="legend" id="legendEl" role="list"></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="rpanel">
+        <div class="label-sm">ALGORITMO ACTIVO</div>
+        <div class="algo-card" id="algoCard" data-theme="dijkstra">
+          <div class="ac-name" id="acName">Dijkstra</div>
+          <div class="ac-desc" id="acDesc">—</div>
+          <div class="ac-cmplx" id="acCmplx">—</div>
+        </div>
+      </div>
+      <div class="rpanel">
+        <div class="label-sm">CONFIGURACIÓN DE MISIÓN</div>
+        <div class="node-row" id="nodeRow">
+          <div class="fgroup">
+            <label for="srcSel">▶ ORIGEN</label>
+            <select id="srcSel" aria-label="Nodo de origen"></select>
+          </div>
+          <div class="fgroup">
+            <label for="dstSel">◼ DESTINO</label>
+            <select id="dstSel" aria-label="Nodo de destino"></select>
+          </div>
+        </div>
+        <div class="speed-row">
+          <label for="speedSlider">VELOCIDAD:</label>
+          <input type="range" id="speedSlider" min="100" max="1400" value="650" step="100" aria-label="Velocidad de animación">
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-run" id="runBtn" data-algo="dijkstra" onclick="startSim()">⚡ EJECUTAR</button>
+          <button type="button" class="btn btn-reset" onclick="resetSim()" aria-label="Reiniciar simulación">↺</button>
+        </div>
+      </div>
+      <div class="rpanel">
+        <div class="label-sm">MÉTRICAS</div>
+        <div class="metrics-grid">
+          <div class="mcard"><div class="mval" id="mSteps">0</div><div class="mlbl">PASOS</div></div>
+          <div class="mcard"><div class="mval" id="mVisited">0</div><div class="mlbl">VISITADOS</div></div>
+          <div class="mcard"><div class="mval accent" id="mDist">—</div><div class="mlbl">DIST / COSTO (m)</div></div>
+          <div class="mcard"><div class="mval" id="mEdges">—</div><div class="mlbl">ARISTAS MST</div></div>
+        </div>
+        <div id="resultBanner">
+          <div class="rb-title" id="rbTitle">🤖 RESULTADO</div>
+          <div class="rb-path" id="rbPath">—</div>
+          <div class="rb-dist" id="rbDist">—</div>
+        </div>
+      </div>
+      <div class="log-header">
+        <div class="label-sm" style="margin-bottom:0">BITÁCORA DEL SISTEMA</div>
+      </div>
+      <div class="log-wrap">
+        <div class="log-scroll" id="logEl" role="log" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingEl" aria-hidden="true"><div class="spinner"></div></div>
+
+  <script src="js/graph-data.js"></script>
+  <script src="js/algorithms.js"></script>
+  <script src="js/canvas.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -124,6 +124,10 @@
             background: linear-gradient(45deg, #f39c12, #e74c3c);
         }
 
+        .cnclab-icon {
+            background: linear-gradient(45deg, #3a86ff, #8338ec);
+        }
+
         .simgrafo-icon {
             background: linear-gradient(45deg, #0d7377, #1565c0);
         }
@@ -230,6 +234,14 @@
             box-shadow: 0 5px 15px rgba(13, 115, 119, 0.3);
         }
 
+        .cnclab-btn {
+            background: linear-gradient(45deg, #3a86ff, #8338ec);
+        }
+
+        .cnclab-btn:hover {
+            box-shadow: 0 5px 15px rgba(58, 134, 255, 0.3);
+        }
+
         .footer {
             text-align: center;
             margin-top: 3rem;
@@ -305,6 +317,7 @@
         .project-card:nth-child(4) { animation-delay: 0.4s; }
         .project-card:nth-child(5) { animation-delay: 0.5s; }
         .project-card:nth-child(6) { animation-delay: 0.6s; }
+        .project-card:nth-child(7) { animation-delay: 0.7s; }
     </style>
 </head>
 <body>
@@ -432,6 +445,26 @@
                 </ul>
                 <a href="SimGrafo/index.html" class="project-button simgrafo-btn">
                     Abrir GraphFlow
+                </a>
+            </div>
+
+            <!-- Proyecto 7: CNCLab -->
+            <div class="project-card">
+                <div class="project-icon cnclab-icon">🔧</div>
+                <h2 class="project-title">CNCLab</h2>
+                <p class="project-description">
+                    Simulador interactivo de torno CNC para programar, validar y visualizar trayectorias G-code en un entorno de laboratorio de mecanizado.
+                </p>
+                <ul class="project-features">
+                    <li>Editor de programación G-code</li>
+                    <li>Vista gráfica X-Z del torneado</li>
+                    <li>Simulación paso a paso y continua</li>
+                    <li>Controles de velocidad, home y reinicio</li>
+                    <li>Ejemplos de programas predefinidos</li>
+                    <li>Guardado y carga de archivos .txt/.nc</li>
+                </ul>
+                <a href="CNCLab/index.html" class="project-button cnclab-btn">
+                    Abrir CNCLab
                 </a>
             </div>
         </main>

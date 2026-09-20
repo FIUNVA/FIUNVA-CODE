@@ -1,0 +1,110 @@
+/* ---------- Graphics panel ---------- */
+.graphics-panel{min-height:0;}
+.viewport{
+  flex:1;
+  position:relative;
+  min-height:0;
+  overflow:auto;
+  cursor:grab;
+  --gridLine:var(--line-dim);
+  --canvasBg:radial-gradient(ellipse at 50% 45%, #0c1815 0%, #060b09 85%);
+  background:
+    linear-gradient(var(--gridLine) 1px, transparent 1px) 0 0/28px 28px,
+    linear-gradient(90deg, var(--gridLine) 1px, transparent 1px) 0 0/28px 28px,
+    var(--canvasBg);
+}
+/* "Cuadrícula" off: keep the backdrop, drop the ruled lines */
+.viewport.noGrid{background:var(--canvasBg);}
+/* "Fondo blanco": light canvas — the drawing's own colors are re-mapped
+   below so they stay legible against white instead of vanishing. */
+.viewport.lightBg{
+  --gridLine:#d8dee2;
+  --canvasBg:#ffffff;
+}
+.viewport.lightBg .centerline{stroke:#9aa6ab;}
+.viewport.lightBg .stockOutline{fill:rgba(60,70,75,.05);stroke:#8c979c;}
+.viewport.lightBg .chuckJaw{fill:#e4e9ec;stroke:#9aa6ab;}
+.viewport.lightBg .materialFill{fill:#c3cdd2;fill-opacity:.9;stroke:#5d686d;}
+.viewport.lightBg .materialFill.noFill{fill:none;}
+.viewport.lightBg .axisLabel,
+.viewport.lightBg .dimText{fill:#4a5459;}
+.viewport.lightBg .dimLine{stroke:#8c979c;}
+.viewport.lightBg .dimArrowHeadGrey{fill:#8c979c;}
+.viewport.lightBg .previewRough{stroke:#7d888d;}
+.viewport.lightBg .previewRapid{stroke:#c98a2e;}
+.viewport.lightBg .previewFeed,
+.viewport.lightBg .pathFeedGeneral{stroke:#0f7fa8;}
+.viewport.lightBg .previewFinish,
+.viewport.lightBg .pathFeedFinish{stroke:#0b7a4b;filter:none;}
+.viewport.lightBg .pathRapid{stroke:#c98a2e;}
+.viewport.lightBg .pathFeedRough{stroke:#6f7a7f;}
+.viewport.lightBg .dimOverlay .dimLine2,
+.viewport.lightBg .dimOverlay .dimTick{stroke:#0d6f91;}
+.viewport.lightBg .dimOverlay .dimExt{stroke:#7fb4c7;}
+.viewport.lightBg .dimOverlay .dimText2{fill:#0d6f91;}
+.viewport.lightBg .dimOverlay .dimArrowHead{fill:#0d6f91;}
+.viewport.lightBg .toolMarker{filter:none;}
+.viewport.lightBg .toolMarker .tHolder{fill:#6b7a74;stroke:#3a4a45;}
+.viewport.lightBg .toolMarker .tInsert{fill:#0b7a4b;stroke:#ffffff;}
+.viewport.lightBg .toolMarker .tTip{fill:#ffffff;}
+.viewport.grabbing{cursor:grabbing;}
+.viewport::-webkit-scrollbar{width:11px;height:11px;}
+.viewport::-webkit-scrollbar-track{background:#081310;}
+.viewport::-webkit-scrollbar-thumb{background:#1c3630;border-radius:6px;border:2px solid #081310;}
+.viewport::-webkit-scrollbar-thumb:hover{background:var(--phosphor-dim);}
+#mainSvg{width:100%;height:100%;display:block;}
+.dims{
+  flex:0 0 auto;
+  display:flex;
+  gap:22px;
+  padding:7px 14px;
+  border-top:1px solid var(--line);
+  background:#081310;
+  font-size:11px;
+  color:var(--text-dim);
+  flex-wrap:wrap;
+}
+.dims b{color:var(--phosphor-bright);font-weight:600;}
+
+/* SVG element styling */
+.stockOutline{fill:rgba(140,150,150,.06);stroke:var(--grey);stroke-dasharray:2 1.4;}
+.chuckJaw{fill:#182521;stroke:var(--grey-dim);}
+.centerline{stroke:var(--grey-dim);stroke-dasharray:3 2;}
+.previewFeed{fill:none;stroke:var(--phosphor);stroke-linecap:round;stroke-linejoin:round;opacity:.9;}
+.previewRapid{fill:none;stroke:var(--amber-dim);stroke-dasharray:1.6 1.6;stroke-linecap:round;}
+.previewRough{fill:none;stroke:var(--grey);opacity:.7;}
+.previewFinish{fill:none;stroke:var(--phosphor-bright);stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 2.4px rgba(168,255,212,.65));}
+.materialFill{fill:url(#materialGradient);fill-opacity:.85;stroke:var(--grey);transition:d .05s linear;}
+/* "Relleno" off: drop only the interior shading, keep the part's outline */
+.materialFill.noFill{fill:none;}
+.pathRapid{fill:none;stroke:var(--amber);stroke-dasharray:1.8 1.6;stroke-linecap:round;opacity:.85;}
+.pathFeedRough{fill:none;stroke:var(--phosphor-dim);stroke-linecap:round;stroke-linejoin:round;}
+.pathFeedFinish{fill:none;stroke:var(--phosphor-bright);stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px rgba(168,255,212,.7));}
+.pathFeedGeneral{fill:none;stroke:var(--cyan);stroke-linecap:round;stroke-linejoin:round;}
+.toolMarker{filter:drop-shadow(0 0 4px rgba(168,255,212,.9));transition:opacity .2s, filter .2s;}
+.toolMarker.disabled{filter:none;opacity:.28;}
+.toolMarker.disabled .tInsert{fill:var(--grey);}
+.toolMarker .tHolder{fill:#7d8f89;stroke:#3a4a45;stroke-width:.3;}
+.toolMarker .tInsert{fill:var(--phosphor-bright);stroke:var(--bg0);stroke-width:.2;}
+.toolMarker .tTip{fill:var(--bg0);}
+.axisLabel{fill:var(--text-dim);font-family:'JetBrains Mono',monospace;letter-spacing:1px;}
+.dimLine{stroke:var(--grey);}
+.dimText{fill:var(--text-dim);font-family:'JetBrains Mono',monospace;}
+.dimArrowHeadGrey{fill:var(--grey);}
+.dimOverlay .dimLine2{stroke:var(--cyan);opacity:.85;}
+.dimOverlay .dimText2{fill:var(--cyan);font-family:'JetBrains Mono',monospace;font-weight:600;}
+.dimOverlay .dimTick{stroke:var(--cyan);opacity:.85;}
+.dimOverlay .dimExt{stroke:var(--cyan-dim);stroke-dasharray:1.5 1.2;opacity:.7;}
+.dimOverlay .dimArrowHead{fill:var(--cyan);}
+.contourPoints .contourPath{fill:none;stroke:var(--magenta);stroke-dasharray:1.2 1;opacity:.6;}
+.contourPoints .contourDot{fill:var(--magenta);stroke:var(--bg0);stroke-width:.3;}
+.contourPoints .contourLabel{fill:var(--magenta);font-family:'JetBrains Mono',monospace;font-weight:600;}
+.viewport.lightBg .contourPoints .contourPath,
+.viewport.lightBg .contourPoints .contourDot,
+.viewport.lightBg .contourPoints .contourLabel{stroke:#b0289a;fill:#b0289a;}
+
+.partZero circle{fill:none;stroke:#ff8f9e;}
+.partZero .zeroAxisH{stroke:#ff8f9e;}
+.partZero .zeroAxisV{stroke:#8a9a96;}
+.partZero .partZeroFill{fill:#1424ff;}
+

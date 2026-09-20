@@ -1,0 +1,41 @@
+/* ---------- Toolbar (transport, editor toggle, Ver medidas) ---------- */
+.toolbar{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:8px 14px;
+  background:linear-gradient(180deg,#0d1a16,#08120f);
+  border:1px solid var(--line);
+  border-radius:4px;
+  flex-wrap:wrap;
+}
+.softkey.tab{
+  background:#0a1613;
+  border-color:var(--phosphor-dim);
+  color:var(--phosphor-bright);
+  font-size:11px;
+  padding:8px 12px;
+}
+.viewMenu{position:relative;margin-left:auto;}
+.viewDropdown{
+  display:none;
+  position:absolute;
+  top:calc(100% + 6px);
+  right:0;
+  background:#0a1613;
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:8px 4px;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+  z-index:25;
+  min-width:150px;
+}
+.viewMenu.open .viewDropdown{display:flex;flex-direction:column;}
+.viewDropdown label{
+  display:flex;align-items:center;gap:7px;cursor:pointer;
+  font-size:11px;letter-spacing:.5px;color:var(--text);
+  padding:6px 10px;border-radius:3px;
+}
+.viewDropdown label:hover{background:#122019;}
+.viewDropdown input{accent-color:var(--cyan);}
+

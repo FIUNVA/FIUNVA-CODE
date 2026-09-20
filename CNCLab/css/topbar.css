@@ -1,0 +1,101 @@
+/* ---------- Top bar ---------- */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:10px 18px;
+  background:linear-gradient(180deg,#0d1a16,#08120f);
+  border:1px solid var(--line);
+  border-radius:4px;
+  flex-wrap:wrap;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  font-family:var(--disp);
+}
+.brand .brandName{
+  color:var(--phosphor);
+  font-size:26px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-shadow:0 0 12px rgba(77,255,160,.5);
+  white-space:nowrap;
+}
+.brandMeta{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.brandMeta .metaRow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.brand .progBadge{
+  color:var(--amber);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:1px;
+  border:1px solid var(--amber-dim);
+  border-radius:3px;
+  padding:1px 6px;
+}
+.brand .sub{
+  color:var(--text-dim);
+  font-size:10.5px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+.poweredBy{
+  color:var(--amber);
+  font-size:9px;
+  letter-spacing:2.5px;
+}
+/* All readouts sit on ONE horizontal row, every label and value at the
+   same intermediate size, so the header occupies a single vertical band. */
+.readouts{
+  display:flex;
+  align-items:flex-end;
+  gap:20px;
+  flex-wrap:wrap;
+}
+.readout{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:56px;
+}
+.readout .k{
+  font-size:13px;
+  color:var(--text-dim);
+  letter-spacing:1.2px;
+  white-space:nowrap;
+}
+.readout .v{
+  font-family:var(--disp);
+  font-size:13px;
+  font-weight:600;
+  color:var(--phosphor-bright);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.readout .v.dim{color:var(--text-dim);}
+.readout .v.ledVal{
+  display:flex;align-items:center;gap:6px;
+  color:var(--text-dim);
+}
+.readout .v.ledVal .dot{
+  width:9px;height:9px;border-radius:50%;flex:0 0 auto;
+  background:#1a2b26;
+  border:1px solid #2a4038;
+  transition:background .2s, box-shadow .2s;
+}
+.readout .v.ledVal.on{color:var(--phosphor-bright);}
+.readout .v.ledVal.on .dot{background:var(--phosphor);box-shadow:0 0 8px var(--phosphor);}
+.readout .v.ledVal.on.coolant .dot{background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
+.readout .v.ledVal.on .dot.spinning{animation:spinpulse 0.6s linear infinite;}
+@keyframes spinpulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+

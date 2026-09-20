@@ -1,0 +1,72 @@
+/* ---------- Program tabs (browser-style, max 3) ---------- */
+.progTabs{
+  display:flex;
+  align-items:stretch;
+  gap:2px;
+  padding:6px 8px 0 8px;
+  background:#081310;
+  border-bottom:1px solid var(--line);
+  overflow:hidden;
+  flex:0 0 auto;
+}
+.progTab{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  max-width:150px;
+  min-width:0;
+  padding:6px 8px;
+  border:1px solid var(--line);
+  border-bottom:none;
+  border-radius:4px 4px 0 0;
+  background:var(--bg1);
+  color:var(--text-dim);
+  font-family:var(--mono);
+  font-size:11.5px;
+  letter-spacing:.5px;
+  cursor:pointer;
+  transition:background .12s ease, color .12s ease;
+}
+.progTab:hover{background:var(--bg2);color:var(--text);}
+.progTab.active{
+  background:var(--panel);
+  color:var(--amber);
+  border-color:var(--amber-dim);
+  box-shadow:inset 0 2px 0 var(--amber);
+}
+.progTab .tabName{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.progTab .tabClose{
+  flex:0 0 auto;
+  width:15px;
+  height:15px;
+  line-height:13px;
+  text-align:center;
+  border:none;
+  border-radius:3px;
+  background:transparent;
+  color:var(--grey);
+  font-family:var(--mono);
+  font-size:12px;
+  cursor:pointer;
+  padding:0;
+}
+.progTab .tabClose:hover{background:rgba(255,90,90,.18);color:var(--warn);}
+.progTabAdd{
+  flex:0 0 auto;
+  margin-left:4px;
+  padding:0 10px;
+  border:1px dashed var(--line);
+  border-bottom:none;
+  border-radius:4px 4px 0 0;
+  background:transparent;
+  color:var(--phosphor-dim);
+  font-family:var(--mono);
+  font-size:14px;
+  cursor:pointer;
+}
+.progTabAdd:hover:not(:disabled){color:var(--phosphor);border-color:var(--phosphor-dim);}
+.progTabAdd:disabled{opacity:.35;cursor:not-allowed;}

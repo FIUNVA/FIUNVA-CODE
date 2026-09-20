@@ -1,0 +1,48 @@
+
+:root{
+  --bg0:#05080a;
+  --bg1:#0a1210;
+  --bg2:#0e1a17;
+  --panel:#0b1512;
+  --line:#1c3630;
+  --line-dim:#132420;
+  --phosphor:#4dffa0;
+  --phosphor-dim:#1f7a51;
+  --phosphor-bright:#a8ffd4;
+  --amber:#ffb648;
+  --amber-dim:#8a5f22;
+  --cyan:#5fd8ff;
+  --cyan-dim:#2c6c85;
+  --magenta:#ff7ad1;
+  --warn:#ff5a5a;
+  --grey:#5c7570;
+  --grey-dim:#33453f;
+  --text:#c8ece0;
+  --text-dim:#6f8f86;
+  --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --disp: 'Rajdhani', var(--mono);
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse at 50% -10%, #0d1f1a 0%, var(--bg0) 60%),
+    var(--bg0);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:13px;
+  -webkit-font-smoothing:antialiased;
+}
+
+.machine{
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  max-width:1500px;
+  margin:0 auto;
+  padding:14px;
+  gap:10px;
+}
+

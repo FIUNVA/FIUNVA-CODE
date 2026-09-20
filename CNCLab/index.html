@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNCLab · Simulador de Torno FANUC</title>
+
+<!-- Tipografías -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- Hojas de estilo (orden importante: de base a componentes) -->
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/topbar.css">
+<link rel="stylesheet" href="css/toolbar.css">
+<link rel="stylesheet" href="css/stage.css">
+<link rel="stylesheet" href="css/editor.css">
+<link rel="stylesheet" href="css/tabs.css">
+<link rel="stylesheet" href="css/graphics.css">
+<link rel="stylesheet" href="css/footer.css">
+</head>
+<body>
+<div class="machine">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="brandName">CNCLab</span>
+      <div class="brandMeta">
+        <div class="metaRow">
+          <span class="sub">Simulador de torno CNC</span>
+        </div>
+        <span class="poweredBy">POWERED BY FIUNVA</span>
+      </div>
+    </div>
+    <div class="readouts">
+      <div class="readout"><span class="k">G ACTIVO</span><span class="v" id="roModalG">—</span></div>
+      <div class="readout"><span class="k">X (Ø)</span><span class="v" id="roX">0.000</span></div>
+      <div class="readout"><span class="k">Z</span><span class="v" id="roZ">0.000</span></div>
+      <div class="readout"><span class="k">F</span><span class="v dim" id="roF">0.0</span></div>
+      <div class="readout"><span class="k">S</span><span class="v dim" id="roS">0</span></div>
+      <div class="readout"><span class="k">TOOL</span><span class="v dim" id="roT">—</span></div>
+      <div class="readout"><span class="k">HUSILLO</span><span class="v ledVal" id="ledSpindle"><span class="dot"></span><span id="spindleTag">M03 abajo</span></span></div>
+      <div class="readout"><span class="k">REFRIG.</span><span class="v ledVal coolant" id="ledCoolant"><span class="dot"></span><span id="coolantTag">OFF</span></span></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="softkey tab" id="btnToggleEditor">☰ PROGRAMA</button>
+    <button class="softkey" id="btnSaveFile" title="Guardar el programa como .txt">💾 GUARDAR</button>
+    <button class="softkey" id="btnLoadFile" title="Cargar un programa desde archivo .txt">📂 CARGAR</button>
+    <input type="file" id="fileLoadInput" accept=".txt,.nc,.tap,text/plain" style="display:none;">
+    <div class="viewMenu" id="examplesMenu">
+      <button class="softkey" id="btnExamplesMenu">📄 EJEMPLOS ▾</button>
+      <div class="viewDropdown" id="examplesDropdown"></div>
+    </div>
+    <div class="transport">
+      <button class="softkey primary" id="btnPlay">▶ SIMULAR</button>
+      <button class="softkey" id="btnPause">❙❙ PAUSA</button>
+      <button class="softkey" id="btnStepBack">◂ STEP</button>
+      <button class="softkey" id="btnStep">STEP ▸</button>
+      <button class="softkey danger" id="btnReset">■ REINICIAR</button>
+      <button class="softkey" id="btnHome" title="Ver toda la pieza y la posición inicial del buril (cero máquina)">⌂ HOME</button>
+      <div class="speed-ctrl">
+        <span>VEL.</span>
+        <input type="range" id="speedSlider" min="0.25" max="6" step="0.25" value="2">
+        <span id="speedVal">2.0×</span>
+      </div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="viewMenu" id="viewMenu">
+      <button class="softkey" id="btnViewMenu">👁 VER ▾</button>
+      <div class="viewDropdown" id="viewDropdown">
+        <label><input type="checkbox" id="chkDims">Ver medidas</label>
+        <label><input type="checkbox" id="chkAxes" checked>Ejes</label>
+        <label><input type="checkbox" id="chkTraces" checked>Trazos</label>
+        <label><input type="checkbox" id="chkFill" checked>Relleno</label>
+        <label><input type="checkbox" id="chkPartZero" checked>Cero pieza</label>
+        <label><input type="checkbox" id="chkGrid" checked>Cuadrícula</label>
+        <label><input type="checkbox" id="chkLightBg">Fondo blanco</label>
+        <label><input type="checkbox" id="chkChuck" checked>Torno</label>
+        <label><input type="checkbox" id="chkBar" checked>Barra</label>
+        <label><input type="checkbox" id="chkContourPts">Puntos de contorno</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="drawerBackdrop" id="drawerBackdrop"></div>
+    <aside class="panel editorDrawer" id="editorDrawer">
+      <div class="panel-label"><span>PROGRAMA</span></div>
+      <div class="progTabs" id="progTabsWrap">
+        <div id="progTabs" style="display:contents;"></div>
+        <button class="progTabAdd" id="btnAddTab" type="button" title="Nueva pestaña de programa">+</button>
+      </div>
+      <div class="editor-wrap">
+        <div class="line-numbers" id="lineNumbers">1</div>
+        <div class="code-stack">
+          <pre class="code-layer" id="codeHighlight"></pre>
+          <textarea class="code-layer" id="gcodeInput" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+        </div>
+      </div>
+      <div class="log-panel" id="logPanel"><div class="log-empty">Sin observaciones.</div></div>
+    </aside>
+
+    <section class="panel graphics-panel">
+      <div class="panel-label">
+        <span>GRÁFICO — VISTA X-Z (perfil de torneado)</span>
+        <span class="hint" id="passHint"></span>
+      </div>
+      <div class="viewport" id="viewport">
+        <svg id="mainSvg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="dims" id="dimsReadout"></div>
+    </section>
+  </div>
+
+
+
+</div>
+
+<!-- Módulos JavaScript: scripts clásicos en orden de dependencia.
+     Cada archivo expone sus funciones al ámbito global, igual que en la
+     versión monolítica, por lo que no hace falta build ni servidor de módulos. -->
+<!-- 1. Núcleo: intérprete de código G FANUC (sin DOM) -->
+<script src="js/interpreter.js"></script>
+<!-- 2. Programas de ejemplo -->
+<script src="js/examples.js"></script>
+<!-- 3. Referencias al DOM y utilidades SVG -->
+<script src="js/dom.js"></script>
+<!-- 4. Resaltado de sintaxis del editor -->
+<script src="js/highlight.js"></script>
+<!-- 5. Panel de observaciones / advertencias -->
+<script src="js/log.js"></script>
+<!-- 6. Mapeo mundo -> SVG y escena base -->
+<script src="js/viewport.js"></script>
+<!-- 7. Capa de cotas ("Ver medidas") -->
+<script src="js/dimensions.js"></script>
+<!-- 8. Puntos de contorno (P0, P1, ...) -->
+<script src="js/contour-points.js"></script>
+<!-- 9. Vista previa estática y readouts -->
+<script src="js/preview.js"></script>
+<!-- 10. Pipeline de parseo (debounce en la entrada) -->
+<script src="js/parse-pipeline.js"></script>
+<!-- 11. Motor de simulación / animación -->
+<script src="js/simulation.js"></script>
+<!-- 12. Panel de programa colapsable -->
+<script src="js/drawer.js"></script>
+<!-- 13. Guardar / cargar programas .txt -->
+<script src="js/save-load.js"></script>
+<!-- 14. Menú de ejemplos -->
+<script src="js/examples-menu.js"></script>
+<!-- 15. Zoom y paneo del visor -->
+<script src="js/zoom-pan.js"></script>
+<!-- 16. Arranque de la aplicación -->
+<script src="js/main.js"></script>
+<!-- 17. Pestañas de programa (hasta 3 abiertas) -->
+<script src="js/tabs.js"></script>
+</body>
+</html>

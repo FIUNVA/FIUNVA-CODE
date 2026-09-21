@@ -1,11 +1,11 @@
 /* ============================================================
-   PROGRAM TABS (browser-style, up to 3 open programs)
+   PROGRAM TABS (browser-style, up to 4 open programs)
    ------------------------------------------------------------
    Only the selected tab's program lives in the textarea, so it is
    the one displayed, parsed and simulated. The other tabs keep
    their text (and scroll position) in memory until selected.
    ============================================================ */
-const MAX_TABS = 3;
+const MAX_TABS = 4;
 
 const tabsState = {
   items: [],      // { id, code, scroll }

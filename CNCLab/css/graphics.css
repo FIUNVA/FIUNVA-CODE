@@ -96,12 +96,10 @@
 .dimOverlay .dimTick{stroke:var(--cyan);opacity:.85;}
 .dimOverlay .dimExt{stroke:var(--cyan-dim);stroke-dasharray:1.5 1.2;opacity:.7;}
 .dimOverlay .dimArrowHead{fill:var(--cyan);}
-.contourPoints .contourPath{fill:none;stroke:var(--magenta);stroke-dasharray:1.2 1;opacity:.6;}
 .contourPoints .contourDot{fill:var(--magenta);stroke:var(--bg0);stroke-width:.3;}
 .contourPoints .contourLabel{fill:var(--magenta);font-family:'JetBrains Mono',monospace;font-weight:600;}
-.viewport.lightBg .contourPoints .contourPath,
-.viewport.lightBg .contourPoints .contourDot,
-.viewport.lightBg .contourPoints .contourLabel{stroke:#b0289a;fill:#b0289a;}
+.viewport.lightBg .contourPoints .contourDot{fill:#8f176f;stroke:#ffffff;stroke-width:.45;}
+.viewport.lightBg .contourPoints .contourLabel{fill:#711052;stroke:none;}
 
 .partZero circle{fill:none;stroke:#ff8f9e;}
 .partZero .zeroAxisH{stroke:#ff8f9e;}

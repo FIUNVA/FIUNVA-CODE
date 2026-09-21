@@ -22,7 +22,6 @@ function renderContourPoints(world, result, vb) {
   const pts = extractContourPoints(result);
   if (pts.length < 2) return;
   const dr = pts.map(p => displayPoint(p, p.spindleDir));
-  g.appendChild(svgEl('path', { class: 'contourPath', 'stroke-width': SC.hair, d: pathFromPoints(dr) }));
   const r = Math.max(SC.u * 0.9, 0.35);
   dr.forEach((p, i) => {
     g.appendChild(svgEl('circle', { class: 'contourDot', cx: p.z, cy: p.x, r }));

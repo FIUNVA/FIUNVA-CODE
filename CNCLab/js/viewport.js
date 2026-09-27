@@ -4,12 +4,20 @@
    z as the horizontal axis and x as the vertical axis — no manual
    pixel-scale math needed, the SVG engine does the scaling.
    ============================================================ */
-function computeViewBox(bounds, g71StockMag) {
-  // The stock diameter reflects what the G71 cycle is actually machining
-  // (the finish contour's own extent), never an oversized clearance value
+function computeViewBox(bounds, cycleStockMag, result) {
+  // The stock diameter is the bar the PROGRAM specifies — the profile's own largest
+  // diameter, with no finishing allowance added. The roughing cycle's internal
+  // clearance (profile + allowance) is a tool-position detail and never reaches the
+  // drawing or the readout. It is also never an oversized clearance value
   // used only for the initial facing approach — but the viewport itself
   // still needs to be tall enough to show that approach without clipping it.
-  const stockMag = Math.max(g71StockMag || bounds.maxAbsX, 4);
+  // A cycle-free program reports no stock magnitude of its own, and falling back to
+  // bounds.maxAbsX took the diameter from a G00 approach position. Only what the
+  // program actually CUTS TO describes the material — the same rule minZFeed/
+  // maxZFeed already apply along Z. maxAbsX itself is left alone: framingMag and
+  // xHalf still want the approach moves in view.
+  const cutMag = bounds.maxAbsXCut > 0 ? bounds.maxAbsXCut : bounds.maxAbsX;
+  const stockMag = Math.max(cycleStockMag || cutMag, 4);
   const framingMag = Math.max(stockMag, bounds.maxAbsX);
   // The modeled cylinder spans exactly the material the program actually cuts —
   // its right edge coincides with "cero pieza" (Z0) and its left edge with the
@@ -30,7 +38,7 @@ function computeViewBox(bounds, g71StockMag) {
   const zSpan = viewZmax - viewZmin;
 
   // Reserve two dimension "tiers" below the part (overall length, then the
-  // per-feature breakdown from "Ver medidas") so their lines/labels always
+  // per-feature breakdown from "Medidas Estándar") so their lines/labels always
   // land INSIDE the viewBox instead of being silently clipped. The scale
   // unit is estimated from the Z-span alone first (font/tier sizes would
   // otherwise depend on xHalf, which depends on how much room they need).
@@ -38,22 +46,31 @@ function computeViewBox(bounds, g71StockMag) {
   const uEst = zSpan / 120;
   const fontEst = Math.max(uEst * 3.2, 1.3);
   const tierGap = Math.max(partHalf * 0.033, fontEst * 0.6);
-  // The per-feature Z lengths ("Ver medidas") sit closer to the part; the
+  // The per-feature Z lengths ("Medidas Estándar") sit closer to the part; the
   // overall stock-length summary sits further out. Their labels are drawn
   // BELOW their own line, so the gap between the two tiers has to clear a
   // full line of text or the blue numbers land on top of the grey L line.
   const featureLenY = partHalf + tierGap / 2;
-  const totalLenY = featureLenY + Math.max(tierGap, fontEst * 2.4);
-  const xHalf = totalLenY + fontEst * 2.2;
+  const rowGap = Math.max(tierGap, fontEst * 2.35);
+  const totalLenY = featureLenY + rowGap;
+  // Keep the original drawing scale independent from the extra vertical room
+  // needed by CNC dimension rows. Only the viewBox grows with those rows.
+  const originalTotalLenY = featureLenY + Math.max(tierGap, fontEst * 2.4);
+  const scaleHalf = originalTotalLenY + fontEst * 2.2;
+  const cncZCount = result ? extractCncZPositions(result).length : 0;
+  const cncFirstY = featureLenY;
+  const cncLastY = cncFirstY + Math.max(0, cncZCount - 1) * rowGap;
+  const deepestDimensionY = Math.max(totalLenY, cncLastY);
+  const xHalf = deepestDimensionY + fontEst * 3.6;
 
   // Final reference "unit" the whole drawing's stroke widths, font sizes and
   // tick/offset lengths scale from, so a tiny part and a huge one both
   // render with proportionate, legible linework.
-  const u = Math.max(zSpan, xHalf * 2) / 120;
+  const u = Math.max(zSpan, scaleHalf * 2) / 120;
 
   return {
     stockMag, zDeepEnd, zFaceStart, stockZLeft, stockZRight, stockLen,
-    viewZmin, viewZmax, xHalf, partHalf, totalLenY, featureLenY, u,
+    viewZmin, viewZmax, xHalf, partHalf, totalLenY, featureLenY, cncFirstY, cncLastY, rowGap, u,
   };
 }
 
@@ -104,16 +121,6 @@ function displayPoint(p, spindleDir) {
   const s = displaySign(spindleDir);
   return { z: p.z, x: s * Math.abs(p.x) };
 }
-/* The finished part is a body of revolution: a pass cut at any Z is visible
-   all the way around the circumference, so every trace line is drawn on
-   BOTH sides of centerline equally (never just the M03/M04-implied side —
-   that convention only applies to the single tool marker, which represents
-   one literal instantaneous position). */
-function mirrorPointsBoth(points) {
-  const top = points.map(p => ({ z: p.z, x: -Math.abs(p.x) }));
-  const bottom = points.map(p => ({ z: p.z, x: Math.abs(p.x) }));
-  return [top, bottom];
-}
 
 /* ---------- Material heightmap (progressive stock removal) ---------- */
 // Sample density scaled to the part's length so a small feature (a 2 mm
@@ -141,7 +148,9 @@ function recordRiser(hm, z, mag) {
   if (existing === undefined || mag < existing) hm.riserMap.set(key, mag);
 }
 
-function applyFeedToHeightmap(hm, points) {
+function applyFeedToHeightmap(hm, seg) {
+  const points = seg.points;
+  const band = seg.zBand;
   const n = hm.zs.length - 1;
   for (let s = 0; s < points.length - 1; s++) {
     const a = points[s], b = points[s + 1];
@@ -157,7 +166,22 @@ function applyFeedToHeightmap(hm, points) {
       const rOuter = Math.max(Math.abs(a.x), Math.abs(b.x));
       const rInner = Math.min(Math.abs(a.x), Math.abs(b.x));
       const reachesAxis = rInner < 0.15;
-      if (reachesAxis) {
+      if (band) {
+        // A G72 facing pass: the tool stepped forward by the cycle's depth, so the
+        // cut owns the whole Z strip it landed on. Clearing only the pass's own Z
+        // (a single heightmap sample, a few hundredths of a mm) would leave a comb
+        // of invisible needles instead of the staircase the cycle actually cuts.
+        // This takes priority over the reachesAxis sweep below: a roughing pass
+        // that bottoms out on the axis clears its own tread, not everything beyond.
+        const bLo = Math.min(band.lo, band.hi), bHi = Math.max(band.lo, band.hi);
+        for (let i = 0; i <= n; i++) {
+          if (hm.zs[i] < bLo - 1e-6 || hm.zs[i] > bHi + 1e-6) continue;
+          hm.mag[i] = Math.min(hm.mag[i], band.mag);
+        }
+        // The riser belongs on the pass's own Z, which is the wall between this
+        // tread and the shallower one already cut above it.
+        recordRiser(hm, bLo, band.mag);
+      } else if (reachesAxis) {
         for (let i = 0; i <= n; i++) {
           if (hm.zs[i] >= a.z - 1e-6) hm.mag[i] = Math.min(hm.mag[i], rInner);
         }
@@ -185,7 +209,11 @@ function heightmapToSilhouettePath(hm) {
   // Merge in the EXACT recorded risers (real shoulders/facing walls) so they
   // render as true vertical steps at their real Z, instead of inferring
   // steps from sampled magnitude jumps (which risked misfiring on a merely
-  // steep, continuous arc and opening a gap in the outline).
+  // steep, continuous arc and opening a gap in the outline). Each riser is
+  // also CLIPPED to the material standing at its own Z, because a cut made
+  // after it was recorded — above all the G70 finishing contour, which goes
+  // deeper than the roughing treads — leaves it pointing at a radius the part
+  // no longer has.
   const risers = [...hm.riserMap.entries()]
     .map(([k, v]) => ({ z: parseFloat(k), mag: v }))
     .sort((a, b) => b.z - a.z); // descending, matching hm.zs order (zs[0] is most +Z)
@@ -198,7 +226,14 @@ function heightmapToSilhouettePath(hm) {
     // value actually reached at that Z, not from the previous sample's.
     pts.push({ z: hm.zs[i], mag: hm.mag[i] });
     while (ri < risers.length && risers[ri].z <= hm.zs[i - 1] + 1e-6 && risers[ri].z >= hm.zs[i] - 1e-6) {
-      pts.push({ z: risers[ri].z, mag: risers[ri].mag });
+      // A riser is a step in the material as it stands NOW. Its own recorded
+      // value is from the moment the step was cut, so it can be stale: the
+      // short side it spans is still standing but has since been machined
+      // down. Trimming to the tall side of the step is a min, never a delete,
+      // so a riser that is still valid is left untouched and the outline can
+      // never poke past the material.
+      const local = Math.max(hm.mag[i], hm.mag[i - 1]);
+      pts.push({ z: risers[ri].z, mag: Math.min(risers[ri].mag, local) });
       ri++;
     }
   }
@@ -210,10 +245,23 @@ function heightmapToSilhouettePath(hm) {
 }
 
 /* ---------- Static scene scaffolding shared by preview & simulation ---------- */
+
+// The -X axis label is the one piece of the scene whose placement depends on which
+// dimension overlay is showing: it has to clear the deepest dimension row that is
+// actually drawn, and xHalf reserves room for both systems at once. The three
+// candidate positions are baked onto the node by buildBaseScene, so the visibility
+// checkboxes only have to pick one — they have no viewBox and recompute nothing.
+function applyAxisLabelMode() {
+  const lbl = document.getElementById('axisLabelXMinus');
+  if (!lbl) return;
+  const y = showCncDimensions ? lbl.dataset.cncY : showDimensions ? lbl.dataset.standardY : lbl.dataset.plainY;
+  if (y) lbl.setAttribute('y', y);
+}
+
 function buildBaseScene(vb) {
   el.svg.innerHTML = '';
   // the drawn Z axis extends past viewZmin (see zAxisMin below), so the
-  // viewBox has to start there or the axis and its -Z label get clipped
+  // viewBox has to start there or the axis gets clipped
   const vbLeft = vb.viewZmin - (vb.viewZmax - vb.viewZmin) * 0.12;
   el.svg.setAttribute('viewBox', `${vbLeft} ${-vb.xHalf} ${vb.viewZmax - vbLeft} ${vb.xHalf * 2}`);
   const SC = scaleOf(vb);
@@ -274,19 +322,35 @@ function buildBaseScene(vb) {
   stockOutlineEl.style.display = showBar ? '' : 'none';
   world.appendChild(stockOutlineEl);
 
-  // axis labels — both ends of each axis line
-  const zPlus = svgEl('text', { class: 'axisLabel', 'font-size': SC.font, x: vb.viewZmax - SC.u * 1, y: -SC.font * 0.6, 'text-anchor': 'end' });
+  // Axis labels — both ends of each axis line. These used to sit on the viewBox
+  // edges, which parked them far from the part: xHalf always reserves room for the
+  // CNC dimension rows whether or not those are on screen, so -X ended up equally
+  // detached in "Medida estándar" and "Cotas CNC". Each label is now anchored to the
+  // part itself, at a standoff proportional to the part's own length on screen —
+  // scaled so a tiny part and a huge one both keep a sensible margin.
+  const axisGap = Math.min(Math.max(vb.stockLen * 0.07, SC.font * 1.6), SC.font * 5);
+  const zPlus = svgEl('text', { class: 'axisLabel', 'font-size': SC.font, x: vb.stockZRight + axisGap, y: -SC.font * 0.6, 'text-anchor': 'start' });
   zPlus.textContent = '+Z';
   axesGroup.appendChild(zPlus);
-  const zMinus = svgEl('text', { class: 'axisLabel', 'font-size': SC.font, x: zAxisMin + SC.u * 1, y: -SC.font * 0.6, 'text-anchor': 'start' });
+  // -Z reads right-to-left from its anchor, so it needs the larger standoff and a
+  // floor against the viewBox edge or the text would be silently clipped.
+  const zMinusX = Math.max(vb.stockZLeft - chuckW - axisGap, vbLeft + SC.font * 1.5);
+  const zMinus = svgEl('text', { class: 'axisLabel', 'font-size': SC.font, x: zMinusX, y: -SC.font * 0.6, 'text-anchor': 'end' });
   zMinus.textContent = '-Z';
   axesGroup.appendChild(zMinus);
-  const xPlus = svgEl('text', { class: 'axisLabel', 'font-size': SC.font, x: xAxisZ + SC.u * 1, y: -vb.xHalf + SC.font * 1.1, 'text-anchor': 'start' });
+  const xPlus = svgEl('text', { class: 'axisLabel', id: 'axisLabelXPlus', 'font-size': SC.font, x: xAxisZ + SC.u * 1, y: -(vb.partHalf + axisGap), 'text-anchor': 'start' });
   xPlus.textContent = '+X';
   axesGroup.appendChild(xPlus);
-  const xMinus = svgEl('text', { class: 'axisLabel', 'font-size': SC.font, x: xAxisZ + SC.u * 1, y: vb.xHalf - SC.font * 0.3, 'text-anchor': 'start' });
+  // -X is the only one of the four that depends on which dimension overlay is on, so
+  // it is the only one the "Medidas Estándar" / "Cotas CNC" checkboxes have to move. Keep
+  // all three candidates on the node and let applyAxisLabelMode() pick between them —
+  // the handlers have no viewBox to hand and must not recompute any of this.
+  const xMinus = svgEl('text', { class: 'axisLabel', id: 'axisLabelXMinus', 'font-size': SC.font, x: xAxisZ + SC.u * 1, y: 0, 'text-anchor': 'start' });
   xMinus.textContent = '-X';
   axesGroup.appendChild(xMinus);
+  const xTiers = { plain: vb.partHalf, standard: vb.totalLenY, cnc: vb.cncLastY };
+  Object.entries(xTiers).forEach(([mode, tierY]) => { xMinus.dataset[mode + 'Y'] = tierY + axisGap + SC.font * 0.6; });
+  applyAxisLabelMode();
 
   // "Cero pieza" (workpiece zero / program origin) — the standard drafting
   // datum symbol: a circle quartered by a crosshair with two OPPOSITE
@@ -302,14 +366,17 @@ function buildBaseScene(vb) {
   pz.appendChild(svgEl('line', { class: 'zeroAxisV', x1: 0, y1: -pzLine, x2: 0, y2: pzLine, 'stroke-width': SC.hair }));
   world.appendChild(pz);
 
-  // overall stock-length dimension (first reserved tier)
+  // Overall stock length belongs to the conventional "Medidas Estándar" layer.
+  const totalLengthGroup = svgEl('g', { id: 'totalLengthGroup' });
+  totalLengthGroup.style.display = showDimensions ? '' : 'none';
   const dimY = vb.totalLenY;
-  world.appendChild(svgEl('line', { class: 'dimLine', 'stroke-width': SC.thin, x1: vb.stockZLeft, y1: dimY, x2: vb.stockZRight, y2: dimY }));
-  world.appendChild(arrowHead(vb.stockZLeft, dimY, -1, 0, SC.tick * 1.4, 'dimArrowHeadGrey'));
-  world.appendChild(arrowHead(vb.stockZRight, dimY, 1, 0, SC.tick * 1.4, 'dimArrowHeadGrey'));
+  totalLengthGroup.appendChild(svgEl('line', { class: 'dimLine', 'stroke-width': SC.thin, x1: vb.stockZLeft, y1: dimY, x2: vb.stockZRight, y2: dimY }));
+  totalLengthGroup.appendChild(arrowHead(vb.stockZLeft, dimY, -1, 0, SC.tick * 1.4, 'dimArrowHeadGrey'));
+  totalLengthGroup.appendChild(arrowHead(vb.stockZRight, dimY, 1, 0, SC.tick * 1.4, 'dimArrowHeadGrey'));
   const dimTxt = svgEl('text', { class: 'dimText', 'font-size': SC.font, x: (vb.stockZLeft + vb.stockZRight) / 2, y: dimY + SC.font * 1.35, 'text-anchor': 'middle' });
   dimTxt.textContent = `L ${vb.stockLen.toFixed(1)} mm`;
-  world.appendChild(dimTxt);
+  totalLengthGroup.appendChild(dimTxt);
+  world.appendChild(totalLengthGroup);
 
   return world;
 }

@@ -5,7 +5,7 @@ let lastResult = null;
 let lastVb = null;
 
 function renderStaticPreview(result) {
-  const vb = computeViewBox(result.bounds, result.g71StockMag);
+  const vb = computeViewBox(result.bounds, result.cycleStockMag, result);
   lastVb = vb;
   const world = buildBaseScene(vb);
   const SC = scaleOf(vb);
@@ -20,12 +20,12 @@ function renderStaticPreview(result) {
   for (const ev of result.timeline) {
     if (ev.kind !== 'move' || ev.phase === 'retract') continue;
     const seg = ev.segment;
-    // Only the finished-part silhouette (below, via the heightmap) is a full
-    // body of revolution; the pass/rapid trace lines show only the side the
-    // tool actually travels on, per the active M03/M04 convention.
+    // Every trace stays on the half where the tool actually is: the drawing is a
+    // half-section, and the M03/M04 sign picks which half that is. Only the filled
+    // silhouette is a full body of revolution (and it is always symmetric).
     const dPts = toDisplayPoints(seg.points, ev.spindleDir);
     if (seg.type === 'feed') {
-      applyFeedToHeightmap(hm, seg.points);
+      applyFeedToHeightmap(hm, seg);
       if (ev.phase === 'rough') roughPts.push(dPts);
       else if (ev.phase === 'finish') finishPts.push(dPts);
       else generalPts.push(dPts);
@@ -65,7 +65,7 @@ function renderDims(result, vb) {
     <span>PASADAS DE DESBASTE: <b>${roughPasses.size || 0}</b></span>
     <span>BLOQUES DE PROGRAMA: <b>${result.blocks.length}</b></span>
   `;
-  el.passHint.textContent = roughPasses.size ? `G71: ${roughPasses.size} pasadas · G70: contorno final` : '';
+  el.passHint.textContent = roughPasses.size ? `${result.cycleKind || 'G71'}: ${roughPasses.size} pasadas · G70: contorno final` : '';
 }
 
 function updateSpindleTag(dir) {

@@ -67,8 +67,8 @@ function resetView() {
 // A wider framing that also reaches the tool's initial/reference (machine
 // zero) position — computed on demand, never used for the normal/default
 // view, so the everyday view of the part stays tightly cropped.
-function computeHomeViewBox(bounds, g71StockMag, home) {
-  const base = computeViewBox(bounds, g71StockMag);
+function computeHomeViewBox(bounds, cycleStockMag, home) {
+  const base = computeViewBox(bounds, cycleStockMag, lastResult);
   if (!home) return base;
   const pad = Math.max(base.stockLen * 0.15, 8);
   const viewZmax = Math.max(base.viewZmax, home.z + pad);
@@ -82,7 +82,7 @@ function computeHomeViewBox(bounds, g71StockMag, home) {
 // simulation; the next normal render restores the usual tight framing.
 el.btnHome.addEventListener('click', () => {
   if (lastResult) {
-    const hvb = computeHomeViewBox(lastResult.bounds, lastResult.g71StockMag, lastResult.home);
+    const hvb = computeHomeViewBox(lastResult.bounds, lastResult.cycleStockMag, lastResult.home);
     el.svg.setAttribute('viewBox', `${hvb.viewZmin} ${-hvb.xHalf} ${hvb.viewZmax - hvb.viewZmin} ${hvb.xHalf * 2}`);
   }
   resetView();

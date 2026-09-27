@@ -1,5 +1,5 @@
 /* ============================================================
-   PROGRAMA DE EJEMPLO POR DEFECTO
+   PROGRAMAS DE EJEMPLO
    ============================================================ */
 const EXAMPLE_1 = `O0001;
 G50 S2500 M03;
@@ -73,9 +73,64 @@ T0100 ;
 M30 ;
 `;
 
-const EXAMPLES = [
-  { name: 'G71-Ejemplo 1', code: EXAMPLE_1 },
-  { name: 'G71-Ejemplo 2', code: EXAMPLE_2 },
-];
-const DEFAULT_PROGRAM = EXAMPLE_1;
+const EXAMPLE_3 = `O0011;
+G50 S2500 M04;
+G96 S150 M08;
+G00 T0101;
+G00 X51.;
+Z0.;
+
+G01 X0. F0.1;
+G00 Z1.;
+X51.;
+Z0.;
+
+G72 W1.5 R0.5;
+G72 P1 Q12 U0.25 W0.25;
+N1 G00 Z-74.;
+G01 X50. F0.1;
+Z-68.;
+G02 X42. Z-64. R4.;
+G01 X40.;
+X30. Z-39.;
+X35. Z-21.;
+Z-12.;
+G02 X29. Z-9. R3.;
+G01 X23.;
+G03 X20. Z-7.5 R1.5;
+G01 Z-2.;
+G02 X16. Z0. R2.;
+N12 G01 X0.;
+
+G70 P1 Q12;
+
+G00 Z10.;
+G28 W0. M05;
+G28 U0. M09;
+T0100;
+M30;
+`;
+
+function exampleProgramNumber(exampleNumber) {
+  // Radix 10, not the default-looking 2: 3.toString(2) is "11", which turned the
+  // third example into "O0011" and any fourth into "O00100".
+  return 'O' + exampleNumber.toString(10).padStart(4, '0');
+}
+
+function withExampleProgramNumber(code, exampleNumber) {
+  const header = exampleProgramNumber(exampleNumber) + ';';
+  return /^\s*O\s*\d+\s*;/i.test(code)
+    ? code.replace(/^\s*O\s*\d+\s*;/i, header)
+    : header + '\n' + code;
+}
+
+const EXAMPLES = [EXAMPLE_1, EXAMPLE_2, EXAMPLE_3].map((code, index) => ({
+  name: (/G72/.test(code) ? 'G72' : 'G71') + '-Ejemplo ' + (index + 1),
+  code: withExampleProgramNumber(code, index + 1),
+}));
+// Taken from the list rather than from the raw EXAMPLE_n text so the program the app
+// boots with is exactly what the matching entry in the EJEMPLOS menu loads — same
+// text, same O number. Reaching for the template instead would boot O0011 while the
+// "G72-Ejemplo 3" button still produced O0003.
+const DEFAULT_PROGRAM = EXAMPLES[2].code;
 

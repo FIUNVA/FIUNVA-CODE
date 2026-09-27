@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/png" href="../Imagenes/FC3.png">
 <title>CNCLab - FIUNVA</title>
 
 <!-- Tipografías -->
@@ -72,7 +71,8 @@
     <div class="viewMenu" id="viewMenu">
       <button class="softkey" id="btnViewMenu">👁 VER ▾</button>
       <div class="viewDropdown" id="viewDropdown">
-        <label><input type="checkbox" id="chkDims">Ver medidas</label>
+        <label><input type="checkbox" id="chkDims">Medidas Estándar</label>
+        <label><input type="checkbox" id="chkCncDims">Medidas CNC</label>
         <label><input type="checkbox" id="chkAxes" checked>Ejes</label>
         <label><input type="checkbox" id="chkTraces" checked>Trazos</label>
         <label><input type="checkbox" id="chkFill" checked>Relleno</label>
@@ -135,7 +135,7 @@
 <script src="js/log.js"></script>
 <!-- 6. Mapeo mundo -> SVG y escena base -->
 <script src="js/viewport.js"></script>
-<!-- 7. Capa de cotas ("Ver medidas") -->
+<!-- 7. Cálculo de cotas convencionales y CNC -->
 <script src="js/dimensions.js"></script>
 <!-- 8. Puntos de contorno (P0, P1, ...) -->
 <script src="js/contour-points.js"></script>
@@ -155,7 +155,7 @@
 <script src="js/zoom-pan.js"></script>
 <!-- 16. Arranque de la aplicación -->
 <script src="js/main.js"></script>
-<!-- 17. Pestañas de programa (hasta 3 abiertas) -->
+<!-- 17. Pestañas de programa (hasta 4 abiertas) -->
 <script src="js/tabs.js"></script>
 </body>
 </html>

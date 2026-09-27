@@ -40,7 +40,7 @@ function positionMarker(p, spindleDir) {
 }
 
 function buildSimScene() {
-  const vb = computeViewBox(lastResult.bounds, lastResult.g71StockMag);
+  const vb = computeViewBox(lastResult.bounds, lastResult.cycleStockMag, lastResult);
   sim.vb = vb;
   sim.SC = scaleOf(vb);
   sim.world = buildBaseScene(vb);
@@ -54,11 +54,9 @@ function buildSimScene() {
   tracesGroup.appendChild(sim.groups.rapid);
   tracesGroup.appendChild(sim.groups.general);
   tracesGroup.appendChild(sim.groups.finish);
-  // the "in progress" trace shows only the active (M03/M04) side while animating
-  sim.tempPathTop = svgEl('path', { class: 'previewFeed', 'stroke-width': sim.SC.normal });
-  sim.tempPathBottom = svgEl('path', { class: 'previewFeed', 'stroke-width': sim.SC.normal, style: 'display:none' });
-  tracesGroup.appendChild(sim.tempPathTop);
-  tracesGroup.appendChild(sim.tempPathBottom);
+  // the "in progress" cut, on the active (M03/M04) side only
+  sim.tempPath = svgEl('path', { class: 'previewFeed', 'stroke-width': sim.SC.normal });
+  tracesGroup.appendChild(sim.tempPath);
   sim.world.appendChild(tracesGroup);
   const pzNodeSim = sim.world.querySelector('#partZeroGroup');
   if (pzNodeSim) sim.world.appendChild(pzNodeSim);
@@ -159,9 +157,8 @@ function drawPartialStep(step, t) {
   const cls = step.seg.type === 'rapid' ? 'previewRapid'
     : step.phase === 'rough' ? 'previewRough'
     : step.phase === 'finish' ? 'previewFinish' : 'previewFeed';
-  sim.tempPathTop.setAttribute('class', cls);
-  sim.tempPathTop.setAttribute('d', pathFromPoints(toDisplayPoints(subPoints, step.spindleDir)));
-  sim.tempPathBottom.setAttribute('d', '');
+  sim.tempPath.setAttribute('class', cls);
+  sim.tempPath.setAttribute('d', pathFromPoints(toDisplayPoints(subPoints, step.spindleDir)));
   el.roX.textContent = (point.x * 2).toFixed(3);
   el.roZ.textContent = point.z.toFixed(3);
 }
@@ -169,18 +166,18 @@ function drawPartialStep(step, t) {
 function finalizeStep(step) {
   const pts = step.seg.points;
   positionMarker(pts[pts.length - 1], step.spindleDir);
-  sim.tempPathTop.setAttribute('d', '');
-  sim.tempPathBottom.setAttribute('d', '');
-  const dPts = toDisplayPoints(pts, step.spindleDir);
+  sim.tempPath.setAttribute('d', '');
   let cls, group, sw;
   if (step.seg.type === 'rapid') { cls = 'pathRapid'; group = sim.groups.rapid; sw = sim.SC.thin; }
   else if (step.phase === 'rough') { cls = 'pathFeedRough'; group = sim.groups.rough; sw = sim.SC.thin; }
   else if (step.phase === 'finish') { cls = 'pathFeedFinish'; group = sim.groups.finish; sw = sim.SC.normal; }
   else { cls = 'pathFeedGeneral'; group = sim.groups.general; sw = sim.SC.normal; }
   const dash = step.phase === 'rough' ? { 'stroke-dasharray': `${sim.SC.u * 1.6} ${sim.SC.u * 1.2}` } : {};
-  group.appendChild(svgEl('path', { class: cls, 'stroke-width': sw, ...dash, d: pathFromPoints(dPts) }));
+  // One trace per move, on the active side only — the drawing is a half-section (see
+  // preview.js). Rapids and the tool marker are a single physical point, not a sweep.
+  group.appendChild(svgEl('path', { class: cls, 'stroke-width': sw, ...dash, d: pathFromPoints(toDisplayPoints(pts, step.spindleDir)) }));
   if (step.seg.type === 'feed') {
-    applyFeedToHeightmap(sim.hm, pts);
+    applyFeedToHeightmap(sim.hm, step.seg);
     sim.materialEl.setAttribute('d', heightmapToSilhouettePath(sim.hm));
   }
   el.roX.textContent = (pts[pts.length - 1].x * 2).toFixed(3);

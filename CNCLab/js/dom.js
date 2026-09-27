@@ -10,6 +10,7 @@ const el = {
   dims: document.getElementById('dimsReadout'),
   passHint: document.getElementById('passHint'),
   chkDims: document.getElementById('chkDims'),
+  chkCncDims: document.getElementById('chkCncDims'),
   chkAxes: document.getElementById('chkAxes'),
   chkTraces: document.getElementById('chkTraces'),
   chkFill: document.getElementById('chkFill'),

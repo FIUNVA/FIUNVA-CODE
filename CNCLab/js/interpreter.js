@@ -208,15 +208,22 @@ function resolveSubProfile(blocks, startIdx, endIdx, initialState) {
     warnings.push(...w);
     if (segment) segments.push(segment);
   }
-  // The contour itself starts at the FIRST block's own target (not the tool's
-  // pre-cycle approach position) — that approach move is handled separately
-  // by the caller (it is not part of the finished-part geometry).
+  // The contour itself starts at the first CUTTING block's own target (not the
+  // tool's pre-cycle approach position) — that approach move is handled
+  // separately by the caller (it is not part of the finished-part geometry).
+  // Taking the first *segment's* target was not enough on its own: a profile that
+  // opens with a positioning move (the Ej. 3's "N1 G00 Z-74.") made that rapid's
+  // target the contour's first point, which drags the approach DIAMETER into the
+  // profile and from there into the stock size — the preceding "G00 X51." then
+  // drew the bar at Ø51 around a part that maxes out at Ø50. A rapid only
+  // POSITIONS, so leading rapids are not contour and are skipped.
+  const firstCut = Math.max(0, segments.findIndex(seg => seg.type === 'feed'));
   const points = [];
   segments.forEach((seg, i) => {
-    const pts = i === 0 ? seg.points.slice(-1) : seg.points.slice(1);
-    points.push(...pts);
+    if (i < firstCut) return;
+    points.push(...(i === firstCut ? seg.points.slice(-1) : seg.points.slice(1)));
   });
-  return { segments, points, endState: state, warnings };
+  return { segments, points, endState: state, warnings, firstCut };
 }
 
 /* ---------- Outward-normal contour offset (finishing allowance) ---------- */
@@ -295,10 +302,17 @@ function expandG71(cfg, profilePoints, startState, outwardSign) {
   // cycle itself is machining: the finish contour's own largest diameter,
   // plus a modest allowance so there's real material left to rough away.
   const finishPts = offsetProfile(profilePoints, outwardSign, allowU || 0, allowW || 0);
+  // Two different diameters, and conflating them is what put 0.5 mm on the readout.
+  // `stockMag` is the finish contour PLUS the allowance: how much material the
+  // roughing has to take before G70, and where the tool retracts to, so it has to
+  // keep the allowance. `partMag` is the bar the program actually specifies — the
+  // raw profile's largest diameter — and is what the drawing and the readout report.
+  const partMag = Math.max(...profilePoints.map(p => Math.abs(p.x)));
   const profileMaxMag = Math.max(...finishPts.map(p => Math.abs(p.x)));
-  const stockMag = profileMaxMag; // the bar is drawn at EXACTLY the max diameter contained in G71 — no invented excess
+  const stockMag = profileMaxMag;
   const stockX = outwardSign < 0 ? -stockMag : stockMag;
   const stepSigned = outwardSign < 0 ? depth : -depth; // moves FROM stock TOWARD profile (depth is already a radius value per FANUC's G71 spec)
+  const rr = retract || 0.5;
   const minFinishMag = Math.min(...finishPts.map(p => Math.abs(p.x)));
   const zStart = finishPts[0].z;
 
@@ -345,11 +359,17 @@ function expandG71(cfg, profilePoints, startState, outwardSign) {
       points: [{ x: Xk, z: zStart }, { x: Xk, z: zStop }] });
     pos = { x: Xk, z: zStop };
 
-    // 3. return to the start reference — a pure Z move at the SAME depth the
-    // cut just finished at (the path just cut is now empty, so this can't
-    // gouge anything); the next pass then steps over in X from here.
+    // 3. FANUC G71 retracts R in the X AXIS, against the direction of infeed, and
+    // only then travels back in Z. Returning in Z at the same depth would slide the
+    // tool along the surface the pass just cut.
+    const xRet = Xk + outwardSign * rr;
     segments.push({ type: 'rapid', phase: 'rough', pass: passCount,
-      points: [{ x: pos.x, z: pos.z }, { x: pos.x, z: zStart }] });
+      points: [{ x: Xk, z: zStop }, { x: xRet, z: zStop }] });
+    pos = { x: xRet, z: zStop };
+
+    // 4. return to the start reference, now clear of the material
+    segments.push({ type: 'rapid', phase: 'rough', pass: passCount,
+      points: [{ ...pos }, { x: pos.x, z: zStart }] });
     pos = { x: pos.x, z: zStart };
 
     cur = Xk;
@@ -359,7 +379,87 @@ function expandG71(cfg, profilePoints, startState, outwardSign) {
     points: [{ x: pos.x, z: pos.z }, { x: stockX, z: pos.z }] });
   pos = { x: stockX, z: pos.z };
 
-  return { segments, warnings, passCount, endPos: pos, stockMag };
+  return { segments, warnings, passCount, endPos: pos, stockMag, partMag };
+}
+
+/* ---------- Expand a G72 (transversal / facing) roughing cycle ---------- */
+function maxMagOverBand(pts, zLo, zHi) {
+  // Largest profile magnitude over the band [zLo, zHi] — the contour radius a facing
+  // pass must respect across the whole Z strip it owns. Returns null when the band
+  // misses the contour entirely, so the caller can skip the pass rather than cut to
+  // an arbitrary depth. Each segment is clipped to the band (not just sampled at its
+  // endpoints), since a long taper can cross a whole band without a vertex inside it.
+  const lo = Math.min(zLo, zHi), hi = Math.max(zLo, zHi);
+  let m = 0, hit = false;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1];
+    if (Math.max(a.z, b.z) < lo - 1e-9 || Math.min(a.z, b.z) > hi + 1e-9) continue;
+    const dz = b.z - a.z;
+    let t0 = 0, t1 = 1;
+    if (Math.abs(dz) >= 1e-12) {
+      const ta = (lo - a.z) / dz, tb = (hi - a.z) / dz;
+      t0 = Math.max(0, Math.min(ta, tb));
+      t1 = Math.min(1, Math.max(ta, tb));
+    }
+    // |x| varies linearly along a segment, so its max over the clip is at an end.
+    for (const t of [t0, t1]) {
+      m = Math.max(m, Math.abs(a.x + t * (b.x - a.x)));
+      hit = true;
+    }
+  }
+  return hit ? m : null;
+}
+function expandG72(cfg, profilePoints, startState, outwardSign) {
+  const { w: depth, r: retract, uf: allowU, wf: allowW } = cfg;
+  const segments = [], warnings = [];
+  if (!depth || depth <= 0) {
+    warnings.push({ line: cfg.line, message: 'G72 sin profundidad de pasada (W) válida — ciclo omitido' });
+    return { segments, warnings, passCount: 0 };
+  }
+  const finishPts = offsetProfile(profilePoints, outwardSign, allowU || 0, allowW || 0);
+  // See expandG71: stockMag keeps the allowance (what the facing passes must clear),
+  // partMag is the real bar diameter the program specifies.
+  const partMag = Math.max(...profilePoints.map(p => Math.abs(p.x)));
+  const stockMag = Math.max(...finishPts.map(p => Math.abs(p.x)));
+  const stockX = outwardSign * stockMag;
+  const clearX = outwardSign * Math.max(stockMag, Math.abs(startState.x));
+  const zMin = Math.min(...finishPts.map(p => p.z));
+  const zTop = Math.min(startState.z, Math.max(...finishPts.map(p => p.z)));
+  const rr = retract || 0.5;
+  let pos = { x: startState.x, z: startState.z };
+  let passCount = 0;
+  for (let k = 1; k < 400; k++) {
+    let zk = zTop - depth * k;
+    const last = zk <= zMin + 1e-6;
+    if (last) zk = zMin;
+    const stopMag = maxMagOverBand(finishPts, zk, Math.min(zk + depth, zTop));
+    if (stopMag !== null && stopMag < stockMag - 1e-6) {
+      passCount++;
+      const stopX = outwardSign * stopMag;
+      if (Math.abs(pos.x - clearX) > 1e-9) { segments.push({ type: 'rapid', phase: 'rough', pass: passCount, points: [{ ...pos }, { x: clearX, z: pos.z }] }); pos = { x: clearX, z: pos.z }; }
+      segments.push({ type: 'rapid', phase: 'rough', pass: passCount, points: [{ ...pos }, { x: clearX, z: zk }] });
+      // A facing pass at Z=zk owns the whole Z strip [zk, zk+depth] it stepped over:
+      // that strip is the tread of the resulting G72 staircase, and the wall between
+      // consecutive treads sits exactly on the pass's own Z.
+      segments.push({ type: 'feed', phase: 'rough', pass: passCount,
+        zBand: { lo: zk, hi: Math.min(zk + depth, zTop), mag: stopMag },
+        points: [{ x: clearX, z: zk }, { x: stopX, z: zk }] });
+      // FANUC G72 retracts R in the Z AXIS (the mirror image of G71, which retracts
+      // in X): the pass steps in Z and cuts radially in X, so the tool has to lift
+      // clear of the material in Z — back over the strip the previous pass already
+      // cleared — before it can travel back in X. Moving both axes at once would
+      // drag the insert through uncut stock; returning in Z first at the cut depth
+      // would drag it along the surface it just machined.
+      const zBack = zk + rr;
+      segments.push({ type: 'rapid', phase: 'rough', pass: passCount, points: [{ x: stopX, z: zk }, { x: stopX, z: zBack }] });
+      segments.push({ type: 'rapid', phase: 'rough', pass: passCount, points: [{ x: stopX, z: zBack }, { x: clearX, z: zBack }] });
+      pos = { x: clearX, z: zBack };
+    }
+    if (last) break;
+  }
+  segments.push({ type: 'rapid', phase: 'rough', points: [{ ...pos }, { x: clearX, z: zTop }] });
+  pos = { x: clearX, z: zTop };
+  return { segments, warnings, passCount, endPos: pos, stockMag, partMag };
 }
 
 /* ---------- Full program interpretation ---------- */
@@ -369,24 +469,28 @@ function interpretProgram(text, home) {
 
   // Pre-scan: find all G71/G70 cycle references to mark referenced N-ranges as "profile-only"
   const cycles = []; // {kind, startLine, p, q, cfgWords}
-  let pendingG71 = null;
+  const pending = {};
   blocks.forEach((b, idx) => {
     const map = b.map;
-    if (map.G && map.G.includes(71)) {
-      if (!pendingG71) pendingG71 = { u: null, r: null, p: null, q: null, uf: null, wf: null, line: b.line, startIdx: idx };
+    for (const code of [71, 72]) {
+      if (!(map.G && map.G.includes(code))) continue;
+      const kind = 'G' + code;
+      if (!pending[kind]) pending[kind] = { u: null, w: null, r: null, p: null, q: null, uf: null, wf: null, line: b.line, startIdx: idx };
+      const pc = pending[kind];
       const isBoundsLine = (map.P && map.P.length) || (map.Q && map.Q.length);
       if (isBoundsLine) {
-        if (map.U && map.U.length) pendingG71.uf = map.U[0];
-        if (map.W && map.W.length) pendingG71.wf = map.W[0];
-        if (map.P && map.P.length) pendingG71.p = map.P[0];
-        if (map.Q && map.Q.length) pendingG71.q = map.Q[0];
+        if (map.U && map.U.length) pc.uf = map.U[0];
+        if (map.W && map.W.length) pc.wf = map.W[0];
+        if (map.P && map.P.length) pc.p = map.P[0];
+        if (map.Q && map.Q.length) pc.q = map.Q[0];
       } else {
-        if (map.U && map.U.length) pendingG71.u = map.U[0];
-        if (map.R && map.R.length) pendingG71.r = map.R[0];
+        if (map.U && map.U.length) pc.u = map.U[0];
+        if (map.W && map.W.length) pc.w = map.W[0];
+        if (map.R && map.R.length) pc.r = map.R[0];
       }
-      if (pendingG71.p !== null && pendingG71.q !== null) {
-        cycles.push({ kind: 'G71', cfg: pendingG71, atIdx: idx });
-        pendingG71 = null;
+      if (pc.p !== null && pc.q !== null) {
+        cycles.push({ kind, cfg: pc, atIdx: idx });
+        pending[kind] = null;
       }
     }
     if (map.G && map.G.includes(70) && map.P && map.Q) {
@@ -434,23 +538,26 @@ function interpretProgram(text, home) {
     }
 
     // G71 cycle trigger
-    if (map.G && map.G.includes(71)) {
-      const c = cycles[cycleCursor] && cycles[cycleCursor].atIdx === idx ? cycles[cycleCursor] : cycles.find(cc => cc.atIdx === idx);
-      if (c && c.kind === 'G71' && !c.invalid && !c.done) {
+    if (map.G && (map.G.includes(71) || map.G.includes(72))) {
+      const c = cycles.find(cc => cc.atIdx === idx && (cc.kind === 'G71' || cc.kind === 'G72'));
+      if (c && !c.invalid && !c.done) {
         c.done = true;
         const sub = resolveSubProfile(blocks, c.startIdx, c.endIdx, { x: state.x, z: state.z, motionG: 1, f: state.f, s: state.s });
         warnings.push(...sub.warnings);
         if (!state._profileCache) state._profileCache = {};
         state._profileCache[`${c.cfg.p}-${c.cfg.q}`] = sub;
         const outwardSign = Math.sign(state.x) || -1;
-        const rough = expandG71({ u: c.cfg.u, r: c.cfg.r, uf: c.cfg.uf || 0, wf: c.cfg.wf || 0, line: c.cfg.line },
-          sub.points, { x: state.x, z: state.z }, outwardSign);
+        const ccfg = { u: c.cfg.u, w: c.cfg.w, r: c.cfg.r, uf: c.cfg.uf || 0, wf: c.cfg.wf || 0, line: c.cfg.line };
+        const rough = c.kind === 'G72'
+          ? expandG72(ccfg, sub.points, { x: state.x, z: state.z }, outwardSign)
+          : expandG71(ccfg, sub.points, { x: state.x, z: state.z }, outwardSign);
+        state._cycleKind = c.kind;
         warnings.push(...rough.warnings);
         const sDir0 = state.spindleDir || 'cw';
         for (const seg of rough.segments) timeline.push({ kind: 'move', segment: seg, line: c.cfg.line, phase: 'rough', spindleDir: sDir0 });
         if (rough.endPos) { state.x = rough.endPos.x; state.z = rough.endPos.z; }
         state.motionG = 0;
-        if (rough.stockMag) state._g71StockMag = rough.stockMag;
+        if (rough.partMag) state._cycleStockMag = rough.partMag;
       }
       return; // G71 param-only lines produce no direct motion of their own
     }
@@ -468,13 +575,23 @@ function interpretProgram(text, home) {
         if (!cached) warnings.push(...sub.warnings);
         if (!state._profileCache) state._profileCache = {};
         state._profileCache[key] = sub;
-        // rapid to the profile's start point first (real machine does this before finishing)
+        // The lead-in rapid has to end exactly where the first REPLAYED segment
+        // starts (a real machine positions there before finishing). Taking
+        // sub.points[0] is only right when the profile opens with a
+        // cutting block; with leading positioning moves (the Ej. 3's "N1 G00 Z-74.")
+        // points[0] is the first feed's TARGET, so the rapid stopped 0.5 mm short of
+        // where the replay began — which also stacked P1 and P2 on the same spot.
+        // Every segment before the first feed is positioning, and its own end is
+        // exactly where the replay resumes.
         const sDir1 = state.spindleDir || 'cw';
-        timeline.push({ kind: 'move', line: c.cfg.line, phase: 'finish', spindleDir: sDir1,
-          segment: { type: 'rapid', points: [{ x: state.x, z: state.z }, { x: sub.points[0].x, z: sub.points[0].z }] } });
-        // segments[0]'s own "from" is the cycle's original reference position, already
-        // covered by the lead-in rapid above — replay only the remaining segments.
-        for (const seg of sub.segments.slice(1)) {
+        const skip = Math.max(1, sub.firstCut || 0);
+        const leadSeg = sub.segments[skip - 1];
+        if (leadSeg) {
+          const leadTo = leadSeg.points[leadSeg.points.length - 1];
+          timeline.push({ kind: 'move', line: c.cfg.line, phase: 'finish', spindleDir: sDir1,
+            segment: { type: 'rapid', points: [{ x: state.x, z: state.z }, leadTo] } });
+        }
+        for (const seg of sub.segments.slice(skip)) {
           timeline.push({ kind: 'move', segment: { ...seg, phase: 'finish' }, line: seg.line, phase: 'finish', spindleDir: sDir1 });
         }
         state.x = sub.endState.x; state.z = sub.endState.z; state.motionG = sub.endState.motionG;
@@ -524,7 +641,7 @@ function interpretProgram(text, home) {
     }
   }
 
-  return { blocks, labelMap, timeline, warnings, finalState: state, g71StockMag: state._g71StockMag, noSemiLines };
+  return { blocks, labelMap, timeline, warnings, finalState: state, cycleStockMag: state._cycleStockMag, cycleKind: state._cycleKind || null, noSemiLines };
 }
 
 /* ---------- Bounds / stock sizing ---------- */
@@ -533,6 +650,11 @@ function computeBounds(timeline) {
   let maxZFeed = 0, minZFeed = 0; // feed-only extent: what the material itself actually spans,
   // excluding transient rapid clearance moves (e.g. a "G00 Z1" retract during
   // facing) that shouldn't be mistaken for real stock/part boundaries.
+  let maxAbsXCut = 0; // the same idea on the X side, taken from each feed move's TARGET:
+  // a rapid only POSITIONS the tool, so a "G00 X51." approach is not the stock diameter,
+  // and neither is the approach point a facing pass starts from. Unlike the Z extents
+  // this one includes the roughing passes, so the bar is never thinner than anything
+  // the program cuts into.
   let any = false;
   for (const ev of timeline) {
     if (ev.kind !== 'move') continue;
@@ -552,9 +674,13 @@ function computeBounds(timeline) {
         minZFeed = Math.min(minZFeed, p.z);
       }
     }
+    if (ev.segment.type === 'feed' && ev.segment.to) {
+      const toMag = Math.abs(ev.segment.to.x);
+      if (toMag > maxAbsXCut) maxAbsXCut = toMag;
+    }
   }
-  if (!any) { maxAbsX = 20; minZ = -50; maxZ = 0; maxZFeed = 0; minZFeed = -50; }
-  return { maxAbsX, minZ, maxZ, extremeSign, maxZFeed, minZFeed };
+  if (!any) { maxAbsX = 20; minZ = -50; maxZ = 0; maxZFeed = 0; minZFeed = -50; maxAbsXCut = 0; }
+  return { maxAbsX, minZ, maxZ, extremeSign, maxZFeed, minZFeed, maxAbsXCut };
 }
 
 /* ---------- Two-pass driver: resolves a sensible "home"/reference point
@@ -574,7 +700,7 @@ function runInterpreter(text) {
 if (typeof module !== 'undefined') {
   module.exports = {
     tokenizeLine, tokenizeProgram, resolveArcPoints, resolveMotionBlock,
-    resolveSubProfile, offsetProfile, expandG71, interpretProgram, computeBounds, runInterpreter,
+    resolveSubProfile, offsetProfile, expandG71, expandG72, interpretProgram, computeBounds, runInterpreter,
   };
 }
 

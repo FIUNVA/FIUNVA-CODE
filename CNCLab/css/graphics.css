@@ -30,7 +30,8 @@
 .viewport.lightBg .dimText{fill:#4a5459;}
 .viewport.lightBg .dimLine{stroke:#8c979c;}
 .viewport.lightBg .dimArrowHeadGrey{fill:#8c979c;}
-.viewport.lightBg .previewRough{stroke:#7d888d;}
+.viewport.lightBg .previewRough,
+.viewport.lightBg .previewGroove{stroke:#7d888d;}
 .viewport.lightBg .previewRapid{stroke:#c98a2e;}
 .viewport.lightBg .previewFeed,
 .viewport.lightBg .pathFeedGeneral{stroke:#0f7fa8;}
@@ -72,7 +73,11 @@
 .centerline{stroke:var(--grey-dim);stroke-dasharray:3 2;}
 .previewFeed{fill:none;stroke:var(--phosphor);stroke-linecap:round;stroke-linejoin:round;opacity:.9;}
 .previewRapid{fill:none;stroke:var(--amber-dim);stroke-dasharray:1.6 1.6;stroke-linecap:round;}
-.previewRough{fill:none;stroke:var(--grey);opacity:.7;}
+/* Grooving/parting traces (G75). It has to be declared explicitly: without a rule the
+   paths preview.js creates for the groove phase keep the SVG default fill and paint as
+   solid black blobs over the groove instead of as a dashed toolpath. */
+.previewRough,
+.previewGroove{fill:none;stroke:var(--grey);opacity:.7;}
 .previewFinish{fill:none;stroke:var(--phosphor-bright);stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 2.4px rgba(168,255,212,.65));}
 .materialFill{fill:url(#materialGradient);fill-opacity:.85;stroke:var(--grey);transition:d .05s linear;}
 /* "Relleno" off: drop only the interior shading, keep the part's outline */
@@ -82,11 +87,28 @@
 .pathFeedFinish{fill:none;stroke:var(--phosphor-bright);stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px rgba(168,255,212,.7));}
 .pathFeedGeneral{fill:none;stroke:var(--cyan);stroke-linecap:round;stroke-linejoin:round;}
 .toolMarker{filter:drop-shadow(0 0 4px rgba(168,255,212,.9));transition:opacity .2s, filter .2s;}
-.toolMarker.disabled{filter:none;opacity:.28;}
-.toolMarker.disabled .tInsert{fill:var(--grey);}
 .toolMarker .tHolder{fill:#7d8f89;stroke:#3a4a45;stroke-width:.3;}
 .toolMarker .tInsert{fill:var(--phosphor-bright);stroke:var(--bg0);stroke-width:.2;}
 .toolMarker .tTip{fill:var(--bg0);}
+
+/* Insert colour by turret station (applyToolMarkerColor sets the class): T01 green as
+   above, T02 blue, T03 red. The glow follows the insert so it doesn't read as a green
+   halo around a red plate. */
+.toolMarker.tool-t2{filter:drop-shadow(0 0 4px rgba(95,216,255,.9));}
+.toolMarker.tool-t3{filter:drop-shadow(0 0 4px rgba(255,90,90,.9));}
+/* The light theme drops the glow for every station (see the .lightBg .toolMarker rule
+   above); it has to be repeated after these two, which tie on specificity. */
+.viewport.lightBg .toolMarker.tool-t2,
+.viewport.lightBg .toolMarker.tool-t3{filter:none;}
+.toolMarker.tool-t2 .tInsert{fill:var(--cyan);stroke:var(--bg0);}
+.toolMarker.tool-t3 .tInsert{fill:var(--warn);stroke:var(--bg0);}
+.viewport.lightBg .toolMarker.tool-t2 .tInsert{fill:#0f7fa8;stroke:#ffffff;}
+.viewport.lightBg .toolMarker.tool-t3 .tInsert{fill:#c62828;stroke:#ffffff;}
+
+/* Declared AFTER the station colours on purpose: a disabled marker has no active tool, and
+   both selectors weigh three classes, so source order is what makes it grey again. */
+.toolMarker.disabled{filter:none;opacity:.28;}
+.toolMarker.disabled .tInsert{fill:var(--grey);}
 .axisLabel{fill:var(--text-dim);font-family:'JetBrains Mono',monospace;letter-spacing:1px;}
 .dimLine{stroke:var(--grey);}
 .dimText{fill:var(--text-dim);font-family:'JetBrains Mono',monospace;}
@@ -105,4 +127,41 @@
 .partZero .zeroAxisH{stroke:#ff8f9e;}
 .partZero .zeroAxisV{stroke:#8a9a96;}
 .partZero .partZeroFill{fill:#1424ff;}
+
+/* Threading toolpath. Deliberately faint: with the thread form now cut into the
+   silhouette, 26 stacked magenta passes would bury the teeth they were meant to
+   explain. Kept visible (and still bound to the "Trazos" toggle) so the progression
+   of pass radii can be read on demand. */
+.previewThread,
+.pathFeedThread{
+  fill:none;
+  stroke:var(--magenta);
+  stroke-linecap:round;
+  opacity:.26;
+}
+.viewport.lightBg .previewThread,
+.viewport.lightBg .pathFeedThread{stroke:#8f176f;opacity:.34;}
+
+/* Thread (G76) hatch. The teeth live in the material silhouette itself (see
+   applyThreadToHeightmap), so these rules only draw the transverse hatch that makes the
+   silhouette read as a screw: crest-to-crest in blue-grey, the marked tone, and
+   root-to-root in a lighter, fainter neutral grey. The crest tone is deliberately NOT
+   magenta — the hatch sits on the green material gradient, and a blue-grey reads as
+   "this line belongs to the thread" instead of competing with the magenta G76 toolpath.
+   Their stroke WEIGHT is not set here — threadHelixStroke() writes it per family, per
+   pass, so the hatch thickens as the cycle deepens the valleys. */
+.threadHelicalCrest{
+  fill:none;
+  stroke:#74a3bd;
+  stroke-linecap:round;
+  opacity:.9;
+}
+.threadHelicalRoot{
+  fill:none;
+  stroke:#a9bcc2;
+  stroke-linecap:round;
+  opacity:.38;
+}
+.viewport.lightBg .threadHelicalCrest{stroke:#3d6a85;opacity:.95;}
+.viewport.lightBg .threadHelicalRoot{stroke:#8c979c;opacity:.5;}
 

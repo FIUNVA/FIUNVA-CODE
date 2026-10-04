@@ -14,6 +14,15 @@ function reparseAndRender() {
   try {
     result = runInterpreter(el.input.value);
   } catch (err) {
+    // An internal error means the program was NEVER interpreted, so nothing of it may stay
+    // on screen. Returning with the previous scene still in the viewport made a program that
+    // crashes look exactly like the one loaded before it — the readouts, the dimensions and
+    // the silhouette all kept describing the previous part.
+    lastResult = null;
+    lastVb = null;
+    el.svg.innerHTML = '';
+    el.passHint.textContent = '';
+    el.dims.innerHTML = '<span>EL PROGRAMA NO SE PUDO INTERPRETAR</span>';
     renderLog([{ message: 'Error interno al interpretar el programa: ' + err.message }]);
     return;
   }

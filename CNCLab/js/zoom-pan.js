@@ -7,6 +7,10 @@
    ============================================================ */
 let zoomLevel = 1;
 const ZOOM_MIN = 0.4, ZOOM_MAX = 10;
+// Zoom the app opens at. The default frame reserves room for layers that start
+// hidden (the CNC dimension rows alone take 9 row-heights of vertical space), so
+// the part reads far too small on a 1:1 open; the user can wheel back out from here.
+const BOOT_ZOOM = 2;
 
 function applyZoom(newZoom, anchorClientX, anchorClientY) {
   newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, newZoom));

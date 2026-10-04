@@ -39,6 +39,20 @@ function positionMarker(p, spindleDir) {
   sim.marker.setAttribute('transform', `translate(${dp.z},${dp.x}) scale(1,${flip})`);
 }
 
+// The insert's colour follows the turret station, so the cutting tool is identifiable at a
+// glance: T0101/T0100 station 1 keeps the phosphor green, T0202 station 2 is the grooving/
+// parting insert (blue), T0303 station 3 the threading insert (red). In a Fanuc tool number
+// the FIRST two digits are the station and the last two the offset, which is why the divisor
+// is 100 — and why "T0100" (cancel offset) still reads as station 1.
+// Styles live in graphics.css (.toolMarker.tool-t2 / .tool-t3), not inline, so the light
+// background theme can override them.
+function applyToolMarkerColor(tool) {
+  if (!sim.marker) return;
+  const station = Math.floor((tool || 0) / 100);
+  sim.marker.classList.toggle('tool-t2', station === 2);
+  sim.marker.classList.toggle('tool-t3', station === 3);
+}
+
 function buildSimScene() {
   const vb = computeViewBox(lastResult.bounds, lastResult.cycleStockMag, lastResult);
   sim.vb = vb;
@@ -49,15 +63,20 @@ function buildSimScene() {
   sim.world.appendChild(sim.materialEl);
   const tracesGroup = svgEl('g', { id: 'tracesGroup' });
   tracesGroup.style.display = showTraces ? '' : 'none';
-  sim.groups = { rough: svgEl('g'), rapid: svgEl('g'), general: svgEl('g'), finish: svgEl('g') };
+  sim.groups = { rough: svgEl('g'), rapid: svgEl('g'), general: svgEl('g'), finish: svgEl('g'), thread: svgEl('g') };
   tracesGroup.appendChild(sim.groups.rough);
   tracesGroup.appendChild(sim.groups.rapid);
   tracesGroup.appendChild(sim.groups.general);
   tracesGroup.appendChild(sim.groups.finish);
+  tracesGroup.appendChild(sim.groups.thread);
   // the "in progress" cut, on the active (M03/M04) side only
   sim.tempPath = svgEl('path', { class: 'previewFeed', 'stroke-width': sim.SC.normal });
   tracesGroup.appendChild(sim.tempPath);
   sim.world.appendChild(tracesGroup);
+  // Thread cycle descriptors + how deep the deepest completed pass has cut. Reset on
+  // every scene rebuild so jumpToStep() replays the thread exactly like any other cut.
+  sim.threadDefs = collectThreadDefs(lastResult);
+  sim.threadDepth = new Map();
   const pzNodeSim = sim.world.querySelector('#partZeroGroup');
   if (pzNodeSim) sim.world.appendChild(pzNodeSim);
   sim.marker = buildToolMarker();
@@ -146,6 +165,7 @@ function applyInstant(ev) {
     el.coolantTag.textContent = ev.state === 'on' ? 'ON' : 'OFF';
   } else if (ev.kind === 'tool') {
     el.roT.textContent = String(ev.tool).padStart(4, '0');
+    applyToolMarkerColor(ev.tool);
     if (!sim.toolEnabled) { sim.toolEnabled = true; sim.marker.classList.remove('disabled'); }
   }
   if (ev.line !== undefined) { activeLine = ev.line; renderHighlight(); scrollActiveLineIntoView(); }
@@ -169,16 +189,26 @@ function finalizeStep(step) {
   sim.tempPath.setAttribute('d', '');
   let cls, group, sw;
   if (step.seg.type === 'rapid') { cls = 'pathRapid'; group = sim.groups.rapid; sw = sim.SC.thin; }
-  else if (step.phase === 'rough') { cls = 'pathFeedRough'; group = sim.groups.rough; sw = sim.SC.thin; }
+  else if (step.phase === 'rough' || step.phase === 'groove') { cls = 'pathFeedRough'; group = sim.groups.rough; sw = sim.SC.thin; }
   else if (step.phase === 'finish') { cls = 'pathFeedFinish'; group = sim.groups.finish; sw = sim.SC.normal; }
+  else if (step.phase === 'thread') { cls = 'pathFeedThread'; group = sim.groups.thread; sw = sim.SC.normal; }
   else { cls = 'pathFeedGeneral'; group = sim.groups.general; sw = sim.SC.normal; }
-  const dash = step.phase === 'rough' ? { 'stroke-dasharray': `${sim.SC.u * 1.6} ${sim.SC.u * 1.2}` } : {};
+  const dash = (step.phase === 'rough' || step.phase === 'groove') ? { 'stroke-dasharray': `${sim.SC.u * 1.6} ${sim.SC.u * 1.2}` } : {};
   // One trace per move, on the active side only — the drawing is a half-section (see
   // preview.js). Rapids and the tool marker are a single physical point, not a sweep.
   group.appendChild(svgEl('path', { class: cls, 'stroke-width': sw, ...dash, d: pathFromPoints(toDisplayPoints(pts, step.spindleDir)) }));
   if (step.seg.type === 'feed') {
-    applyFeedToHeightmap(sim.hm, step.seg);
-    sim.materialEl.setAttribute('d', heightmapToSilhouettePath(sim.hm));
+    // Threading passes don't sweep a groove, so they must not go through the generic
+    // heightmap path — that min'd the whole band to one cylinder and erased the
+    // crests. applyThreadToHeightmap cuts the real thread form instead, and does so
+    // at the depth reached SO FAR, which is what makes the thread visibly deepen
+    // pass by pass through the Fanuc sqrt progression.
+    if (step.phase === 'thread') {
+      applyThreadCutForPass(step.seg);
+    } else {
+      applyFeedToHeightmap(sim.hm, step.seg);
+      sim.materialEl.setAttribute('d', heightmapToSilhouettePath(sim.hm));
+    }
   }
   el.roX.textContent = (pts[pts.length - 1].x * 2).toFixed(3);
   el.roZ.textContent = pts[pts.length - 1].z.toFixed(3);
@@ -279,4 +309,50 @@ el.speedSlider.addEventListener('input', () => {
   sim.speed = parseFloat(el.speedSlider.value);
   el.speedVal.textContent = sim.speed.toFixed(2) + '×';
 });
+/* ---------- G76 threading: progressive cut into the material ---------- */
+// Each threading pass deepens the valleys of the thread form already cut into the
+// silhouette. Keying on the cycle's start Z (not on the pass index) keeps several
+// G76 cycles in one program independent, and re-reading the descriptor from the
+// segment means jumpToStep()'s from-scratch replay stays exact.
+function applyThreadCutForPass(seg) {
+  const th = seg.thread;
+  if (!th || !sim.threadDefs) return;
+  const key = th.threadStartZ.toFixed(4);
+  const depth = Math.max(sim.threadDepth.get(key) || 0, th.depth);
+  sim.threadDepth.set(key, depth);
+  applyThreadToHeightmap(sim.hm, th, depth);
+  sim.materialEl.setAttribute('d', heightmapToSilhouettePath(sim.hm));
+  ensureThreadHelixLines(th);
+}
 
+// The transverse hatch appears with the first pass of a cycle and stays for the rest of
+// it, thickening as the passes deepen. Each family lives in its own <g> because
+// stroke-width is inherited: one attribute per family re-weights the whole hatch every
+// pass, instead of touching thirty paths.
+function ensureThreadHelixLines(th) {
+  if (!sim.groups.threadHelix) {
+    sim.groups.threadHelix = svgEl('g', { id: 'threadHelixGroup' });
+    // Above the traces so the hatch reads over the toolpath, below the datum.
+    sim.world.insertBefore(sim.groups.threadHelix, sim.world.querySelector('#partZeroGroup'));
+  }
+  const key = th.threadStartZ.toFixed(4);
+  let wrap = sim.groups.threadHelix.querySelector(`[data-thread-z="${key}"]`);
+  if (!wrap) {
+    wrap = svgEl('g', { 'data-thread-z': key });
+    const crestG = svgEl('g', { class: 'threadHelixCrestLines' });
+    const rootG = svgEl('g', { class: 'threadHelixRootLines' });
+    for (const line of buildThreadHelixPaths(th, sim.vb)) {
+      const d = `M ${line.z1.toFixed(3)} ${line.y1.toFixed(3)} L ${line.z2.toFixed(3)} ${line.y2.toFixed(3)}`;
+      (line.cls === 'threadHelicalCrest' ? crestG : rootG).appendChild(svgEl('path', { class: line.cls, d }));
+    }
+    wrap.appendChild(crestG);
+    wrap.appendChild(rootG);
+    sim.groups.threadHelix.appendChild(wrap);
+  }
+  // Deeper cut = more assertive hatch, driven by the same depth the valleys follow.
+  const progress = (th.depth || 0) / (th.threadHeight || 1);
+  const crestG = wrap.querySelector('.threadHelixCrestLines');
+  const rootG = wrap.querySelector('.threadHelixRootLines');
+  if (crestG) crestG.setAttribute('stroke-width', threadHelixStroke(sim.SC, progress, 'crest'));
+  if (rootG) rootG.setAttribute('stroke-width', threadHelixStroke(sim.SC, progress, 'root'));
+}

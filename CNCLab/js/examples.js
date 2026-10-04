@@ -111,6 +111,75 @@ T0100;
 M30;
 `;
 
+/* ============================================================
+   EXAMPLE 4: M16×2.0 BOLT — G71 roughing, G70 finish, G75 groove & parting, G76 threading
+   Blank: Ø30 (faced to the centre at Z0). Thread: M16×2, 30 mm long, run from Z+3 to Z-27.
+   Undercut: radial plunge at Z-31 down to Ø12.5, as wide as the 3 mm insert.
+   Shoulder: Ø25, 10 mm long (Z=-32..-42). Parting: G75 to X0 at Z-42.
+   Tools: T01 turn, T02 groove/part (3 mm), T03 thread (60°).
+   M04 (tool above the centreline) because every X here is positive, which is the pairing
+   this simulator expects; with M03 it emitted its own "husillo y signo de X" warning.
+   ============================================================ */
+const EXAMPLE_4 = `O0100 (PERNO M16 CON UNDERCUT G71 G75 G76);
+
+G50 S2500 M04; 
+G96 S120 M08;
+G00 T0101;
+G00 X30. ;
+Z0. ;
+
+G01 X0. F0.1;
+G00 Z1.;
+X30.;
+Z0. ;
+
+G71 U2. R0.5;
+G71 P10 Q20 U0.4 W0.1 F0.2;
+
+N10 G01 X14. Z1.;
+G01 X16. Z-1.;
+G01 Z-32.;
+G01 X25.;
+N20 G01 Z-42.;
+
+G70 P10 Q20 F0.08;
+G00 X30. Z5.;
+G28 U0. W0.;
+T0100;
+
+T0202;
+G96 S80 M04;
+G00 X18. Z-31.;
+
+G75 R0.5;
+G75 X12.5 P1500 F0.05;
+G00 X30. Z5.;
+
+T0303;
+G97 S600 M04;
+G00 X18. Z3.;
+
+G76 P020060 Q100 R0.02;
+G76 X13.55 Z-27. P1227 Q250 F2.0;
+G00 X30. Z5.;
+G28 U0. W0.;
+T0300;
+
+T0202;
+G96 S60 M04;
+G00 X27. Z-42.;
+
+G75 R0.5;
+G75 X0. P2000 F0.04;
+
+G00 X30. Z10.;
+M09;
+M05;
+G28 U0. W0.;
+T0200;
+M30;
+`;
+
 function exampleProgramNumber(exampleNumber) {
   // Radix 10, not the default-looking 2: 3.toString(2) is "11", which turned the
   // third example into "O0011" and any fourth into "O00100".
@@ -118,19 +187,32 @@ function exampleProgramNumber(exampleNumber) {
 }
 
 function withExampleProgramNumber(code, exampleNumber) {
-  const header = exampleProgramNumber(exampleNumber) + ';';
-  return /^\s*O\s*\d+\s*;/i.test(code)
-    ? code.replace(/^\s*O\s*\d+\s*;/i, header)
-    : header + '\n' + code;
+  const header = exampleProgramNumber(exampleNumber);
+  // The whole program-number block is matched, comment included, and only the number is
+  // rewritten: "O0100 (PERNO M16 ...);" becomes "O0004 (PERNO M16 ...);". Matching the
+  // digits alone used to fail against a commented header, and the number was then PREPENDED,
+  // leaving the example with "O0004;" on line 1 and "O0100 (...)" on line 2.
+  const re = /^(\s*)O\s*\d+\s*(\([^)]*\))?\s*;/i;
+  return re.test(code)
+    ? code.replace(re, (_, sp, comment) => sp + header + (comment ? ' ' + comment : '') + ';')
+    : header + ';\n' + code;
 }
 
-const EXAMPLES = [EXAMPLE_1, EXAMPLE_2, EXAMPLE_3].map((code, index) => ({
-  name: (/G72/.test(code) ? 'G72' : 'G71') + '-Ejemplo ' + (index + 1),
+// Explicit titles. They used to be derived from the code ("/G72/ ? 'G72' : 'G71'"), which
+// labelled the fourth example "G71-Ejemplo 4" and hid the fact that it is the G75 + G76 one.
+const EXAMPLE_TITLES = ['G71-Ejemplo 1', 'G71-Ejemplo 2', 'G72-Ejemplo 3', 'G75/G76-Ejemplo 4'];
+
+const EXAMPLES = [EXAMPLE_1, EXAMPLE_2, EXAMPLE_3, EXAMPLE_4].map((code, index) => ({
+  name: EXAMPLE_TITLES[index] || ('Ejemplo ' + (index + 1)),
   code: withExampleProgramNumber(code, index + 1),
 }));
 // Taken from the list rather than from the raw EXAMPLE_n text so the program the app
 // boots with is exactly what the matching entry in the EJEMPLOS menu loads — same
-// text, same O number. Reaching for the template instead would boot O0011 while the
-// "G72-Ejemplo 3" button still produced O0003.
-const DEFAULT_PROGRAM = EXAMPLES[2].code;
+// text, same O number. Reaching for the template instead boots a program whose O number
+// disagrees with the button that produces it (O0011 against O0003, back when this pointed
+// at the third example).
+// Default is the fourth: the M16 bolt with undercut, the one program that exercises every
+// cycle the simulator implements at once — G71 roughing, G70 finishing, G75 grooving and
+// parting, G76 threading. Booting with any simpler one hides half of them.
+const DEFAULT_PROGRAM = EXAMPLES[3].code;
 

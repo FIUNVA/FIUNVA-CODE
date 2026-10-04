@@ -10,6 +10,20 @@
 
 const ARC_SEGMENTS = 96; // polyline resolution for G02/G03
 
+// Width of the grooving/parting insert, in mm. Fanuc's G75 has no tool-geometry word, so a
+// cycle that plunges without a Z would cut a zero-width slit that the heightmap cannot show
+// (it can only sample the material AT the tool's Z). The simulator therefore assumes this
+// width and sweeps the whole band; the glosario states the approximation.
+const GROOVE_TOOL_WIDTH = 3;
+/* Radius of the pip ("tetón") a parting cycle leaves behind when it stops EXACTLY on the axis.
+   A real parting insert has a nose radius, so a cut that ends at X0 cannot reach a mathematical
+   point at the centre of rotation: a small core of material survives, and the bar is left
+   attached by it. That is why practice parts PAST the axis (X-1.5 and beyond) instead of
+   stopping on it. The simulator does not model the tool's nose geometry, so this is a single
+   representative radius standing in for it — enough to show the defect, small enough that the
+   separation still reads as complete. A cycle that overshoots the axis leaves no pip. */
+const PART_OFF_PIP = 0.4;
+
 /* ---------- Tokenizer ---------- */
 // Letters whose value is a physical dimension in FANUC's "decimal point
 // programming": written WITH a decimal point the number is plain mm; written
@@ -462,6 +476,353 @@ function expandG72(cfg, profilePoints, startState, outwardSign) {
   return { segments, warnings, passCount, endPos: pos, stockMag, partMag };
 }
 
+/* ---------- Expand a G75 (grooving / parting-off) cycle ---------- */
+/* G75 is a fixed canned cycle for grooving and parting-off. It does not use
+   a profile (N-P..N-Q) like G71/G72; it runs entirely within the two blocks
+   where it is programmed. The first block provides the retract amount R.
+   The second block provides X (target diameter/radius), Z (target Z), P
+   (increment per peck, in microns unless decimal point is present), and F
+   (feed). The cycle performs repeated pecking in X toward the target, with
+   a rapid retract of R after each peck, returning to the start Z. If Z
+   differs from the start Z, each peck advances in Z as well (axial groove). */
+function expandG75(cfg, startState) {
+  const { r: retract, x: targetX, z: targetZ, p: incRaw, f: feed, line } = cfg;
+  const segments = [];
+  const warnings = [];
+
+  if (incRaw === undefined || incRaw === null || incRaw <= 0) {
+    warnings.push({ line, message: 'G75 sin incremento de pasada (P) válido — ciclo omitido' });
+    return { segments, warnings, passCount: 0, endPos: startState };
+  }
+  if (targetX === undefined || targetX === null) {
+    warnings.push({ line, message: 'G75 sin X ni U (profundidad del ciclo) — ciclo omitido' });
+    return { segments, warnings, passCount: 0, endPos: startState };
+  }
+
+  // P is in microns (per Fanuc spec for G75) unless written with a decimal point.
+  // The tokenizer does NOT scale P (it's not in DIMENSIONAL_LETTERS), so a bare
+  // "P1500" arrives as 1500. We treat values >= 100 without a decimal point as microns.
+  // Since we can't know if the original had a decimal point here, we use the
+  // conventional heuristic: if the value is >= 100 it's almost certainly microns.
+  const inc = incRaw >= 100 ? incRaw / 1000 : incRaw; // mm per peck
+  const retractDist = retract || 0.5; // mm, default 0.5 if not given
+
+  const startX = startState.x;
+  const startZ = startState.z;
+  const endX = targetX; // already radius (tokenizer divides X by 2)
+  const endZ = targetZ !== undefined ? targetZ : startZ;
+  // No Z in the cycle block: the cycle plunges at ONE Z, so the cut takes the width of the
+  // insert (see GROOVE_TOOL_WIDTH). With a Z it is an axial/ramped groove and the ordinary
+  // slanted feed already removes the whole band it sweeps.
+  const radialPlunge = Math.abs(endZ - startZ) < 1e-9;
+  const width = radialPlunge ? GROOVE_TOOL_WIDTH : 0;
+  // Cutting to (or past) the axis severs the bar. Flagged because the heightmap otherwise
+  // reads a constant-Z feed that reaches the axis as a facing and clears EVERYTHING from
+  // that Z forward — which deletes the whole part instead of cutting it off.
+  //
+  // Two DIFFERENT questions, previously conflated in one test, and the difference is visible:
+  //   partsBar   — the cycle REACHES the axis, so it severs the bar. A target past the axis
+  //                (X-1.5) is negative as a radius and must count too, or an overtraveling
+  //                parting cycle would be mistaken for a facing and delete the part.
+  //   stopsAtAxis— the cycle STOPS on the axis, which is what leaves the pip behind. An
+  //                overtraveling cycle cuts clean through and leaves no pip.
+  const partsBar = endX <= 0.15;
+  const stopsAtAxis = Math.abs(endX) <= 0.15;
+  const pip = partsBar && stopsAtAxis;
+
+  const direction = Math.sign(endX - startX) || -1; // typically negative (toward center)
+  let curX = startX;
+  let passCount = 0;
+  const maxPasses = 500; // safety cap
+
+  let pos = { x: startX, z: startZ };
+
+  while (true) {
+    if (passCount >= maxPasses) {
+      warnings.push({ line, message: 'G75: límite de pasadas alcanzado — ciclo truncado' });
+      break;
+    }
+    passCount++;
+
+    // Next peck depth: advance by inc, but clamp to endX so we always reach the target
+    let nextX = curX + direction * inc;
+    if (direction < 0 ? nextX < endX : nextX > endX) nextX = endX;
+
+    // 1. Feed cut to peck depth at current Z (this IS the cutting feed)
+    // For radial grooves (Z constant), this cuts in X.
+    // For axial grooves (Z changes), this is a diagonal feed.
+    const feedTargetZ = endZ;
+    // The pip belongs to the ONE peck that actually reaches the axis. The earlier pecks only
+    // shave the stub down to their own depth, so marking them would draw the pip from the
+    // first pass and hide the very progression the cycle is meant to show.
+    const reachesAxis = Math.abs(nextX - endX) < 1e-9;
+    segments.push({
+      type: 'feed', phase: 'groove', pass: passCount,
+      points: [{ x: pos.x, z: pos.z }, { x: nextX, z: feedTargetZ }],
+      f: feed, s: startState.s,
+      partOff: partsBar, width, pip: pip && reachesAxis,
+    });
+    pos = { x: nextX, z: feedTargetZ };
+
+    // If we've reached the target, do the retract/return and stop after this peck
+    if (reachesAxis) {
+      // 2. Rapid retract R in X (opposite to cut direction)
+      const retractX = nextX - direction * retractDist;
+      segments.push({
+        type: 'rapid', phase: 'groove', pass: passCount,
+        points: [{ x: pos.x, z: pos.z }, { x: retractX, z: pos.z }]
+      });
+      pos = { x: retractX, z: pos.z };
+
+      // 3. Rapid return to start Z (clear of the groove)
+      if (Math.abs(pos.z - startZ) > 1e-9) {
+        segments.push({
+          type: 'rapid', phase: 'groove', pass: passCount,
+          points: [{ x: pos.x, z: pos.z }, { x: pos.x, z: startZ }]
+        });
+        pos = { x: pos.x, z: startZ };
+      }
+      break;
+    }
+
+    // 2. Rapid retract R in X (opposite to cut direction)
+    const retractX = nextX - direction * retractDist;
+    segments.push({
+      type: 'rapid', phase: 'groove', pass: passCount,
+      points: [{ x: pos.x, z: pos.z }, { x: retractX, z: pos.z }]
+    });
+    pos = { x: retractX, z: pos.z };
+
+    // 3. Rapid return to start Z (clear of the groove)
+    if (Math.abs(pos.z - startZ) > 1e-9) {
+      segments.push({
+        type: 'rapid', phase: 'groove', pass: passCount,
+        points: [{ x: pos.x, z: pos.z }, { x: pos.x, z: startZ }]
+      });
+      pos = { x: pos.x, z: startZ };
+    }
+
+    curX = nextX;
+  }
+
+  // Final move: rapid back to start X (safe clearance)
+  if (Math.abs(pos.x - startX) > 1e-9) {
+    segments.push({
+      type: 'rapid', phase: 'groove',
+      points: [{ x: pos.x, z: pos.z }, { x: startX, z: startZ }]
+    });
+    pos = { x: startX, z: startZ };
+  }
+
+  // partOffZ travels to the renderer, which needs it to draw the stub of bar standing on the
+  // chuck side of the cut: without that stub there is nothing for the cycle to sever.
+  return { segments, warnings, passCount, endPos: pos, partOffZ: partsBar ? endZ : undefined };
+}
+
+/* ---------- Expand a G76 (multi-pass threading) cycle ---------- */
+/* G76 performs multi-pass threading. It uses two blocks:
+   Block 1: G76 P(n)(r)(a) Q(minDepth) R(finishAllowance)
+     - P: 6 digits: nn = finish passes (01-99), rr = chamfer angle/amount (00=none), aa = tool angle (60=metric, 55=Whitworth, etc.)
+     - Q: minimum cut depth (microns) for first pass
+     - R: finish allowance (mm) reserved for final passes
+   Block 2: G76 X/U Z/W R(taper) P(threadHeight) Q(firstCut) F(lead)
+     - X/U: target minor diameter (radius after tokenizer)
+     - Z/W: thread length endpoint
+     - R: taper (radius difference over thread length); 0 = straight
+     - P: thread height (microns) = total radial depth of thread
+     - Q: first pass depth (microns) — overrides block 1 Q if present
+     - F: thread lead (pitch for single-start)
+   The cycle generates a series of passes:
+     - Roughing passes: decreasing depth per sqrt progression until (threadHeight - finishAllowance)
+     - Finish passes: 'n' passes at full threadHeight
+   Each pass is a synchronized feed (G32-equivalent) from thread start Z to end Z.
+   Chamfer (rr) adds an exit taper at the end of each pass. */
+function expandG76(cfg, startState) {
+  const {
+    // Block 1 params
+    pRaw: pBlock1, qRaw: qBlock1, r: finishAllowance,
+    // Block 2 params
+    x: targetX, z: targetZ, rTaper, pRaw2: pThreadHeight, qRaw2: qFirstCut, f: lead,
+    line
+  } = cfg;
+
+  const segments = [];
+  const warnings = [];
+
+  // Parse P block 1: nn rr aa (6 digits)
+  let finishPasses = 2, chamferAmount = 0, toolAngle = 60;
+  if (pBlock1 !== undefined && pBlock1 !== null) {
+    const pStr = String(Math.round(pBlock1)).padStart(6, '0');
+    finishPasses = parseInt(pStr.slice(0, 2), 10) || 2;
+    const chamferDigits = parseInt(pStr.slice(2, 4), 10) || 0;
+    chamferAmount = chamferDigits * 0.1; // Fanuc: 0.1° units (or distance if 45° assumed)
+    toolAngle = parseInt(pStr.slice(4, 6), 10) || 60;
+  }
+
+  // Depths in microns -> mm
+  const threadHeight = (pThreadHeight || 0) / 1000; // mm
+  // Q(dmin) is the first cut depth AND the floor of the progression; the block-2 value
+  // overrides the block-1 one. It used to be parsed into a `minDepth` nobody read, which
+  // also let a Q-less cycle reach the sqrt loop and grind out 100 zero-depth passes.
+  const qDepth = (qFirstCut !== undefined && qFirstCut !== null) ? qFirstCut : qBlock1;
+  const minDepth = (qDepth || 0) / 1000; // mm
+  const firstCutDepth = minDepth;
+  const finishAllow = finishAllowance || 0; // mm
+  const taper = rTaper || 0; // radius difference over thread length
+
+  if (threadHeight <= 0) {
+    warnings.push({ line, message: 'G76 sin altura de hilo (P bloque 2) válida — ciclo omitido' });
+    return { segments, warnings, passCount: 0, endPos: startState };
+  }
+  if (lead <= 0) {
+    warnings.push({ line, message: 'G76 sin paso de rosca (F) válido — ciclo omitido' });
+    return { segments, warnings, passCount: 0, endPos: startState };
+  }
+  if (firstCutDepth <= 0) {
+    warnings.push({ line, message: 'G76 sin profundidad mínima de pasada (Q) válida — ciclo omitido' });
+    return { segments, warnings, passCount: 0, endPos: startState };
+  }
+
+  const startX = startState.x;
+  const startZ = startState.z;
+  const endX = targetX !== undefined ? targetX : startX; // radius
+  const endZ = targetZ !== undefined ? targetZ : startZ;
+  const threadLength = Math.abs(endZ - startZ);
+  const directionZ = endZ > startZ ? 1 : -1;
+
+  // Calculate pass depths: roughing (sqrt progression) + finish passes
+  const roughTargetDepth = threadHeight - finishAllow;
+  const passDepths = [];
+
+  if (firstCutDepth > 0) {
+    passDepths.push(firstCutDepth);
+  }
+
+  // Roughing passes: sqrt progression
+  // Fanuc standard: depth_k = firstCut * sqrt(k) capped at roughTargetDepth
+  let k = passDepths.length + 1;
+  while (true) {
+    const depth = firstCutDepth * Math.sqrt(k);
+    if (depth >= roughTargetDepth - 1e-6) break;
+    passDepths.push(depth);
+    k++;
+    if (passDepths.length > 100) break; // safety
+  }
+
+  // Finish passes at full thread height
+  for (let i = 0; i < finishPasses; i++) {
+    passDepths.push(threadHeight);
+  }
+
+  // Thread start position: approach in X to just outside major diameter.
+  // endX is the block-2 X already halved to a radius — the ROOT radius — so the crest sits
+  // one thread height above it. This binding must exist: the descriptor attached to every
+  // pass carries majorR to the renderer, and reading it as an assumed global threw a
+  // ReferenceError that aborted the whole G76 cycle.
+  const majorR = endX + threadHeight;
+  const approachX = majorR + 2; // 2mm clearance
+
+  let pos = { x: startX, z: startZ };
+  let passCount = 0;
+
+  // Rapid to approach position
+  if (Math.abs(pos.x - approachX) > 1e-9) {
+    segments.push({
+      type: 'rapid', phase: 'thread', pass: 0,
+      points: [{ x: pos.x, z: pos.z }, { x: approachX, z: pos.z }]
+    });
+    pos = { x: approachX, z: pos.z };
+  }
+  if (Math.abs(pos.z - startZ) > 1e-9) {
+    segments.push({
+      type: 'rapid', phase: 'thread', pass: 0,
+      points: [{ x: pos.x, z: pos.z }, { x: pos.x, z: startZ }]
+    });
+    pos = { x: pos.x, z: startZ };
+  }
+
+  // Each threading pass
+  for (const depth of passDepths) {
+    passCount++;
+    const passX = majorR - depth; // current X for this pass (radius)
+
+    // Rapid to pass X at start Z
+    if (Math.abs(pos.x - passX) > 1e-9) {
+      segments.push({
+        type: 'rapid', phase: 'thread', pass: passCount,
+        points: [{ x: pos.x, z: pos.z }, { x: passX, z: startZ }]
+      });
+      pos = { x: passX, z: startZ };
+    }
+
+    // Synchronized feed (G32-equivalent): Z moves, X follows taper
+    // For taper: X changes linearly from passX at startZ to (passX + taper*directionZ) at endZ
+    const passEndX = passX + taper * directionZ;
+
+    // Chamfer: if chamferAmount > 0, extend the pass beyond endZ by chamfer distance
+    // Chamfer is typically 45°, so Z extension = X extension = chamferAmount
+    let feedEndZ = endZ;
+    let feedEndX = passEndX;
+    if (chamferAmount > 0) {
+      // Chamfer in degrees -> distance. For 45°, Z extension = chamferAmount
+      // We'll treat chamferAmount as mm of Z extension at 45°
+      const chamferDist = chamferAmount; // simplified: 0.1° units -> mm at 45°
+      feedEndZ = endZ + directionZ * chamferDist;
+      feedEndX = passEndX + directionZ * chamferDist;
+    }
+
+    segments.push({
+      type: 'feed', phase: 'thread', pass: passCount,
+      points: [{ x: pos.x, z: pos.z }, { x: feedEndX, z: feedEndZ }],
+      f: lead, // F is lead (mm/rev) in threading
+      s: startState.s,
+      thread: {
+        lead, angle: toolAngle, chamfer: chamferAmount,
+        pass: passCount, total: passDepths.length,
+        depth, threadHeight,
+        // Authoritative geometry for the renderer. The renderer must not try to
+        // reconstruct these from per-pass segments: a pass's start X is that PASS's
+        // radius (majorR minus its own depth), not the thread's root radius, so
+        // anchoring the profile on it produced a fake taper from one end to the other.
+        majorR,               // crest radius  = minorR + threadHeight
+        minorR: endX,         // root radius   = the G76 block-2 X (a radius already)
+        threadStartZ: startZ, // where the threading passes begin
+        threadEndZ: feedEndZ, // where they end (already includes the exit chamfer)
+        taper,                // radial change over the thread length (R)
+      }
+    });
+    pos = { x: feedEndX, z: feedEndZ };
+
+    // Rapid retract in X (clear the thread)
+    const retractX = passX + 2; // 2mm clearance
+    segments.push({
+      type: 'rapid', phase: 'thread', pass: passCount,
+      points: [{ x: pos.x, z: pos.z }, { x: retractX, z: pos.z }]
+    });
+    pos = { x: retractX, z: pos.z };
+
+    // Rapid return to start Z
+    if (Math.abs(pos.z - startZ) > 1e-9) {
+      segments.push({
+        type: 'rapid', phase: 'thread', pass: passCount,
+        points: [{ x: pos.x, z: pos.z }, { x: pos.x, z: startZ }]
+      });
+      pos = { x: pos.x, z: startZ };
+    }
+  }
+
+  // Final rapid to safe position
+  if (Math.abs(pos.x - approachX) > 1e-9) {
+    segments.push({
+      type: 'rapid', phase: 'thread',
+      points: [{ x: pos.x, z: pos.z }, { x: approachX, z: startZ }]
+    });
+    pos = { x: approachX, z: startZ };
+  }
+
+  return { segments, warnings, passCount, endPos: pos };
+}
+
 /* ---------- Full program interpretation ---------- */
 function interpretProgram(text, home) {
   const { blocks, labelMap, warnings: tokWarnings, noSemiLines } = tokenizeProgram(text);
@@ -562,6 +923,80 @@ function interpretProgram(text, home) {
       return; // G71 param-only lines produce no direct motion of their own
     }
 
+    // G75 cycle trigger — two-block canned cycle: first block stores R,
+    // second block (with X/Z/P/F) fires the groove/parting cycle.
+    if (map.G && map.G.includes(75)) {
+      if (map.R && map.R.length && !(map.X || map.U || map.Z || map.W || map.P)) {
+        // First block: only R (retract amount)
+        state._g75cfg = { r: map.R[0], line: b.line };
+        return;
+      }
+      if ((map.X || map.U || map.Z || map.W) && map.P && map.P.length) {
+        // Second block: X/Z target, P increment, F feed
+        const cfg = { ...state._g75cfg, line: b.line };
+        if (map.X && map.X.length) cfg.x = map.X[0] / 2; // X is diameter -> radius
+        else if (map.U && map.U.length) cfg.x = state.x + map.U[0] / 2;
+        if (map.Z && map.Z.length) cfg.z = map.Z[0];
+        else if (map.W && map.W.length) cfg.z = state.z + map.W[0];
+        cfg.p = map.P[0]; // P in microns (tokenizer does not scale P)
+        if (map.F && map.F.length) cfg.f = map.F[0];
+        const rough = expandG75(cfg, { x: state.x, z: state.z, f: state.f, s: state.s });
+        warnings.push(...rough.warnings);
+        const sDir0 = state.spindleDir || 'cw';
+        for (const seg of rough.segments) timeline.push({ kind: 'move', segment: seg, line: b.line, phase: 'groove', spindleDir: sDir0 });
+        if (rough.endPos) { state.x = rough.endPos.x; state.z = rough.endPos.z; }
+        state.motionG = 0;
+        state._g75cfg = null;
+        // Only the FIRST cut counts as the separation: it is the one that frees the piece.
+        if (rough.partOffZ !== undefined && state._partOffZ === undefined) state._partOffZ = rough.partOffZ;
+        return;
+      }
+      warnings.push({ line: b.line, message: 'G75: bloque no reconocido — el ciclo necesita un bloque con R (retroceso) y otro con X o Z, P (incremento) y F' });
+      return;
+    }
+
+    // G76 cycle trigger — two-block threading cycle: first block stores P/Q/R,
+    // second block (with X/Z/R/P/Q/F) fires the threading passes.
+    if (map.G && map.G.includes(76)) {
+      const hasAxis = map.X || map.U || map.Z || map.W;
+      if (!hasAxis && map.P && map.P.length && !(map.F && map.F.length)) {
+        // First block: P (nn rr aa), Q (min depth), R (finish allowance). Fanuc's first
+        // block ALWAYS carries Q and R, so the only things that tell it apart from the
+        // threading block are the absence of an axis word and of F. Excluding Q/R/F here
+        // made "G76 P020060 Q100 R0.02;" fall through unrecognised, silently losing the
+        // finish allowance and the nn/rr/aa triple.
+        state._g76cfg = {
+          pRaw: map.P[0],
+          qRaw: map.Q ? map.Q[0] : undefined,
+          r: map.R ? map.R[0] : undefined,
+          line: b.line
+        };
+        return;
+      }
+      if (hasAxis && map.P && map.P.length && map.F && map.F.length) {
+        // Second block: X/U Z/W R(taper) P(threadHeight) Q(firstCut) F(lead)
+        const cfg = { ...state._g76cfg, line: b.line };
+        if (map.X && map.X.length) cfg.x = map.X[0] / 2;
+        else if (map.U && map.U.length) cfg.x = state.x + map.U[0] / 2;
+        if (map.Z && map.Z.length) cfg.z = map.Z[0];
+        else if (map.W && map.W.length) cfg.z = state.z + map.W[0];
+        if (map.R && map.R.length) cfg.rTaper = map.R[0];
+        cfg.pRaw2 = map.P[0]; // thread height in microns
+        if (map.Q && map.Q.length) cfg.qRaw2 = map.Q[0];
+        cfg.f = map.F[0]; // lead (pitch)
+        const rough = expandG76(cfg, { x: state.x, z: state.z, f: state.f, s: state.s });
+        warnings.push(...rough.warnings);
+        const sDir0 = state.spindleDir || 'cw';
+        for (const seg of rough.segments) timeline.push({ kind: 'move', segment: seg, line: b.line, phase: 'thread', spindleDir: sDir0 });
+        if (rough.endPos) { state.x = rough.endPos.x; state.z = rough.endPos.z; }
+        state.motionG = 0;
+        state._g76cfg = null;
+        return;
+      }
+      warnings.push({ line: b.line, message: 'G76: bloque no reconocido — se esperan dos bloques, el primero con P/Q/R y el segundo con X o Z, P y F' });
+      return;
+    }
+
     // G70 cycle trigger
     if (map.G && map.G.includes(70) && map.P && map.Q) {
       const c = cycles.find(cc => cc.atIdx === idx);
@@ -641,7 +1076,9 @@ function interpretProgram(text, home) {
     }
   }
 
-  return { blocks, labelMap, timeline, warnings, finalState: state, cycleStockMag: state._cycleStockMag, cycleKind: state._cycleKind || null, noSemiLines };
+  // partOffZ is undefined unless the program severed the bar with a G75 that reached the axis;
+  // computeViewBox uses it to place the stub of bar the cut is made through.
+  return { blocks, labelMap, timeline, warnings, finalState: state, cycleStockMag: state._cycleStockMag, cycleKind: state._cycleKind || null, partOffZ: state._partOffZ, noSemiLines };
 }
 
 /* ---------- Bounds / stock sizing ---------- */

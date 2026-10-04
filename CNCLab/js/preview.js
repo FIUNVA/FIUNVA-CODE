@@ -4,6 +4,33 @@
 let lastResult = null;
 let lastVb = null;
 
+/* Collects ONE descriptor per G76 threading cycle.
+   The interpreter already attaches the authoritative geometry to every threading pass
+   (see expandG76), so the renderer must never re-derive a cycle's extents from the
+   passes themselves: a pass's own X is THAT PASS's radius (majorR minus its depth),
+   not the thread's root radius, which is what made the earlier taper interpolation
+   slant the whole thread. */
+function collectThreadDefs(result) {
+  const defs = [];
+  for (const ev of result.timeline) {
+    if (ev.kind !== 'move' || ev.phase !== 'thread' || ev.segment.type !== 'feed') continue;
+    const th = ev.segment.thread;
+    if (!th || !(th.lead > 0) || !(th.threadHeight > 0)) continue;
+    const dup = defs.some(d => Math.abs(d.threadStartZ - th.threadStartZ) < 1e-6
+      && Math.abs(d.majorR - th.majorR) < 1e-6
+      && Math.abs(d.lead - th.lead) < 1e-9);
+    if (!dup) defs.push(th);
+  }
+  return defs;
+}
+
+/* Helper: convert machine points to display points for a given spindle direction */
+function toDisplayPoints(pts, spindleDir) {
+  // Mirror X for ccw (tool above axis)
+  const sign = spindleDir === 'ccw' ? -1 : 1;
+  return pts.map(p => ({ x: p.x * sign, z: p.z }));
+}
+
 function renderStaticPreview(result) {
   const vb = computeViewBox(result.bounds, result.cycleStockMag, result);
   lastVb = vb;
@@ -16,6 +43,8 @@ function renderStaticPreview(result) {
   const roughPts = [];
   const finishPts = [];
   const generalPts = [];
+  const groovePts = [];
+  const threadPts = [];
 
   for (const ev of result.timeline) {
     if (ev.kind !== 'move' || ev.phase === 'retract') continue;
@@ -25,14 +54,24 @@ function renderStaticPreview(result) {
     // silhouette is a full body of revolution (and it is always symmetric).
     const dPts = toDisplayPoints(seg.points, ev.spindleDir);
     if (seg.type === 'feed') {
-      applyFeedToHeightmap(hm, seg);
+      // Threading passes are synchronized feeds, not contouring sweeps: running them
+      // through the heightmap here min'd the whole band down to one cylinder at the
+      // pass radius and erased the crests. The thread is applied afterwards from its
+      // cycle descriptor instead (see threadDefs below).
+      if (ev.phase !== 'thread') applyFeedToHeightmap(hm, seg);
       if (ev.phase === 'rough') roughPts.push(dPts);
       else if (ev.phase === 'finish') finishPts.push(dPts);
+      else if (ev.phase === 'groove') groovePts.push(dPts);
+      else if (ev.phase === 'thread') threadPts.push(dPts);
       else generalPts.push(dPts);
     } else {
       rapidPts.push(dPts);
     }
   }
+
+  // Cut the real ISO thread form into the material, at full programmed depth.
+  const threadDefs = collectThreadDefs(result);
+  for (const th of threadDefs) applyThreadToHeightmap(hm, th, th.threadHeight);
 
   const fillEl = svgEl('path', { id: 'materialFillEl', class: 'materialFill' + (showFill ? '' : ' noFill'), 'stroke-width': SC.thin, d: heightmapToSilhouettePath(hm) });
   world.appendChild(fillEl);
@@ -40,10 +79,32 @@ function renderStaticPreview(result) {
   const tracesGroup = svgEl('g', { id: 'tracesGroup' });
   tracesGroup.style.display = showTraces ? '' : 'none';
   for (const pts of roughPts) tracesGroup.appendChild(svgEl('path', { class: 'previewRough', 'stroke-width': SC.thin, 'stroke-dasharray': `${SC.u * 1.6} ${SC.u * 1.2}`, d: pathFromPoints(pts) }));
+  for (const pts of groovePts) tracesGroup.appendChild(svgEl('path', { class: 'previewGroove', 'stroke-width': SC.thin, 'stroke-dasharray': `${SC.u * 1.6} ${SC.u * 1.2}`, d: pathFromPoints(pts) }));
   for (const pts of rapidPts) tracesGroup.appendChild(svgEl('path', { class: 'previewRapid', 'stroke-width': SC.thin, d: pathFromPoints(pts) }));
   for (const pts of generalPts) tracesGroup.appendChild(svgEl('path', { class: 'previewFeed', 'stroke-width': SC.normal, d: pathFromPoints(pts) }));
   for (const pts of finishPts) tracesGroup.appendChild(svgEl('path', { class: 'previewFinish', 'stroke-width': SC.normal, d: pathFromPoints(pts) }));
-  world.appendChild(tracesGroup);
+  for (const pts of threadPts) tracesGroup.appendChild(svgEl('path', { class: 'previewThread', 'stroke-width': SC.normal, d: pathFromPoints(pts) }));
+  
+  // Transverse hatch, drawn over the now-threaded silhouette. These are what make it
+  // read as a screw rather than a row of notches: crest-to-crest lines (dark) and
+  // root-to-root lines (light grey), each crossing the full diameter at half a pitch.
+  // The static preview is the FINISHED cycle, so the hatch carries its final weight.
+  if (threadDefs.length) {
+    const helixGroup = svgEl('g', { id: 'threadHelixGroup' });
+    for (const th of threadDefs) {
+      // stroke-width is inherited, so one value per family weights the whole hatch.
+      const crestG = svgEl('g', { 'stroke-width': threadHelixStroke(SC, 1, 'crest') });
+      const rootG = svgEl('g', { 'stroke-width': threadHelixStroke(SC, 1, 'root') });
+      for (const line of buildThreadHelixPaths(th, vb)) {
+        const d = `M ${line.z1.toFixed(3)} ${line.y1.toFixed(3)} L ${line.z2.toFixed(3)} ${line.y2.toFixed(3)}`;
+        (line.cls === 'threadHelicalCrest' ? crestG : rootG).appendChild(svgEl('path', { class: line.cls, d }));
+      }
+      helixGroup.appendChild(crestG);
+      helixGroup.appendChild(rootG);
+    }
+    world.appendChild(helixGroup);
+  }
+
   // keep the datum symbol on top of the part rather than buried under it
   const pzNode = world.querySelector('#partZeroGroup');
   if (pzNode) world.appendChild(pzNode);

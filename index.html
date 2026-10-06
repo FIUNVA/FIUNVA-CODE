@@ -1,783 +1,1014 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="Imagenes/FC3.png">
-    <title>Hub de Proyectos Web</title>
+    <title>Hub de Proyectos Web | FIUNVA</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Space Grotesk, Orbitron & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#070a12',
+                            card: '#0f172a',
+                            border: '#1e293b',
+                            cyan: '#00f3ff',
+                            green: '#00ff88',
+                            magenta: '#ff007f',
+                            purple: '#9d4edd',
+                            orange: '#ff9e00',
+                            yellow: '#ffaa00',
+                            blue: '#3a86ff'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        grotesk: ['Space Grotesk', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         :root {
-            --primary: #2ecc71;
-            --secondary: #3498db;
-            --accent: #e74c3c;
-            --background: #2c3e50;
-            --card-bg: #34495e;
-            --text: #ecf0f1;
-            --text-secondary: #bdc3c7;
-            --hover: #1abc9c;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --bg-dark: #070a12;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, var(--background), #1a252f);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 2rem;
+            background-color: var(--bg-dark);
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .project-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .project-card::before {
-            content: '';
-            position: absolute;
+        /* Ambient Canvas Grid Background */
+        #bg-canvas {
+            position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
         }
 
-        .project-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        /* Glassmorphism Effect */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .project-card:hover::before {
-            opacity: 1;
+        .glass-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.9) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .project-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            border-radius: 50%;
-            margin-bottom: 1.5rem;
+        /* Glowing Neon Text */
+        .neon-text-cyan {
+            text-shadow: 0 0 12px rgba(0, 243, 255, 0.6), 0 0 25px rgba(0, 243, 255, 0.3);
         }
 
-        .calculator-icon {
-            background: linear-gradient(45deg, #f39c12, #e67e22);
+        /* Custom Project Neon Colors & Glowing Variables */
+        .card-calc { 
+            --card-accent: #ffaa00; 
+            --card-neon-alpha: rgba(255, 170, 0, 0.6); 
+            --card-neon-glow: rgba(255, 170, 0, 0.3); 
+        }
+        .card-game { 
+            --card-accent: #b026ff; 
+            --card-neon-alpha: rgba(176, 38, 255, 0.6); 
+            --card-neon-glow: rgba(176, 38, 255, 0.3); 
+        }
+        .card-pong { 
+            --card-accent: #ff0055; 
+            --card-neon-alpha: rgba(255, 0, 85, 0.6); 
+            --card-neon-glow: rgba(255, 0, 85, 0.3); 
+        }
+        .card-mech { 
+            --card-accent: #00ff88; 
+            --card-neon-alpha: rgba(0, 255, 136, 0.6); 
+            --card-neon-glow: rgba(0, 255, 136, 0.3); 
+        }
+        .card-invest { 
+            --card-accent: #ff5500; 
+            --card-neon-alpha: rgba(255, 85, 0, 0.6); 
+            --card-neon-glow: rgba(255, 85, 0, 0.3); 
+        }
+        .card-grafo { 
+            --card-accent: #00f3ff; 
+            --card-neon-alpha: rgba(0, 243, 255, 0.6); 
+            --card-neon-glow: rgba(0, 243, 255, 0.3); 
+        }
+        .card-cnc { 
+            --card-accent: #3a86ff; 
+            --card-neon-alpha: rgba(58, 134, 255, 0.6); 
+            --card-neon-glow: rgba(58, 134, 255, 0.3); 
         }
 
-        .game-icon {
-            background: linear-gradient(45deg, #9b59b6, #8e44ad);
-        }
-
-        .pong-icon {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
-        }
-
-        .mechlab-icon {
-            background: linear-gradient(45deg, #00b894, #0984e3);
-        }
-
-        .mechatronics-icon {
-            background: linear-gradient(45deg, #f39c12, #e74c3c);
-        }
-
-        .cnclab-icon {
-            background: linear-gradient(45deg, #3a86ff, #8338ec);
-        }
-
-        .simgrafo-icon {
-            background: linear-gradient(45deg, #0d7377, #1565c0);
-        }
-
-        .project-title {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .project-description {
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .project-features {
-            list-style: none;
-            margin-bottom: 2rem;
-        }
-
-        .project-features li {
-            padding: 0.5rem 0;
-            color: var(--text-secondary);
+        .project-card-container {
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform-origin: center center;
             position: relative;
-            padding-left: 1.5rem;
-        }
-
-        .project-features li::before {
-            content: '✓';
-            color: var(--primary);
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-        }
-
-        .project-button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(45deg, var(--primary), var(--hover));
-            border: none;
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: block;
-            text-align: center;
-        }
-
-        .project-button:hover {
-            transform: scale(0.98);
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
-        }
-
-        .calculator-btn {
-            background: linear-gradient(45deg, #f39c12, #e67e22);
-        }
-
-        .calculator-btn:hover {
-            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
-        }
-
-        .game-btn {
-            background: linear-gradient(45deg, #9b59b6, #8e44ad);
-        }
-
-        .game-btn:hover {
-            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
-        }
-
-        .pong-btn {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
-        }
-
-        .pong-btn:hover {
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
-        }
-
-        .mechlab-btn {
-            background: linear-gradient(45deg, #00b894, #0984e3);
-        }
-
-        .mechlab-btn:hover {
-            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
-        }
-
-        .mechatronics-btn {
-            background: linear-gradient(45deg, #f39c12, #e74c3c);
-        }
-
-        .mechatronics-btn:hover {
-            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
-        }
-
-        .simgrafo-btn {
-            background: linear-gradient(45deg, #0d7377, #1565c0);
-        }
-
-        .simgrafo-btn:hover {
-            box-shadow: 0 5px 15px rgba(13, 115, 119, 0.3);
-        }
-
-        .cnclab-btn {
-            background: linear-gradient(45deg, #3a86ff, #8338ec);
-        }
-
-        .cnclab-btn:hover {
-            box-shadow: 0 5px 15px rgba(58, 134, 255, 0.3);
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--card-bg);
-            color: var(--text-secondary);
-        }
-
-        .footer-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .footer-logo {
-            height: 9rem;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .tech-stack {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .tech-badge {
-            background: var(--card-bg);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .projects-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-            
-            .project-card {
-                padding: 1.5rem;
-            }
-        }
-
-        /* Animaciones */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .project-card {
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        .project-card:nth-child(1) { animation-delay: 0.1s; }
-        .project-card:nth-child(2) { animation-delay: 0.2s; }
-        .project-card:nth-child(3) { animation-delay: 0.3s; }
-        .project-card:nth-child(4) { animation-delay: 0.4s; }
-        .project-card:nth-child(5) { animation-delay: 0.5s; }
-        .project-card:nth-child(6) { animation-delay: 0.6s; }
-        .project-card:nth-child(7) { animation-delay: 0.7s; }
-
-        :root {
-            --primary: #176b58;
-            --secondary: #39756c;
-            --background: #f0f2ed;
-            --card-bg: #ffffff;
-            --text: #1d2926;
-            --text-secondary: #56635e;
-            --hover: #e3a64a;
-        }
-
-        body {
-            padding: clamp(1rem, 4vw, 3.5rem);
-            background-color: var(--background);
-            background-image: linear-gradient(rgba(29, 41, 38, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 41, 38, 0.025) 1px, transparent 1px);
-            background-size: 28px 28px;
-            color: var(--text);
-            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-        }
-
-        .container {
-            max-width: 1180px;
-        }
-
-        .header {
-            margin-bottom: 2rem;
-            text-align: left;
-        }
-
-        .header h1 {
-            margin: 0.6rem 0 0.75rem;
-            color: var(--text);
-            background: none;
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: clamp(2.3rem, 5vw, 3.6rem);
-            font-weight: 600;
-            line-height: 1.05;
-            -webkit-text-fill-color: currentColor;
-        }
-
-        .header p {
-            max-width: 650px;
-            color: var(--text-secondary);
-            font-size: 1rem;
-            line-height: 1.6;
-        }
-
-        .eyebrow {
-            color: var(--primary);
-            font-size: 0.76rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-
-        .projects-grid {
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-            grid-auto-rows: 390px;
-            gap: 1.15rem;
-            margin-bottom: 2rem;
-        }
-
-        .project-card {
-            --project-accent: #176b58;
-            min-width: 0;
-            height: 100%;
-            padding: 0;
-            overflow: hidden;
-            border: 1px solid #d9dfd9;
-            border-radius: 8px;
-            background: var(--card-bg);
-            box-shadow: 0 5px 18px rgba(29, 41, 38, 0.07);
-            animation: fadeInUp 0.45s ease both;
-        }
-
-        .project-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 28px rgba(29, 41, 38, 0.13);
-        }
-
-        .project-card::before {
-            height: 4px;
-            background: var(--project-accent);
-            opacity: 1;
-        }
-
-        .calculator-card { --project-accent: #a95d08; }
-        .game-card { --project-accent: #684a9b; }
-        .pong-card { --project-accent: #b83f3b; }
-        .mechlab-card { --project-accent: #087565; }
-        .investigation-card { --project-accent: #b64d2c; }
-        .simgrafo-card { --project-accent: #176c76; }
-        .cnclab-card { --project-accent: #3d579d; }
-
-        .project-cover {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 2rem;
-            cursor: pointer;
-            list-style: none;
-        }
-
-        .project-cover::-webkit-details-marker {
-            display: none;
-        }
-
-        .project-cover::marker {
-            content: "";
-        }
-
-        .project-icon {
-            width: 62px;
-            height: 62px;
-            margin: 1.2rem 0 1.1rem;
-            border: 1px solid color-mix(in srgb, var(--project-accent), white 72%);
-            border-radius: 8px;
-            background: color-mix(in srgb, var(--project-accent), white 91%);
-            color: var(--project-accent);
-            font-size: 1.8rem;
-        }
-
-        .project-type {
-            color: var(--project-accent);
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .project-title {
-            margin: 0;
-            color: var(--text);
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: 1.65rem;
-            line-height: 1.15;
-            text-align: left;
-        }
-
-        .project-hint {
-            display: flex;
-            width: 100%;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: auto;
-            padding-top: 1.2rem;
-            border-top: 1px solid #e4e8e3;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        .project-hint span {
-            color: var(--project-accent);
-            font-size: 1.2rem;
-        }
-
-        .project-details {
-            position: absolute;
             z-index: 1;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.65rem;
-            padding: 1.65rem 1.75rem 1.4rem;
-            border-top: 4px solid var(--project-accent);
-            background: #fff;
+        }
+
+        .project-card-inner {
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        /* Hover Behavior: Centered Proportional Scale + Radiant Neon Glow */
+        .project-card-container:hover {
+            transform: scale(1.05);
+            z-index: 20;
+        }
+
+        .project-card-container:hover .project-card-inner {
+            border-color: var(--card-accent);
+            box-shadow: 0 0 25px var(--card-neon-alpha), 0 0 50px var(--card-neon-glow);
+        }
+
+        /* Scanning Line Effect */
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(1000%); }
+        }
+
+        .scanline-effect {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--card-accent, #00f3ff), transparent);
             opacity: 0;
-            visibility: hidden;
-            transform: translateY(8px);
-            transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+            pointer-events: none;
         }
 
-        .project-card:hover .project-details,
-        .project-card:focus-within .project-details,
-        .project-card[open] .project-details {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
+        .project-card-container:hover .scanline-effect {
+            opacity: 0.9;
+            animation: scanline 2.2s linear infinite;
         }
 
-        .project-card:hover > .project-cover,
-        .project-card:focus-within > .project-cover,
-        .project-card[open] > .project-cover {
-            z-index: 2;
-            inset: 0 0 auto auto;
-            width: 42px;
-            height: 42px;
-            padding: 0;
-            border-radius: 0 0 0 8px;
-            background: #fff;
+        /* Pulsing Dot */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.25); }
         }
 
-        .project-card:hover > .project-cover > *,
-        .project-card:focus-within > .project-cover > *,
-        .project-card[open] > .project-cover > * {
-            opacity: 0;
+        .pulse-dot {
+            animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
-        .project-card:hover > .project-cover::after,
-        .project-card:focus-within > .project-cover::after,
-        .project-card[open] > .project-cover::after {
-            content: "×";
-            color: var(--project-accent);
-            font-size: 1.5rem;
-            line-height: 1;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-
-        .project-description {
-            margin: 0;
-            color: var(--text-secondary);
-            font-size: 0.88rem;
-            line-height: 1.45;
-            text-align: left;
+        ::-webkit-scrollbar-track {
+            background: #070a12;
         }
-
-        .project-features {
-            display: grid;
-            gap: 0.28rem;
-            margin: 0;
-            padding: 0;
-            list-style: none;
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
         }
-
-        .project-features li {
-            padding: 0 0 0 1.2rem;
-            color: var(--text);
-            font-size: 0.82rem;
-            line-height: 1.3;
-        }
-
-        .project-features li::before {
-            content: "✓";
-            left: 0;
-            color: var(--project-accent);
-        }
-
-        .project-button {
-            width: auto;
-            min-height: 42px;
-            margin-top: auto;
-            padding: 0.7rem 1rem;
-            border-radius: 5px;
-            background: var(--project-accent);
-            color: #fff;
-            font-size: 0.9rem;
-        }
-
-        .project-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 12px color-mix(in srgb, var(--project-accent), transparent 72%);
-        }
-
-        .footer {
-            margin-top: 2rem;
-            padding-top: 1.4rem;
-            border-color: #d9dfd9;
-        }
-
-        .footer-logo {
-            height: 6rem;
-        }
-
-        .project-cover:focus-visible,
-        .project-button:focus-visible {
-            outline: 3px solid #e3a64a;
-            outline-offset: 3px;
-        }
-
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 2.4rem;
-            }
-
-            .projects-grid {
-                grid-template-columns: 1fr;
-                grid-auto-rows: 390px;
-            }
-
-            .project-cover {
-                padding: 1.65rem;
-            }
-
-            .project-details {
-                gap: 0.55rem;
-                padding: 1.35rem 1.35rem 1.2rem;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                scroll-behavior: auto !important;
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f3ff;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <header class="header">
-            <span class="eyebrow">FIUNVA · Colección digital</span>
-            <h1>Proyectos web</h1>
-            <p>Herramientas, simuladores y juegos interactivos desarrollados para explorar, aprender y experimentar.</p>
+<body class="relative min-h-screen text-slate-100 flex flex-col justify-between selection:bg-cyber-cyan selection:text-black">
+
+    <!-- Interactive Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 w-full flex-grow flex flex-col">
+
+        <!-- HEADER SECTION -->
+        <header class="mb-10 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-800/80">
+            <div class="max-w-2xl">
+                <!-- Updated Main Title -->
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-orbitron tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-cyber-cyan mb-3 neon-text-cyan">
+                    Hub de proyectos Web
+                </h1>
+                
+                <!-- Subtitle -->
+                <p class="text-base sm:text-lg text-slate-400 font-normal leading-relaxed">
+                    Herramientas, simuladores y juegos interactivos desarrollados para explorar, aprender y experimentar.
+                </p>
+            </div>
+
+            <!-- System Status Indicator -->
+            <div class="flex items-center justify-center gap-3">
+                <div class="glass-panel px-5 py-3 rounded-xl border border-slate-800 flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-cyber-green pulse-dot shadow-[0_0_10px_#00ff88]"></div>
+                    <div class="text-left">
+                        <div class="text-xs text-slate-400 font-mono uppercase tracking-wider">Estado del Hub</div>
+                        <div class="text-sm font-semibold font-grotesk text-cyber-green">7 Módulos Online</div>
+                    </div>
+                </div>
+            </div>
         </header>
 
-        <main class="projects-grid">
-            <details class="project-card calculator-card">
-                <summary class="project-cover">
-                    <span class="project-type">Herramienta</span>
-                    <span class="project-icon">🧮</span>
-                    <span class="project-title">Calculadora Universal</span>
-                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
-                </summary>
-                <div class="project-details">
-                    <p class="project-description">Calculadora avanzada para operaciones en múltiples bases numéricas, con procedimientos detallados.</p>
-                    <ul class="project-features">
-                        <li>Conversión entre bases (2 a 36)</li>
-                        <li>Operaciones aritméticas básicas</li>
-                        <li>Suma, resta, multiplicación y división</li>
-                        <li>Procedimientos algorítmicos</li>
-                        <li>Resolución paso a paso</li>
-                    </ul>
-                    <a href="Calculadora/index.html" class="project-button">Abrir Calculadora</a>
+        <section class="mb-10 space-y-4">
+            <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                
+                <!-- Search Bar -->
+                <div class="relative flex-1 max-w-md">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-magnifying-glass text-cyber-cyan/70"></i>
+                    </div>
+                    <input type="text" id="search-input" 
+                           placeholder="Buscar proyectos por nombre o palabras clave..." 
+                           class="w-full pl-10 pr-10 py-3 rounded-xl glass-panel text-sm text-slate-100 placeholder-slate-500 border border-slate-800 focus:border-cyber-cyan focus:outline-none focus:ring-1 focus:ring-cyber-cyan transition-all duration-200">
+                    <button id="clear-search" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-            </details>
 
-            <details class="project-card game-card">
-                <summary class="project-cover">
-                    <span class="project-type">Juego arcade</span>
-                    <span class="project-icon">🚀</span>
-                    <span class="project-title">Computer Space</span>
-                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
-                </summary>
-                <div class="project-details">
-                    <p class="project-description">Recreación del clásico arcade espacial: pilota una nave y enfréntate a objetos enemigos.</p>
-                    <ul class="project-features">
-                        <li>Gráficos retro estilo arcade</li>
-                        <li>Sistema de puntuación y vidas</li>
-                        <li>Efectos de sonido</li>
-                        <li>Controles intuitivos</li>
-                        <li>Física de movimiento</li>
-                    </ul>
-                    <a href="ComputerSpace/index.html" class="project-button">Jugar Computer Space</a>
+                <!-- Category Filters -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar" id="filter-container">
+                    <button data-filter="all" class="filter-btn active px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium font-grotesk transition-all duration-200 bg-cyber-cyan/20 border border-cyber-cyan text-cyber-cyan shadow-[0_0_12px_rgba(0,243,255,0.25)] whitespace-nowrap">
+                        <i class="fa-solid fa-border-all mr-1.5"></i>Todos
+                    </button>
+                    <button data-filter="Herramienta" class="filter-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium font-grotesk transition-all duration-200 bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-calculator mr-1.5 text-cyber-yellow"></i>Herramientas
+                    </button>
+                    <button data-filter="Juego" class="filter-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium font-grotesk transition-all duration-200 bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-gamepad mr-1.5 text-cyber-magenta"></i>Juegos
+                    </button>
+                    <button data-filter="Simulador" class="filter-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium font-grotesk transition-all duration-200 bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-gears mr-1.5 text-cyber-green"></i>Simuladores
+                    </button>
+                    <button data-filter="Optimización" class="filter-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium font-grotesk transition-all duration-200 bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-diagram-project mr-1.5 text-cyber-cyan"></i>Optimización
+                    </button>
+                    <button data-filter="Investigación" class="filter-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium font-grotesk transition-all duration-200 bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-compass mr-1.5 text-cyber-orange"></i>Investigación
+                    </button>
                 </div>
-            </details>
+            </div>
 
-            <details class="project-card pong-card">
-                <summary class="project-cover">
-                    <span class="project-type">Juego clásico</span>
-                    <span class="project-icon">🏓</span>
-                    <span class="project-title">Pong Clásico</span>
-                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
-                </summary>
-                <div class="project-details">
-                    <p class="project-description">El legendario tenis de mesa digital, recreado con controles responsive y física de rebote.</p>
-                    <ul class="project-features">
-                        <li>Gameplay clásico</li>
-                        <li>Controles para dos jugadores</li>
-                        <li>Física de rebote</li>
-                        <li>Interfaz minimalista</li>
-                        <li>Velocidad progresiva</li>
-                    </ul>
-                    <a href="Pong/index.html" class="project-button">Jugar Pong</a>
-                </div>
-            </details>
+            <!-- Status Count -->
+            <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+                <span>Mostrando <span id="visible-count" class="font-bold text-cyber-cyan">7</span> de 7 proyectos</span>
+                <span id="no-results-msg" class="hidden text-cyber-magenta"><i class="fa-solid fa-circle-exclamation mr-1"></i>No se encontraron proyectos coincidentes</span>
+            </div>
+        </section>
 
-            <details class="project-card mechlab-card">
-                <summary class="project-cover">
-                    <span class="project-type">Simulador mecánico</span>
-                    <span class="project-icon">⚙️</span>
-                    <span class="project-title">MECHLAB</span>
-                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
-                </summary>
-                <div class="project-details">
-                    <p class="project-description">Simulador de sistemas mecánicos para modelar y estudiar el movimiento y su dinámica.</p>
-                    <ul class="project-features">
-                        <li>Modos translacional, rotacional y péndulo</li>
-                        <li>Paleta de elementos mecánicos</li>
-                        <li>Simulación en tiempo real</li>
-                        <li>Análisis de ecuaciones y gráficas</li>
-                        <li>Guardado, carga y exportación</li>
-                    </ul>
-                    <a href="MECHLAB/index.html" class="project-button">Abrir MECHLAB</a>
-                </div>
-            </details>
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 flex-grow" id="projects-grid">
 
-            <details class="project-card investigation-card">
-                <summary class="project-cover">
-                    <span class="project-type">Investigación interactiva</span>
-                    <span class="project-icon">🧭</span>
-                    <span class="project-title">Mechatronics Investigation V2.0</span>
-                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
-                </summary>
-                <div class="project-details">
-                    <p class="project-description">Investigación forense industrial con pistas, personajes y resolución de incidentes mecatrónicos.</p>
-                    <ul class="project-features">
-                        <li>Tablero de pistas y evidencias</li>
-                        <li>Mapa de fábrica y ubicaciones</li>
-                        <li>Personajes y sospechosos</li>
-                        <li>Decisiones y diagramas de proceso</li>
-                        <li>Narración interactiva</li>
-                    </ul>
-                    <a href="MechatronicsInvestigationV2.0/index.html" class="project-button">Abrir Investigation</a>
-                </div>
-            </details>
+            <!-- PROJECT 1: Calculadora Universal -->
+            <div class="project-card-container card-calc" data-category="Herramienta" data-title="Calculadora Universal" data-keywords="calculadora universal bases numericas conversion operaciones aritmeticas suma resta multiplicacion division paso a paso">
+                <div class="project-card-inner glass-card relative h-full rounded-2xl border border-slate-800 p-6 flex flex-col justify-between overflow-hidden group">
+                    <div class="scanline-effect"></div>
+                    
+                    <div>
+                        <!-- Header / Category Badge & Icon -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                                <i class="fa-solid fa-calculator text-xs"></i>
+                                Herramienta
+                            </span>
+                            <span class="text-3xl p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-amber-400 shadow-[0_0_15px_rgba(255,170,0,0.15)]">
+                                🧮
+                            </span>
+                        </div>
 
-            <details class="project-card simgrafo-card">
-                <summary class="project-cover">
-                    <span class="project-type">Optimización industrial</span>
-                    <span class="project-icon">📈</span>
-                    <span class="project-title">GraphFlow Optimizer</span>
-                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
-                </summary>
-                <div class="project-details">
-                    <p class="project-description">Simulador de rutas industriales para analizar nodos, aristas, costos y flujos de planta.</p>
-                    <ul class="project-features">
-                        <li>Rutas con algoritmo de Dijkstra</li>
-                        <li>Árboles mínimos con Prim y Kruskal</li>
-                        <li>Mapa visual de planta</li>
-                        <li>Bitácora y métricas</li>
-                        <li>Selección de origen y destino</li>
-                    </ul>
-                    <a href="SimGrafo/index.html" class="project-button">Abrir GraphFlow</a>
-                </div>
-            </details>
+                        <!-- Project Title -->
+                        <h2 class="text-2xl font-bold font-grotesk text-slate-100 group-hover:text-amber-400 transition-colors mb-2">
+                            Calculadora Universal
+                        </h2>
 
-            <details class="project-card cnclab-card">
-                <summary class="project-cover">
-                    <span class="project-type">Simulador CNC</span>
-                    <span class="project-icon">🔧</span>
-                    <span class="project-title">CNCLab</span>
-                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
-                </summary>
-                <div class="project-details">
-                    <p class="project-description">Simulador interactivo de torno CNC para programar, validar y visualizar trayectorias G-code.</p>
-                    <ul class="project-features">
-                        <li>Editor de programación G-code</li>
-                        <li>Vista gráfica X-Z del torneado</li>
-                        <li>Simulación paso a paso o continua</li>
-                        <li>Controles de velocidad, home y reinicio</li>
-                        <li>Ejemplos y archivos .txt/.nc</li>
-                    </ul>
-                    <a href="CNCLab/index.html" class="project-button">Abrir CNCLab</a>
+                        <!-- Description -->
+                        <p class="text-sm text-slate-400 leading-relaxed mb-5">
+                            Calculadora avanzada para operaciones en múltiples bases numéricas, con procedimientos detallados y conversión en tiempo real.
+                        </p>
+
+                        <!-- Accordion Details Toggle -->
+                        <button class="details-toggle w-full py-2 px-3 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 text-xs text-slate-300 font-medium flex items-center justify-between mb-4 transition-all">
+                            <span>Ver características principales</span>
+                            <i class="fa-solid fa-chevron-down text-amber-400 transition-transform duration-300"></i>
+                        </button>
+
+                        <!-- Feature List -->
+                        <div class="details-content hidden space-y-2 mb-6 text-xs text-slate-300 border-l-2 border-amber-500/40 pl-3 py-1">
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-amber-400 mt-0.5"></i>
+                                <span>Conversión entre bases (2 a 36)</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-amber-400 mt-0.5"></i>
+                                <span>Operaciones aritméticas básicas</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-amber-400 mt-0.5"></i>
+                                <span>Suma, resta, multiplicación y división</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-amber-400 mt-0.5"></i>
+                                <span>Procedimientos algorítmicos</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-amber-400 mt-0.5"></i>
+                                <span>Resolución paso a paso</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <a href="Calculadora/index.html" class="mt-4 w-full py-3 px-4 rounded-xl font-grotesk text-sm font-bold text-center text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-[0_0_20px_rgba(255,170,0,0.3)] transition-all duration-200 flex items-center justify-center gap-2 group/btn">
+                        <span>Abrir Calculadora</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"></i>
+                    </a>
                 </div>
-            </details>
+            </div>
+
+            <!-- PROJECT 2: Computer Space -->
+            <div class="project-card-container card-game" data-category="Juego" data-title="Computer Space" data-keywords="computer space juego arcade nave retro puntuacion vidas efectos sonido controles intuitivos fisica movimiento">
+                <div class="project-card-inner glass-card relative h-full rounded-2xl border border-slate-800 p-6 flex flex-col justify-between overflow-hidden group">
+                    <div class="scanline-effect"></div>
+                    
+                    <div>
+                        <!-- Header / Category Badge & Icon -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider bg-purple-500/10 border border-purple-500/30 text-purple-400">
+                                <i class="fa-solid fa-gamepad text-xs"></i>
+                                Juego Arcade
+                            </span>
+                            <span class="text-3xl p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-purple-400 shadow-[0_0_15px_rgba(176,38,255,0.15)]">
+                                🚀
+                            </span>
+                        </div>
+
+                        <!-- Project Title -->
+                        <h2 class="text-2xl font-bold font-grotesk text-slate-100 group-hover:text-purple-400 transition-colors mb-2">
+                            Computer Space
+                        </h2>
+
+                        <!-- Description -->
+                        <p class="text-sm text-slate-400 leading-relaxed mb-5">
+                            Recreación del clásico arcade espacial: pilota una nave hiper-dinámica y enfréntate a objetos enemigos.
+                        </p>
+
+                        <!-- Accordion Details Toggle -->
+                        <button class="details-toggle w-full py-2 px-3 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 text-xs text-slate-300 font-medium flex items-center justify-between mb-4 transition-all">
+                            <span>Ver características principales</span>
+                            <i class="fa-solid fa-chevron-down text-purple-400 transition-transform duration-300"></i>
+                        </button>
+
+                        <!-- Feature List -->
+                        <div class="details-content hidden space-y-2 mb-6 text-xs text-slate-300 border-l-2 border-purple-500/40 pl-3 py-1">
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-purple-400 mt-0.5"></i>
+                                <span>Gráficos retro estilo arcade</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-purple-400 mt-0.5"></i>
+                                <span>Sistema de puntuación y vidas</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-purple-400 mt-0.5"></i>
+                                <span>Efectos de sonido retro</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-purple-400 mt-0.5"></i>
+                                <span>Controles intuitivos</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-purple-400 mt-0.5"></i>
+                                <span>Física de movimiento inercial</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <a href="ComputerSpace/index.html" class="mt-4 w-full py-3 px-4 rounded-xl font-grotesk text-sm font-bold text-center text-slate-950 bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-300 hover:to-purple-400 shadow-[0_0_20px_rgba(176,38,255,0.3)] transition-all duration-200 flex items-center justify-center gap-2 group/btn">
+                        <span>Jugar Computer Space</span>
+                        <i class="fa-solid fa-gamepad text-xs group-hover/btn:rotate-12 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PROJECT 3: Pong Clásico -->
+            <div class="project-card-container card-pong" data-category="Juego" data-title="Pong Clásico" data-keywords="pong clasico tenis de mesa digital dos jugadores fisica rebote velocidad progresiva retro">
+                <div class="project-card-inner glass-card relative h-full rounded-2xl border border-slate-800 p-6 flex flex-col justify-between overflow-hidden group">
+                    <div class="scanline-effect"></div>
+                    
+                    <div>
+                        <!-- Header / Category Badge & Icon -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider bg-rose-500/10 border border-rose-500/30 text-rose-400">
+                                <i class="fa-solid fa-table-tennis-paddle-ball text-xs"></i>
+                                Juego Clásico
+                            </span>
+                            <span class="text-3xl p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-rose-400 shadow-[0_0_15px_rgba(255,0,85,0.15)]">
+                                🏓
+                            </span>
+                        </div>
+
+                        <!-- Project Title -->
+                        <h2 class="text-2xl font-bold font-grotesk text-slate-100 group-hover:text-rose-400 transition-colors mb-2">
+                            Pong Clásico
+                        </h2>
+
+                        <!-- Description -->
+                        <p class="text-sm text-slate-400 leading-relaxed mb-5">
+                            El legendario tenis de mesa digital, recreado con controles responsive y física de rebote acelerado.
+                        </p>
+
+                        <!-- Accordion Details Toggle -->
+                        <button class="details-toggle w-full py-2 px-3 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 text-xs text-slate-300 font-medium flex items-center justify-between mb-4 transition-all">
+                            <span>Ver características principales</span>
+                            <i class="fa-solid fa-chevron-down text-rose-400 transition-transform duration-300"></i>
+                        </button>
+
+                        <!-- Feature List -->
+                        <div class="details-content hidden space-y-2 mb-6 text-xs text-slate-300 border-l-2 border-rose-500/40 pl-3 py-1">
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-rose-400 mt-0.5"></i>
+                                <span>Gameplay clásico fluído</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-rose-400 mt-0.5"></i>
+                                <span>Controles para dos jugadores</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-rose-400 mt-0.5"></i>
+                                <span>Física realista de rebote</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-rose-400 mt-0.5"></i>
+                                <span>Interfaz minimalista Sci-Fi</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-rose-400 mt-0.5"></i>
+                                <span>Velocidad progresiva</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <a href="Pong/index.html" class="mt-4 w-full py-3 px-4 rounded-xl font-grotesk text-sm font-bold text-center text-slate-950 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 shadow-[0_0_20px_rgba(255,0,85,0.3)] transition-all duration-200 flex items-center justify-center gap-2 group/btn">
+                        <span>Jugar Pong</span>
+                        <i class="fa-solid fa-play text-xs group-hover/btn:translate-x-0.5 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PROJECT 4: MECHLAB -->
+            <div class="project-card-container card-mech" data-category="Simulador" data-title="MECHLAB" data-keywords="mechlab simulador mecanico translacional rotacional pendulo elementos mecanicos tiempo real analisis ecuaciones graficas">
+                <div class="project-card-inner glass-card relative h-full rounded-2xl border border-slate-800 p-6 flex flex-col justify-between overflow-hidden group">
+                    <div class="scanline-effect"></div>
+                    
+                    <div>
+                        <!-- Header / Category Badge & Icon -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                                <i class="fa-solid fa-gear text-xs"></i>
+                                Simulador Mecánico
+                            </span>
+                            <span class="text-3xl p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-emerald-400 shadow-[0_0_15px_rgba(0,255,136,0.15)]">
+                                ⚙️
+                            </span>
+                        </div>
+
+                        <!-- Project Title -->
+                        <h2 class="text-2xl font-bold font-grotesk text-slate-100 group-hover:text-emerald-400 transition-colors mb-2">
+                            MECHLAB
+                        </h2>
+
+                        <!-- Description -->
+                        <p class="text-sm text-slate-400 leading-relaxed mb-5">
+                            Simulador interactivo de sistemas mecánicos para modelar y estudiar el movimiento y su dinámica.
+                        </p>
+
+                        <!-- Accordion Details Toggle -->
+                        <button class="details-toggle w-full py-2 px-3 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 text-xs text-slate-300 font-medium flex items-center justify-between mb-4 transition-all">
+                            <span>Ver características principales</span>
+                            <i class="fa-solid fa-chevron-down text-emerald-400 transition-transform duration-300"></i>
+                        </button>
+
+                        <!-- Feature List -->
+                        <div class="details-content hidden space-y-2 mb-6 text-xs text-slate-300 border-l-2 border-emerald-500/40 pl-3 py-1">
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+                                <span>Modos translacional, rotacional y péndulo</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+                                <span>Paleta de elementos mecánicos</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+                                <span>Simulación física en tiempo real</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+                                <span>Análisis de ecuaciones y gráficas</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+                                <span>Guardado, carga y exportación</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <a href="MECHLAB/index.html" class="mt-4 w-full py-3 px-4 rounded-xl font-grotesk text-sm font-bold text-center text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-200 flex items-center justify-center gap-2 group/btn">
+                        <span>Abrir MECHLAB</span>
+                        <i class="fa-solid fa-sliders text-xs group-hover/btn:rotate-45 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PROJECT 5: Mechatronics Investigation V2.0 -->
+            <div class="project-card-container card-invest" data-category="Investigación" data-title="Mechatronics Investigation V2.0" data-keywords="mechatronics investigation investigacion interactiva mecatronica pistas evidencias mapa fabrica personajes sospechosos diagrama proceso">
+                <div class="project-card-inner glass-card relative h-full rounded-2xl border border-slate-800 p-6 flex flex-col justify-between overflow-hidden group">
+                    <div class="scanline-effect"></div>
+                    
+                    <div>
+                        <!-- Header / Category Badge & Icon -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider bg-orange-500/10 border border-orange-500/30 text-orange-400">
+                                <i class="fa-solid fa-compass text-xs"></i>
+                                Investigación Interactiva
+                            </span>
+                            <span class="text-3xl p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-orange-400 shadow-[0_0_15px_rgba(255,85,0,0.15)]">
+                                🧭
+                            </span>
+                        </div>
+
+                        <!-- Project Title -->
+                        <h2 class="text-2xl font-bold font-grotesk text-slate-100 group-hover:text-orange-400 transition-colors mb-2">
+                            Mechatronics Investigation
+                        </h2>
+
+                        <!-- Description -->
+                        <p class="text-sm text-slate-400 leading-relaxed mb-5">
+                            Investigación forense industrial interactiva con pistas, personajes y resolución de incidentes mecatrónicos.
+                        </p>
+
+                        <!-- Accordion Details Toggle -->
+                        <button class="details-toggle w-full py-2 px-3 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 text-xs text-slate-300 font-medium flex items-center justify-between mb-4 transition-all">
+                            <span>Ver características principales</span>
+                            <i class="fa-solid fa-chevron-down text-orange-400 transition-transform duration-300"></i>
+                        </button>
+
+                        <!-- Feature List -->
+                        <div class="details-content hidden space-y-2 mb-6 text-xs text-slate-300 border-l-2 border-orange-500/40 pl-3 py-1">
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-orange-400 mt-0.5"></i>
+                                <span>Tablero de pistas y evidencias</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-orange-400 mt-0.5"></i>
+                                <span>Mapa interactivo de fábrica</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-orange-400 mt-0.5"></i>
+                                <span>Personajes y sospechosos</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-orange-400 mt-0.5"></i>
+                                <span>Decisiones y diagramas de proceso</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-orange-400 mt-0.5"></i>
+                                <span>Narración inmersiva branching</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <a href="MechatronicsInvestigationV2.0/index.html" class="mt-4 w-full py-3 px-4 rounded-xl font-grotesk text-sm font-bold text-center text-slate-950 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 shadow-[0_0_20px_rgba(255,85,0,0.3)] transition-all duration-200 flex items-center justify-center gap-2 group/btn">
+                        <span>Abrir Investigation</span>
+                        <i class="fa-solid fa-user-ninja text-xs group-hover/btn:scale-110 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PROJECT 6: GraphFlow Optimizer -->
+            <div class="project-card-container card-grafo" data-category="Optimización" data-title="GraphFlow Optimizer" data-keywords="graphflow optimizer simgrafo optimizacion industrial rutas dijkstra prim kruskal mapa planta bitacora grafos">
+                <div class="project-card-inner glass-card relative h-full rounded-2xl border border-slate-800 p-6 flex flex-col justify-between overflow-hidden group">
+                    <div class="scanline-effect"></div>
+                    
+                    <div>
+                        <!-- Header / Category Badge & Icon -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider bg-cyan-500/10 border border-cyan-500/30 text-cyber-cyan">
+                                <i class="fa-solid fa-diagram-project text-xs"></i>
+                                Optimización Industrial
+                            </span>
+                            <span class="text-3xl p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-cyber-cyan shadow-[0_0_15px_rgba(0,243,255,0.15)]">
+                                📈
+                            </span>
+                        </div>
+
+                        <!-- Project Title -->
+                        <h2 class="text-2xl font-bold font-grotesk text-slate-100 group-hover:text-cyber-cyan transition-colors mb-2">
+                            GraphFlow Optimizer
+                        </h2>
+
+                        <!-- Description -->
+                        <p class="text-sm text-slate-400 leading-relaxed mb-5">
+                            Simulador de rutas industriales para analizar nodos, aristas, costos y flujos de planta con algoritmos de grafos.
+                        </p>
+
+                        <!-- Accordion Details Toggle -->
+                        <button class="details-toggle w-full py-2 px-3 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 text-xs text-slate-300 font-medium flex items-center justify-between mb-4 transition-all">
+                            <span>Ver características principales</span>
+                            <i class="fa-solid fa-chevron-down text-cyber-cyan transition-transform duration-300"></i>
+                        </button>
+
+                        <!-- Feature List -->
+                        <div class="details-content hidden space-y-2 mb-6 text-xs text-slate-300 border-l-2 border-cyber-cyan/40 pl-3 py-1">
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-cyber-cyan mt-0.5"></i>
+                                <span>Rutas óptimas con algoritmo de Dijkstra</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-cyber-cyan mt-0.5"></i>
+                                <span>Árboles mínimos con Prim y Kruskal</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-cyber-cyan mt-0.5"></i>
+                                <span>Mapa visual e interactivo de planta</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-cyber-cyan mt-0.5"></i>
+                                <span>Bitácora y métricas de desempeño</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-cyber-cyan mt-0.5"></i>
+                                <span>Selección dinámica de origen y destino</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <a href="SimGrafo/index.html" class="mt-4 w-full py-3 px-4 rounded-xl font-grotesk text-sm font-bold text-center text-slate-950 bg-gradient-to-r from-cyber-cyan to-blue-500 hover:from-cyan-300 hover:to-blue-400 shadow-[0_0_20px_rgba(0,243,255,0.3)] transition-all duration-200 flex items-center justify-center gap-2 group/btn">
+                        <span>Abrir GraphFlow</span>
+                        <i class="fa-solid fa-network-wired text-xs group-hover/btn:scale-110 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PROJECT 7: CNCLab -->
+            <div class="project-card-container card-cnc" data-category="Simulador" data-title="CNCLab" data-keywords="cnclab simulador cnc torno programacion g-code gcode x-z mecanizado torneado paso a paso ejemplos .txt .nc">
+                <div class="project-card-inner glass-card relative h-full rounded-2xl border border-slate-800 p-6 flex flex-col justify-between overflow-hidden group">
+                    <div class="scanline-effect"></div>
+                    
+                    <div>
+                        <!-- Header / Category Badge & Icon -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider bg-blue-500/10 border border-blue-500/30 text-blue-400">
+                                <i class="fa-solid fa-wrench text-xs"></i>
+                                Simulador CNC
+                            </span>
+                            <span class="text-3xl p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-blue-400 shadow-[0_0_15px_rgba(58,134,255,0.15)]">
+                                🔧
+                            </span>
+                        </div>
+
+                        <!-- Project Title -->
+                        <h2 class="text-2xl font-bold font-grotesk text-slate-100 group-hover:text-blue-400 transition-colors mb-2">
+                            CNCLab
+                        </h2>
+
+                        <!-- Description -->
+                        <p class="text-sm text-slate-400 leading-relaxed mb-5">
+                            Simulador interactivo de torno CNC para programar, validar y visualizar trayectorias de mecanizado G-code.
+                        </p>
+
+                        <!-- Accordion Details Toggle -->
+                        <button class="details-toggle w-full py-2 px-3 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 text-xs text-slate-300 font-medium flex items-center justify-between mb-4 transition-all">
+                            <span>Ver características principales</span>
+                            <i class="fa-solid fa-chevron-down text-blue-400 transition-transform duration-300"></i>
+                        </button>
+
+                        <!-- Feature List -->
+                        <div class="details-content hidden space-y-2 mb-6 text-xs text-slate-300 border-l-2 border-blue-500/40 pl-3 py-1">
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-blue-400 mt-0.5"></i>
+                                <span>Editor de programación G-code</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-blue-400 mt-0.5"></i>
+                                <span>Vista gráfica X-Z del torneado</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-blue-400 mt-0.5"></i>
+                                <span>Simulación paso a paso o continua</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-blue-400 mt-0.5"></i>
+                                <span>Controles de velocidad, home y reinicio</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-blue-400 mt-0.5"></i>
+                                <span>Ejemplos precargados y carga de .txt/.nc</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <a href="CNCLab/index.html" class="mt-4 w-full py-3 px-4 rounded-xl font-grotesk text-sm font-bold text-center text-slate-950 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 shadow-[0_0_20px_rgba(58,134,255,0.3)] transition-all duration-200 flex items-center justify-center gap-2 group/btn">
+                        <span>Abrir CNCLab</span>
+                        <i class="fa-solid fa-terminal text-xs group-hover/btn:translate-x-0.5 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+
         </main>
 
-        <footer class="footer">
-            <div class="footer-content">
-                <img src="Imagenes/FC1.png" alt="FIUNVA Logo" class="footer-logo">
+        <!-- FOOTER SECTION -->
+        <footer class="mt-auto pt-8 border-t border-slate-800/80 text-center text-slate-400 flex flex-col items-center justify-between gap-6">
+            
+            <!-- Logo FC1 Image -->
+            <div class="flex flex-col items-center justify-center gap-3">
+                <div class="relative group">
+                    <img src="Imagenes/FC1.png" alt="Logotipo de FIUNVA CODE" 
+                         class="h-20 sm:h-24 object-contain transition-all duration-300 filter drop-shadow-[0_0_15px_rgba(0,243,255,0.3)] group-hover:drop-shadow-[0_0_25px_rgba(0,243,255,0.6)]"
+                         onerror="this.onerror=null; this.style.display='none'; document.getElementById('logo-fallback').classList.remove('hidden');">
+                    <!-- Fallback Badge -->
+                    <div id="logo-fallback" role="img" aria-label="Logotipo de FIUNVA CODE" class="hidden flex items-center justify-center w-20 h-20 rounded-2xl bg-slate-900 border border-cyber-cyan/40 text-cyber-cyan text-3xl font-extrabold font-orbitron shadow-[0_0_20px_rgba(0,243,255,0.3)]">
+                        FI
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tech Stack Badges -->
+            <div class="flex flex-wrap items-center justify-center gap-2 max-w-xl">
+                <span class="px-3 py-1 rounded-full text-xs font-mono bg-slate-900/80 border border-slate-800 text-slate-400 hover:border-cyber-cyan/40 hover:text-cyber-cyan transition-colors">
+                    <i class="fa-brands fa-html5 text-orange-500 mr-1"></i>HTML5
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-mono bg-slate-900/80 border border-slate-800 text-slate-400 hover:border-cyber-cyan/40 hover:text-cyber-cyan transition-colors">
+                    <i class="fa-brands fa-css3-alt text-blue-500 mr-1"></i>CSS3 & Tailwind
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-mono bg-slate-900/80 border border-slate-800 text-slate-400 hover:border-cyber-cyan/40 hover:text-cyber-cyan transition-colors">
+                    <i class="fa-brands fa-js text-yellow-400 mr-1"></i>JavaScript ES6+
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-mono bg-slate-900/80 border border-slate-800 text-slate-400 hover:border-cyber-cyan/40 hover:text-cyber-cyan transition-colors">
+                    <i class="fa-solid fa-atom text-cyan-400 mr-1"></i>Interactive Canvas
+                </span>
+            </div>
+
+            <!-- Copyright and Credits -->
+            <div class="text-xs text-slate-500 font-mono space-y-1 pb-4">
+                <p>&copy; FIUNVA · Plataforma de Desarrollo y Laboratorios Digitales</p>
+                <p class="text-slate-600">Hub de proyectos Web en Modo Oscuro & Neón Proporcional</p>
             </div>
         </footer>
+
     </div>
 
+    <!-- JAVASCRIPT: PARTICLES BACKGROUND & INTERACTIVE FILTERS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. AMBIENT CANVAS BACKGROUND SYSTEM ---
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = Math.min(Math.floor((width * height) / 18000), 65);
+            let mouse = { x: null, y: null, radius: 150 };
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            });
+
+            window.addEventListener('mouseleave', () => {
+                mouse.x = null;
+                mouse.y = null;
+            });
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.6;
+                    this.vy = (Math.random() - 0.5) * 0.6;
+                    this.size = Math.random() * 2 + 1;
+                    this.baseAlpha = Math.random() * 0.4 + 0.1;
+                    const colors = ['#00f3ff', '#00ff88', '#ff007f', '#9d4edd', '#ff9e00'];
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 0) this.x = width;
+                    if (this.x > width) this.x = 0;
+                    if (this.y < 0) this.y = height;
+                    if (this.y > height) this.y = 0;
+
+                    if (mouse.x !== null && mouse.y !== null) {
+                        const dx = mouse.x - this.x;
+                        const dy = mouse.y - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < mouse.radius) {
+                            const force = (mouse.radius - dist) / mouse.radius;
+                            this.x -= (dx / dist) * force * 3;
+                            this.y -= (dy / dist) * force * 3;
+                        }
+                    }
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = this.baseAlpha;
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = this.color;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animateCanvas() {
+                ctx.clearRect(0, 0, width, height);
+
+                // Grid background lines
+                ctx.strokeStyle = 'rgba(30, 41, 59, 0.25)';
+                ctx.lineWidth = 1;
+                const gridSize = 60;
+                for (let x = 0; x < width; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, height);
+                    ctx.stroke();
+                }
+                for (let y = 0; y < height; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y);
+                    ctx.stroke();
+                }
+
+                // Particles connections
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 130) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = particles[i].color;
+                            ctx.globalAlpha = (1 - dist / 130) * 0.18;
+                            ctx.lineWidth = 0.8;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                ctx.globalAlpha = 1;
+                requestAnimationFrame(animateCanvas);
+            }
+
+            animateCanvas();
+
+            // --- 2. ACCORDION / DETAILS TOGGLE ---
+            const toggleButtons = document.querySelectorAll('.details-toggle');
+
+            toggleButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const content = btn.nextElementSibling;
+                    const icon = btn.querySelector('i');
+
+                    const isHidden = content.classList.contains('hidden');
+
+                    if (isHidden) {
+                        content.classList.remove('hidden');
+                        icon.style.transform = 'rotate(180deg)';
+                        btn.querySelector('span').textContent = 'Ocultar características';
+                    } else {
+                        content.classList.add('hidden');
+                        icon.style.transform = 'rotate(0deg)';
+                        btn.querySelector('span').textContent = 'Ver características principales';
+                    }
+                });
+            });
+
+            // --- 3. SEARCH AND FILTER LOGIC ---
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const cardContainers = document.querySelectorAll('.project-card-container');
+            const visibleCountEl = document.getElementById('visible-count');
+            const noResultsMsg = document.getElementById('no-results-msg');
+
+            let activeCategory = 'all';
+            let searchQuery = '';
+
+            function filterProjects() {
+                let visibleCount = 0;
+
+                cardContainers.forEach(container => {
+                    const category = container.getAttribute('data-category');
+                    const keywords = container.getAttribute('data-keywords').toLowerCase();
+                    const title = container.getAttribute('data-title').toLowerCase();
+
+                    const matchesCategory = (activeCategory === 'all' || category === activeCategory);
+                    const matchesSearch = searchQuery === '' || keywords.includes(searchQuery) || title.includes(searchQuery);
+
+                    if (matchesCategory && matchesSearch) {
+                        container.style.display = 'block';
+                        setTimeout(() => {
+                            container.style.opacity = '1';
+                        }, 10);
+                        visibleCount++;
+                    } else {
+                        container.style.opacity = '0';
+                        setTimeout(() => {
+                            container.style.display = 'none';
+                        }, 200);
+                    }
+                });
+
+                visibleCountEl.textContent = visibleCount;
+                if (visibleCount === 0) {
+                    noResultsMsg.classList.remove('hidden');
+                } else {
+                    noResultsMsg.classList.add('hidden');
+                }
+            }
+
+            // Category filter click handler
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => {
+                        b.classList.remove('active', 'bg-cyber-cyan/20', 'border-cyber-cyan', 'text-cyber-cyan', 'shadow-[0_0_12px_rgba(0,243,255,0.25)]');
+                        b.classList.add('bg-slate-900/60', 'border-slate-800', 'text-slate-400');
+                    });
+
+                    btn.classList.remove('bg-slate-900/60', 'border-slate-800', 'text-slate-400');
+                    btn.classList.add('active', 'bg-cyber-cyan/20', 'border-cyber-cyan', 'text-cyber-cyan', 'shadow-[0_0_12px_rgba(0,243,255,0.25)]');
+
+                    activeCategory = btn.getAttribute('data-filter');
+                    filterProjects();
+                });
+            });
+
+            // Search bar input
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value.trim().toLowerCase();
+                if (searchQuery.length > 0) {
+                    clearSearchBtn.classList.remove('hidden');
+                } else {
+                    clearSearchBtn.classList.add('hidden');
+                }
+                filterProjects();
+            });
+
+            // Clear search
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                searchQuery = '';
+                clearSearchBtn.classList.add('hidden');
+                filterProjects();
+            });
+
+        });
+    </script>
 </body>
 </html>

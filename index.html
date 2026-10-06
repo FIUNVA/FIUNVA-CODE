@@ -319,155 +319,457 @@
         .project-card:nth-child(5) { animation-delay: 0.5s; }
         .project-card:nth-child(6) { animation-delay: 0.6s; }
         .project-card:nth-child(7) { animation-delay: 0.7s; }
+
+        :root {
+            --primary: #176b58;
+            --secondary: #39756c;
+            --background: #f0f2ed;
+            --card-bg: #ffffff;
+            --text: #1d2926;
+            --text-secondary: #56635e;
+            --hover: #e3a64a;
+        }
+
+        body {
+            padding: clamp(1rem, 4vw, 3.5rem);
+            background-color: var(--background);
+            background-image: linear-gradient(rgba(29, 41, 38, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 41, 38, 0.025) 1px, transparent 1px);
+            background-size: 28px 28px;
+            color: var(--text);
+            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        }
+
+        .container {
+            max-width: 1180px;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .header h1 {
+            margin: 0.6rem 0 0.75rem;
+            color: var(--text);
+            background: none;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(2.3rem, 5vw, 3.6rem);
+            font-weight: 600;
+            line-height: 1.05;
+            -webkit-text-fill-color: currentColor;
+        }
+
+        .header p {
+            max-width: 650px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .eyebrow {
+            color: var(--primary);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .projects-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            grid-auto-rows: 390px;
+            gap: 1.15rem;
+            margin-bottom: 2rem;
+        }
+
+        .project-card {
+            --project-accent: #176b58;
+            min-width: 0;
+            height: 100%;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid #d9dfd9;
+            border-radius: 8px;
+            background: var(--card-bg);
+            box-shadow: 0 5px 18px rgba(29, 41, 38, 0.07);
+            animation: fadeInUp 0.45s ease both;
+        }
+
+        .project-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(29, 41, 38, 0.13);
+        }
+
+        .project-card::before {
+            height: 4px;
+            background: var(--project-accent);
+            opacity: 1;
+        }
+
+        .calculator-card { --project-accent: #a95d08; }
+        .game-card { --project-accent: #684a9b; }
+        .pong-card { --project-accent: #b83f3b; }
+        .mechlab-card { --project-accent: #087565; }
+        .investigation-card { --project-accent: #b64d2c; }
+        .simgrafo-card { --project-accent: #176c76; }
+        .cnclab-card { --project-accent: #3d579d; }
+
+        .project-cover {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .project-cover::-webkit-details-marker {
+            display: none;
+        }
+
+        .project-cover::marker {
+            content: "";
+        }
+
+        .project-icon {
+            width: 62px;
+            height: 62px;
+            margin: 1.2rem 0 1.1rem;
+            border: 1px solid color-mix(in srgb, var(--project-accent), white 72%);
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--project-accent), white 91%);
+            color: var(--project-accent);
+            font-size: 1.8rem;
+        }
+
+        .project-type {
+            color: var(--project-accent);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .project-title {
+            margin: 0;
+            color: var(--text);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.65rem;
+            line-height: 1.15;
+            text-align: left;
+        }
+
+        .project-hint {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 1.2rem;
+            border-top: 1px solid #e4e8e3;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .project-hint span {
+            color: var(--project-accent);
+            font-size: 1.2rem;
+        }
+
+        .project-details {
+            position: absolute;
+            z-index: 1;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            padding: 1.65rem 1.75rem 1.4rem;
+            border-top: 4px solid var(--project-accent);
+            background: #fff;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px);
+            transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+        }
+
+        .project-card:hover .project-details,
+        .project-card:focus-within .project-details,
+        .project-card[open] .project-details {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .project-card:hover > .project-cover,
+        .project-card:focus-within > .project-cover,
+        .project-card[open] > .project-cover {
+            z-index: 2;
+            inset: 0 0 auto auto;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            border-radius: 0 0 0 8px;
+            background: #fff;
+        }
+
+        .project-card:hover > .project-cover > *,
+        .project-card:focus-within > .project-cover > *,
+        .project-card[open] > .project-cover > * {
+            opacity: 0;
+        }
+
+        .project-card:hover > .project-cover::after,
+        .project-card:focus-within > .project-cover::after,
+        .project-card[open] > .project-cover::after {
+            content: "×";
+            color: var(--project-accent);
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .project-description {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            line-height: 1.45;
+            text-align: left;
+        }
+
+        .project-features {
+            display: grid;
+            gap: 0.28rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .project-features li {
+            padding: 0 0 0 1.2rem;
+            color: var(--text);
+            font-size: 0.82rem;
+            line-height: 1.3;
+        }
+
+        .project-features li::before {
+            content: "✓";
+            left: 0;
+            color: var(--project-accent);
+        }
+
+        .project-button {
+            width: auto;
+            min-height: 42px;
+            margin-top: auto;
+            padding: 0.7rem 1rem;
+            border-radius: 5px;
+            background: var(--project-accent);
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .project-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 12px color-mix(in srgb, var(--project-accent), transparent 72%);
+        }
+
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1.4rem;
+            border-color: #d9dfd9;
+        }
+
+        .footer-logo {
+            height: 6rem;
+        }
+
+        .project-cover:focus-visible,
+        .project-button:focus-visible {
+            outline: 3px solid #e3a64a;
+            outline-offset: 3px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2.4rem;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+                grid-auto-rows: 390px;
+            }
+
+            .project-cover {
+                padding: 1.65rem;
+            }
+
+            .project-details {
+                gap: 0.55rem;
+                padding: 1.35rem 1.35rem 1.2rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1>🚀 HUB DE PROYECTOS WEB</h1>
-            <p>Colección de aplicaciones y juegos web interactivas desarrolladas con HTML, CSS y JavaScript</p>
+            <span class="eyebrow">FIUNVA · Colección digital</span>
+            <h1>Proyectos web</h1>
+            <p>Herramientas, simuladores y juegos interactivos desarrollados para explorar, aprender y experimentar.</p>
         </header>
 
         <main class="projects-grid">
-            <!-- Proyecto 1: Calculadora -->
-            <div class="project-card">
-                <div class="project-icon calculator-icon">🧮</div>
-                <h2 class="project-title">Calculadora Universal</h2>
-                <p class="project-description">
-                    Calculadora avanzada para operaciones en múltiples bases numéricas con procedimientos detallados y operaciones especializadas.
-                </p>
-                <ul class="project-features">
-                    <li>Conversión entre bases (2 a 36)</li>
-                    <li>Operaciones aritméticas básicas</li>
-                    <li>Suma y resta</li>
-                    <li>Multiplicación y división</li>
-                    <li>Procedimiento algorítmico</li>
-                    <li>Procedimientos paso a paso</li>
-                </ul>
-                <a href="Calculadora/index.html" class="project-button calculator-btn">
-                    Abrir Calculadora
-                </a>
-            </div>
+            <details class="project-card calculator-card">
+                <summary class="project-cover">
+                    <span class="project-type">Herramienta</span>
+                    <span class="project-icon">🧮</span>
+                    <span class="project-title">Calculadora Universal</span>
+                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
+                </summary>
+                <div class="project-details">
+                    <p class="project-description">Calculadora avanzada para operaciones en múltiples bases numéricas, con procedimientos detallados.</p>
+                    <ul class="project-features">
+                        <li>Conversión entre bases (2 a 36)</li>
+                        <li>Operaciones aritméticas básicas</li>
+                        <li>Suma, resta, multiplicación y división</li>
+                        <li>Procedimientos algorítmicos</li>
+                        <li>Resolución paso a paso</li>
+                    </ul>
+                    <a href="Calculadora/index.html" class="project-button">Abrir Calculadora</a>
+                </div>
+            </details>
 
-            <!-- Proyecto 2: Computer Space -->
-            <div class="project-card">
-                <div class="project-icon game-icon">🚀</div>
-                <h2 class="project-title">Computer Space</h2>
-                <p class="project-description">
-                    Recreación del clásico juego de arcade Computer Space. Controla una nave espacial y dispara a objetos enemigos en el espacio.
-                </p>
-                <ul class="project-features">
-                    <li>Gráficos retro estilo arcade</li>
-                    <li>Sistema de puntuación</li>
-                    <li>Efectos de sonido</li>
-                    <li>Controles intuitivos</li>
-                    <li>Física de movimiento realista</li>
-                    <li>Múltiples vidas</li>
-                </ul>
-                <a href="ComputerSpace/index.html" class="project-button game-btn">
-                    Jugar Computer Space
-                </a>
-            </div>
+            <details class="project-card game-card">
+                <summary class="project-cover">
+                    <span class="project-type">Juego arcade</span>
+                    <span class="project-icon">🚀</span>
+                    <span class="project-title">Computer Space</span>
+                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
+                </summary>
+                <div class="project-details">
+                    <p class="project-description">Recreación del clásico arcade espacial: pilota una nave y enfréntate a objetos enemigos.</p>
+                    <ul class="project-features">
+                        <li>Gráficos retro estilo arcade</li>
+                        <li>Sistema de puntuación y vidas</li>
+                        <li>Efectos de sonido</li>
+                        <li>Controles intuitivos</li>
+                        <li>Física de movimiento</li>
+                    </ul>
+                    <a href="ComputerSpace/index.html" class="project-button">Jugar Computer Space</a>
+                </div>
+            </details>
 
-            <!-- Proyecto 3: Pong -->
-            <div class="project-card">
-                <div class="project-icon pong-icon">🏓</div>
-                <h2 class="project-title">Pong Clásico</h2>
-                <p class="project-description">
-                    El legendario juego Pong recreado con tecnologías web modernas. Disfruta del clásico juego de tenis de mesa digital.
-                </p>
-                <ul class="project-features">
-                    <li>Gameplay clásico auténtico</li>
-                    <li>Controles responsive</li>
-                    <li>Física de rebote realista</li>
-                    <li>Interfaz minimalista</li>
-                    <li>Modo un jugador 1 vs jugador 2</li>
-                    <li>Velocidad progresiva</li>
-                </ul>
-                <a href="Pong/index.html" class="project-button pong-btn">
-                    Jugar Pong
-                </a>
-            </div>
+            <details class="project-card pong-card">
+                <summary class="project-cover">
+                    <span class="project-type">Juego clásico</span>
+                    <span class="project-icon">🏓</span>
+                    <span class="project-title">Pong Clásico</span>
+                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
+                </summary>
+                <div class="project-details">
+                    <p class="project-description">El legendario tenis de mesa digital, recreado con controles responsive y física de rebote.</p>
+                    <ul class="project-features">
+                        <li>Gameplay clásico</li>
+                        <li>Controles para dos jugadores</li>
+                        <li>Física de rebote</li>
+                        <li>Interfaz minimalista</li>
+                        <li>Velocidad progresiva</li>
+                    </ul>
+                    <a href="Pong/index.html" class="project-button">Jugar Pong</a>
+                </div>
+            </details>
 
-            <!-- Proyecto 4: MECHLAB -->
-            <div class="project-card">
-                <div class="project-icon mechlab-icon">⚙️</div>
-                <h2 class="project-title">MECHLAB</h2>
-                <p class="project-description">
-                    Simulador de sistemas mecánicos con análisis de dinámica, modos translacional, rotacional y de péndulo para modelar y estudiar movimientos.
-                </p>
-                <ul class="project-features">
-                    <li>Modo translacional, rotacional y péndulo</li>
-                    <li>Paleta de elementos mecánicos interactiva</li>
-                    <li>Simulación en tiempo real</li>
-                    <li>Análisis de ecuaciones y gráficas</li>
-                    <li>Guardado, carga y exportación de proyectos</li>
-                    <li>Diseño de laboratorio especializado</li>
-                </ul>
-                <a href="MECHLAB/index.html" class="project-button mechlab-btn">
-                    Abrir MECHLAB
-                </a>
-            </div>
+            <details class="project-card mechlab-card">
+                <summary class="project-cover">
+                    <span class="project-type">Simulador mecánico</span>
+                    <span class="project-icon">⚙️</span>
+                    <span class="project-title">MECHLAB</span>
+                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
+                </summary>
+                <div class="project-details">
+                    <p class="project-description">Simulador de sistemas mecánicos para modelar y estudiar el movimiento y su dinámica.</p>
+                    <ul class="project-features">
+                        <li>Modos translacional, rotacional y péndulo</li>
+                        <li>Paleta de elementos mecánicos</li>
+                        <li>Simulación en tiempo real</li>
+                        <li>Análisis de ecuaciones y gráficas</li>
+                        <li>Guardado, carga y exportación</li>
+                    </ul>
+                    <a href="MECHLAB/index.html" class="project-button">Abrir MECHLAB</a>
+                </div>
+            </details>
 
-            <!-- Proyecto 5: Mechatronics Investigation V2.0 -->
-            <div class="project-card">
-                <div class="project-icon mechatronics-icon">🧭</div>
-                <h2 class="project-title">Mechatronics Investigation V2.0</h2>
-                <p class="project-description">
-                    Aplicación de investigación forense industrial con narración, análisis de personajes, ubicación de pistas y resolución de incidentes mecatrónicos.
-                </p>
-                <ul class="project-features">
-                    <li>Interfaz tipo investigación y tablero de pistas</li>
-                    <li>Mapa de fábrica y análisis de ubicaciones</li>
-                    <li>Personajes, causas y sospechosos del caso</li>
-                    <li>Flujo de decisiones y diagramas de proceso</li>
-                    <li>Datos de evidencia y relato interactivo</li>
-                    <li>Visualización estilo laboratorio/forensic UI</li>
-                </ul>
-                <a href="MechatronicsInvestigationV2.0/index.html" class="project-button mechatronics-btn">
-                    Abrir Investigation
-                </a>
-            </div>
+            <details class="project-card investigation-card">
+                <summary class="project-cover">
+                    <span class="project-type">Investigación interactiva</span>
+                    <span class="project-icon">🧭</span>
+                    <span class="project-title">Mechatronics Investigation V2.0</span>
+                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
+                </summary>
+                <div class="project-details">
+                    <p class="project-description">Investigación forense industrial con pistas, personajes y resolución de incidentes mecatrónicos.</p>
+                    <ul class="project-features">
+                        <li>Tablero de pistas y evidencias</li>
+                        <li>Mapa de fábrica y ubicaciones</li>
+                        <li>Personajes y sospechosos</li>
+                        <li>Decisiones y diagramas de proceso</li>
+                        <li>Narración interactiva</li>
+                    </ul>
+                    <a href="MechatronicsInvestigationV2.0/index.html" class="project-button">Abrir Investigation</a>
+                </div>
+            </details>
 
-            <!-- Proyecto 6: GraphFlow Optimizer -->
-            <div class="project-card">
-                <div class="project-icon simgrafo-icon">📈</div>
-                <h2 class="project-title">GraphFlow Optimizer</h2>
-                <p class="project-description">
-                    Simulador industrial de optimización de rutas con algoritmos de grafos para analizar nodos, aristas, costos y flujos en una planta.
-                </p>
-                <ul class="project-features">
-                    <li>Motor de rutas con Dijkstra</li>
-                    <li>Árboles de expansión mínima con Prim y Kruskal</li>
-                    <li>Mapa visual de planta industrial</li>
-                    <li>Bitácora de resultados y métricas</li>
-                    <li>Configuración de origen y destino</li>
-                    <li>Interfaz orientada a control logístico</li>
-                </ul>
-                <a href="SimGrafo/index.html" class="project-button simgrafo-btn">
-                    Abrir GraphFlow
-                </a>
-            </div>
+            <details class="project-card simgrafo-card">
+                <summary class="project-cover">
+                    <span class="project-type">Optimización industrial</span>
+                    <span class="project-icon">📈</span>
+                    <span class="project-title">GraphFlow Optimizer</span>
+                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
+                </summary>
+                <div class="project-details">
+                    <p class="project-description">Simulador de rutas industriales para analizar nodos, aristas, costos y flujos de planta.</p>
+                    <ul class="project-features">
+                        <li>Rutas con algoritmo de Dijkstra</li>
+                        <li>Árboles mínimos con Prim y Kruskal</li>
+                        <li>Mapa visual de planta</li>
+                        <li>Bitácora y métricas</li>
+                        <li>Selección de origen y destino</li>
+                    </ul>
+                    <a href="SimGrafo/index.html" class="project-button">Abrir GraphFlow</a>
+                </div>
+            </details>
 
-            <!-- Proyecto 7: CNCLab -->
-            <div class="project-card">
-                <div class="project-icon cnclab-icon">🔧</div>
-                <h2 class="project-title">CNCLab</h2>
-                <p class="project-description">
-                    Simulador interactivo de torno CNC para programar, validar y visualizar trayectorias G-code en un entorno de laboratorio de mecanizado.
-                </p>
-                <ul class="project-features">
-                    <li>Editor de programación G-code</li>
-                    <li>Vista gráfica X-Z del torneado</li>
-                    <li>Simulación paso a paso y continua</li>
-                    <li>Controles de velocidad, home y reinicio</li>
-                    <li>Ejemplos de programas predefinidos</li>
-                    <li>Guardado y carga de archivos .txt/.nc</li>
-                </ul>
-                <a href="CNCLab/index.html" class="project-button cnclab-btn">
-                    Abrir CNCLab
-                </a>
-            </div>
+            <details class="project-card cnclab-card">
+                <summary class="project-cover">
+                    <span class="project-type">Simulador CNC</span>
+                    <span class="project-icon">🔧</span>
+                    <span class="project-title">CNCLab</span>
+                    <span class="project-hint">Ver detalles <span aria-hidden="true">↗</span></span>
+                </summary>
+                <div class="project-details">
+                    <p class="project-description">Simulador interactivo de torno CNC para programar, validar y visualizar trayectorias G-code.</p>
+                    <ul class="project-features">
+                        <li>Editor de programación G-code</li>
+                        <li>Vista gráfica X-Z del torneado</li>
+                        <li>Simulación paso a paso o continua</li>
+                        <li>Controles de velocidad, home y reinicio</li>
+                        <li>Ejemplos y archivos .txt/.nc</li>
+                    </ul>
+                    <a href="CNCLab/index.html" class="project-button">Abrir CNCLab</a>
+                </div>
+            </details>
         </main>
 
         <footer class="footer">
@@ -477,67 +779,5 @@
         </footer>
     </div>
 
-    <script>
-        // Agregar efectos de interacción adicionales
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.project-card');
-            
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.5)';
-                });
-                
-                card.addEventListener('mouseleave', function() {
-                    this.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
-                });
-            });
-
-            // Efecto de ripple en los botones
-            const buttons = document.querySelectorAll('.project-button');
-            
-            buttons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    // Crear elemento ripple
-                    const ripple = document.createElement('span');
-                    const rect = this.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = e.clientX - rect.left - size / 2;
-                    const y = e.clientY - rect.top - size / 2;
-                    
-                    ripple.style.cssText = `
-                        position: absolute;
-                        border-radius: 50%;
-                        background: rgba(255, 255, 255, 0.3);
-                        transform: scale(0);
-                        animation: ripple 0.6s linear;
-                        left: ${x}px;
-                        top: ${y}px;
-                        width: ${size}px;
-                        height: ${size}px;
-                    `;
-                    
-                    this.style.position = 'relative';
-                    this.style.overflow = 'hidden';
-                    this.appendChild(ripple);
-                    
-                    setTimeout(() => {
-                        ripple.remove();
-                    }, 600);
-                });
-            });
-        });
-
-        // Crear animación CSS para el ripple
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
 </body>
 </html>

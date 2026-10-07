@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/topbar.css">
 <link rel="stylesheet" href="css/toolbar.css">
+<link rel="stylesheet" href="css/glossary.css">
 <link rel="stylesheet" href="css/stage.css">
 <link rel="stylesheet" href="css/editor.css">
 <link rel="stylesheet" href="css/tabs.css">
@@ -55,6 +56,7 @@
       <button class="softkey" id="btnExamplesMenu">📄 EJEMPLOS ▾</button>
       <div class="viewDropdown" id="examplesDropdown"></div>
     </div>
+    <button class="softkey" id="btnGlossaryMenu" title="Qué códigos entiende este simulador y qué hacen">📖 GLOSARIO</button>
     <div class="transport">
       <button class="softkey primary" id="btnPlay">▶ SIMULAR</button>
       <button class="softkey" id="btnPause">❙❙ PAUSA</button>
@@ -121,6 +123,25 @@
 
 </div>
 
+<!-- Glosario: vista de página completa, fuera de .machine a propósito. Un
+     position:fixed dentro de la barra quedaría atrapado en el primer ancestro
+     con transform o filter que se le añadiera después. -->
+<section class="glossaryPage" id="glossaryPage" hidden>
+  <header class="glossaryHead">
+    <div class="glossaryTitle">
+      <h2>GLOSARIO DE CÓDIGOS</h2>
+      <p>Qué acepta y qué hace realmente este simulador. No es el manual de un torno FANUC: es el comportamiento del código de esta aplicación.</p>
+    </div>
+    <div class="glossaryTools">
+      <input type="search" id="glossarySearch" placeholder="Buscar código o texto… (G71, radio, husillo, avisos)" spellcheck="false" autocomplete="off">
+      <span class="glossaryCount" id="glossaryCount"></span>
+      <button class="softkey primary" id="btnGlossaryBack">◂ VOLVER AL SIMULADOR</button>
+    </div>
+  </header>
+  <nav class="glossaryToc" id="glossaryToc"></nav>
+  <div class="glossaryBody" id="glossaryBody"></div>
+</section>
+
 <!-- Módulos JavaScript: scripts clásicos en orden de dependencia.
      Cada archivo expone sus funciones al ámbito global, igual que en la
      versión monolítica, por lo que no hace falta build ni servidor de módulos. -->
@@ -152,11 +173,13 @@
 <script src="js/save-load.js"></script>
 <!-- 14. Menú de ejemplos -->
 <script src="js/examples-menu.js"></script>
-<!-- 15. Zoom y paneo del visor -->
+<!-- 15. Glosario de códigos -->
+<script src="js/glossary.js"></script>
+<!-- 16. Zoom y paneo del visor -->
 <script src="js/zoom-pan.js"></script>
-<!-- 16. Arranque de la aplicación -->
+<!-- 17. Arranque de la aplicación -->
 <script src="js/main.js"></script>
-<!-- 17. Pestañas de programa (hasta 4 abiertas) -->
+<!-- 18. Pestañas de programa (hasta 4 abiertas) -->
 <script src="js/tabs.js"></script>
 </body>
 </html>

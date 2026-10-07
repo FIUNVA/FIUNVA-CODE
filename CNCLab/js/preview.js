@@ -24,11 +24,16 @@ function collectThreadDefs(result) {
   return defs;
 }
 
-/* Helper: convert machine points to display points for a given spindle direction */
+/* Helper: convert machine points to display points for a given spindle direction.
+   Display convention: M03 (CW) = tool BELOW centerline -> positive x in display;
+   M04 (CCW) = tool ABOVE -> negative x. The stored coordinate already carries the
+   programmed sign (negative X for M03, positive for M04), so taking its magnitude
+   and re-applying the display sign is what puts each side where it belongs —
+   multiplying the stored sign by the spindle sign double-counts it and lands M03
+   on the wrong side. */
 function toDisplayPoints(pts, spindleDir) {
-  // Mirror X for ccw (tool above axis)
-  const sign = spindleDir === 'ccw' ? -1 : 1;
-  return pts.map(p => ({ x: p.x * sign, z: p.z }));
+  const s = displaySign(spindleDir);
+  return pts.map(p => ({ x: s * Math.abs(p.x), z: p.z }));
 }
 
 function renderStaticPreview(result) {

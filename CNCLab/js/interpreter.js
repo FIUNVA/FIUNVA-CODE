@@ -8,7 +8,18 @@
    Pure JS, no DOM dependencies, usable in browser or Node.
    ============================================================ */
 
-const ARC_SEGMENTS = 96; // polyline resolution for G02/G03
+const ARC_SEGMENTS = 200; // base polyline resolution for G02/G03 (full circle)
+const CHORD_TOLERANCE = 0.005; // mm, max deviation from true arc for adaptive refinement
+const MIN_ARC_SEGMENTS = 16;
+const MAX_ARC_SEGMENTS = 1024;
+
+function arcSegmentsFor(radius, angleDiff) {
+  if (radius <= 0 || Math.abs(angleDiff) < 1e-9) return 1;
+  // chord height = R * (1 - cos(theta/2)) <= CHORD_TOLERANCE
+  // max angle per segment = 2 * acos(1 - CHORD_TOLERANCE / R)
+  const maxChordAngle = 2 * Math.acos(Math.max(-1, Math.min(1, 1 - CHORD_TOLERANCE / radius)));
+  return Math.max(MIN_ARC_SEGMENTS, Math.min(MAX_ARC_SEGMENTS, Math.ceil(Math.abs(angleDiff) / maxChordAngle)));
+}
 
 // Width of the grooving/parting insert, in mm. Fanuc's G75 has no tool-geometry word, so a
 // cycle that plunges without a Z would cut a zero-width slit that the heightmap cannot show
@@ -141,10 +152,11 @@ function resolveArcPoints(x0, z0, x1, z1, r, cw) {
   const chosen = Math.abs(s1.diff) <= Math.abs(s2.diff) ? { c: c1, s: s1 } : { c: c2, s: s2 };
 
   const pts = [];
-  // Enough segments that even a small arc stays visibly smooth and lands
-  // exactly on its endpoints; short arcs previously got too few points and
-  // read as a broken or faceted corner.
-  const n = Math.max(16, Math.round(ARC_SEGMENTS * Math.min(1, Math.abs(chosen.s.diff) / Math.PI)));
+  // Adaptive segments: base resolution scaled by sweep angle, refined by chord tolerance
+  // for small radii. Guarantees max CHORD_TOLERANCE mm deviation from true arc.
+  const baseN = Math.max(MIN_ARC_SEGMENTS, Math.round(ARC_SEGMENTS * Math.min(1, Math.abs(chosen.s.diff) / Math.PI)));
+  const adaptiveN = arcSegmentsFor(absR, chosen.s.diff);
+  const n = Math.max(baseN, adaptiveN);
   for (let i = 0; i <= n; i++) {
     const a = chosen.s.a0 + (chosen.s.diff * i) / n;
     pts.push({ x: chosen.c.x + absR * Math.sin(a), z: chosen.c.z + absR * Math.cos(a) });
@@ -915,7 +927,7 @@ function interpretProgram(text, home) {
         state._cycleKind = c.kind;
         warnings.push(...rough.warnings);
         const sDir0 = state.spindleDir || 'cw';
-        for (const seg of rough.segments) timeline.push({ kind: 'move', segment: seg, line: c.cfg.line, phase: 'rough', spindleDir: sDir0 });
+        for (const seg of rough.segments) timeline.push({ kind: 'move', segment: seg, line: c.cfg.line, phase: 'rough', spindleDir: sDir0, g: 1 });
         if (rough.endPos) { state.x = rough.endPos.x; state.z = rough.endPos.z; }
         state.motionG = 0;
         if (rough.partMag) state._cycleStockMag = rough.partMag;
@@ -943,7 +955,7 @@ function interpretProgram(text, home) {
         const rough = expandG75(cfg, { x: state.x, z: state.z, f: state.f, s: state.s });
         warnings.push(...rough.warnings);
         const sDir0 = state.spindleDir || 'cw';
-        for (const seg of rough.segments) timeline.push({ kind: 'move', segment: seg, line: b.line, phase: 'groove', spindleDir: sDir0 });
+        for (const seg of rough.segments) timeline.push({ kind: 'move', segment: seg, line: b.line, phase: 'groove', spindleDir: sDir0, g: 1 });
         if (rough.endPos) { state.x = rough.endPos.x; state.z = rough.endPos.z; }
         state.motionG = 0;
         state._g75cfg = null;
@@ -987,7 +999,7 @@ function interpretProgram(text, home) {
         const rough = expandG76(cfg, { x: state.x, z: state.z, f: state.f, s: state.s });
         warnings.push(...rough.warnings);
         const sDir0 = state.spindleDir || 'cw';
-        for (const seg of rough.segments) timeline.push({ kind: 'move', segment: seg, line: b.line, phase: 'thread', spindleDir: sDir0 });
+        for (const seg of rough.segments) timeline.push({ kind: 'move', segment: seg, line: b.line, phase: 'thread', spindleDir: sDir0, g: 1 });
         if (rough.endPos) { state.x = rough.endPos.x; state.z = rough.endPos.z; }
         state.motionG = 0;
         state._g76cfg = null;
@@ -1023,11 +1035,11 @@ function interpretProgram(text, home) {
         const leadSeg = sub.segments[skip - 1];
         if (leadSeg) {
           const leadTo = leadSeg.points[leadSeg.points.length - 1];
-          timeline.push({ kind: 'move', line: c.cfg.line, phase: 'finish', spindleDir: sDir1,
-            segment: { type: 'rapid', points: [{ x: state.x, z: state.z }, leadTo] } });
+timeline.push({ kind: 'move', line: c.cfg.line, phase: 'finish', spindleDir: sDir1,
+             segment: { type: 'rapid', points: [{ x: state.x, z: state.z }, leadTo] }, g: 0 });
         }
         for (const seg of sub.segments.slice(skip)) {
-          timeline.push({ kind: 'move', segment: { ...seg, phase: 'finish' }, line: seg.line, phase: 'finish', spindleDir: sDir1 });
+          timeline.push({ kind: 'move', segment: { ...seg, phase: 'finish' }, line: seg.line, phase: 'finish', spindleDir: sDir1, g: 1 });
         }
         state.x = sub.endState.x; state.z = sub.endState.z; state.motionG = sub.endState.motionG;
       }
@@ -1048,8 +1060,8 @@ function interpretProgram(text, home) {
       const pts = [from];
       if (inter.x !== from.x || inter.z !== from.z) pts.push(inter);
       pts.push(home);
-      timeline.push({ kind: 'move', line: b.line, phase: 'retract', spindleDir: state.spindleDir || 'cw',
-        segment: { type: 'rapid', points: pts } });
+timeline.push({ kind: 'move', line: b.line, phase: 'retract', spindleDir: state.spindleDir || 'cw',
+         segment: { type: 'rapid', points: pts }, g: 0 });
       state.x = home.x; state.z = home.z; state.motionG = 0;
       return;
     }
@@ -1057,7 +1069,7 @@ function interpretProgram(text, home) {
     // Generic motion block
     const { segment, warnings: w } = resolveMotionBlock(b, state);
     warnings.push(...w.map(ww => ({ line: b.line, message: ww.message || ww })));
-    if (segment) timeline.push({ kind: 'move', segment, line: b.line, phase: 'general', spindleDir: state.spindleDir || 'cw' });
+    if (segment) timeline.push({ kind: 'move', segment, line: b.line, phase: 'general', spindleDir: state.spindleDir || 'cw', g: state.motionG });
   });
 
   // Coherence check: the standard convention pairs M03 (tool below centerline)

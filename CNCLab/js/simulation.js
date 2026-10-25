@@ -104,7 +104,7 @@ function prepareSimulation() {
       for (let i = 0; i < pts.length - 1; i++) length += Math.hypot(pts[i + 1].z - pts[i].z, pts[i + 1].x - pts[i].x);
       const speedRef = ev.segment.type === 'rapid' ? 260 : 40;
       const duration = Math.max(60, (length / speedRef) * 1000);
-      sim.steps.push({ kind: 'move', seg: ev.segment, phase: ev.phase, line: ev.line, duration, spindleDir: ev.spindleDir || 'cw' });
+      sim.steps.push({ kind: 'move', seg: ev.segment, phase: ev.phase, line: ev.line, duration, spindleDir: ev.spindleDir || 'cw', g: ev.g });
     } else {
       sim.steps.push({ kind: 'instant', ev, duration: 40 });
     }
@@ -178,9 +178,12 @@ function drawPartialStep(step, t) {
     : step.phase === 'rough' ? 'previewRough'
     : step.phase === 'finish' ? 'previewFinish' : 'previewFeed';
   sim.tempPath.setAttribute('class', cls);
+  // For partial steps, we still use polyline since we're interpolating
   sim.tempPath.setAttribute('d', pathFromPoints(toDisplayPoints(subPoints, step.spindleDir)));
   el.roX.textContent = (point.x * 2).toFixed(3);
   el.roZ.textContent = point.z.toFixed(3);
+  const _gn = { 0: 'G00', 1: 'G01', 2: 'G02', 3: 'G03' };
+  if (step.g !== undefined && step.g !== null) el.roModalG.textContent = _gn[step.g] || ('G' + String(step.g).padStart(2, '0'));
 }
 
 function finalizeStep(step) {
@@ -210,7 +213,8 @@ function finalizeStep(step) {
       sim.materialEl.setAttribute('d', heightmapToSilhouettePath(sim.hm));
     }
   }
-  el.roX.textContent = (pts[pts.length - 1].x * 2).toFixed(3);
+  const _gNames = { 0: 'G00', 1: 'G01', 2: 'G02', 3: 'G03' };
+if (step.g !== undefined && step.g !== null) el.roModalG.textContent = _gNames[step.g] || ('G' + String(step.g).padStart(2, '0'));
   el.roZ.textContent = pts[pts.length - 1].z.toFixed(3);
   if (step.seg.f !== undefined) el.roF.textContent = (step.seg.f || 0).toFixed(3);
   if (step.seg.s !== undefined) el.roS.textContent = Math.round(step.seg.s || 0);
@@ -299,6 +303,7 @@ function resetSimState() {
   el.progressBar.style.width = '0%';
   el.ledSpindle.classList.remove('on');
   el.ledCoolant.classList.remove('on');
+  el.roModalG.textContent = '—';
 }
 el.btnReset.addEventListener('click', () => {
   resetSimState();
